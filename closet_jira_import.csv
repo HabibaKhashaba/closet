@@ -1,0 +1,361 @@
+Issue ID,Issue Type,Summary,Description,Priority,Labels,Labels,Labels,Parent,Sprint,Story Points
+E1,Epic,E1 Accounts & Profile,Epic E1: Accounts & Profile. See SRS section 3.3.,High,E1,,,,,
+E2,Epic,E2 Digital Closet,Epic E2: Digital Closet. See SRS section 3.3.,High,E2,,,,,
+E3,Epic,E3 Availability & Laundry,Epic E3: Availability & Laundry. See SRS section 3.3.,High,E3,,,,,
+E4,Epic,E4 Outfit Recommender,Epic E4: Outfit Recommender. See SRS section 3.3.,High,E4,,,,,
+E5,Epic,E5 Virtual Try-On,Epic E5: Virtual Try-On. See SRS section 3.3.,High,E5,,,,,
+E6,Epic,E6 Ask Closet AI Agent,Epic E6: Ask Closet AI Agent. See SRS section 3.3.,High,E6,,,,,
+E7,Epic,E7 Feedback & Learning,Epic E7: Feedback & Learning. See SRS section 3.3.,High,E7,,,,,
+E8,Epic,E8 Outfit Builder,Epic E8: Outfit Builder. See SRS section 3.3.,High,E8,,,,,
+E9,Epic,E9 Plan Ahead,Epic E9: Plan Ahead. See SRS section 3.3.,High,E9,,,,,
+E10,Epic,E10 Saved & Wear Analytics,Epic E10: Saved & Wear Analytics. See SRS section 3.3.,High,E10,,,,,
+US-01,Story,US-01 Register and log in with email or Google,"As a user, I want to register and log in with email or Google.
+
+Acceptance criteria: Password ≥ 8 chars or Google; wrong password shows an error; no other user’s data is ever returned
+
+Use case: UC-01 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-01,E1,Closet Sprint 1,8
+US-02,Story,"US-02 Answer a short style quiz: styles, colours, occasions","As a user, I want to answer a short style quiz: styles, colours, occasions.
+
+Acceptance criteria: ≤ 4 steps, skippable; answers change the first recommendation
+
+Use case: UC-02 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-02,E1,Closet Sprint 1,2
+US-03,Story,US-03 Set my usual dress code and a modest preference,"As a user, I want to set my usual dress code and a modest preference.
+
+Acceptance criteria: One of the 5 levels; with modest on, no non-modest piece appears anywhere
+
+Use case: UC-02 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-02,E1,Closet Sprint 1,2
+US-04,Story,US-04 Set my city so outfits use my local weather,"As a user, I want to set my city so outfits use my local weather.
+
+Acceptance criteria: Forecast on Home is for that city
+
+Use case: UC-02 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-02,E1,Closet Sprint 1,2
+US-05,Story,US-05 Edit my profile and settings at any time,"As a user, I want to edit my profile and settings at any time.
+
+Acceptance criteria: Every quiz answer is editable; the next recommendation uses it
+
+Use case: UC-02 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-02,E1,Closet Sprint 2,2
+US-06,Story,US-06 Delete my account and all my photos and data,"As a user, I want to delete my account and all my photos and data.
+
+Acceptance criteria: Double confirmation; all data and photos deleted within 24 h
+
+Use case: UC-01 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-01,E1,Closet Sprint 1,2
+US-07,Story,US-07 Use the app in Arabic (RTL),"As a user, I want to use the app in Arabic (RTL).
+
+Acceptance criteria: Out of scope
+
+Use case: — · MoSCoW: Could · Release: Future",Medium,Could,Future,,E1,,
+US-08,Story,US-08 Add a piece by taking or uploading a photo,"As a user, I want to add a piece by taking or uploading a photo.
+
+Acceptance criteria: JPG/PNG/HEIC ≤ 10 MB stored and shown as the piece’s image
+
+Use case: UC-03 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-03,E2,Closet Sprint 1,8
+US-09,Story,"US-09 Enter category, colour, fabric, season, size, style, dress code","As a user, I want to enter category, colour, fabric, season, size, style, dress code.
+
+Acceptance criteria: Values from 3.1; category, colour and ≥ 1 dress-code level required
+
+Use case: UC-03 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-03,E2,Closet Sprint 1,2
+US-10,Story,US-10 Let AI suggest those details from the photo,"As a user, I want to let AI suggest those details from the photo.
+
+Acceptance criteria: Suggestions ≤ 10 s with confidence; nothing saved until confirmed; failure leaves a usable empty form
+
+Use case: UC-03 · MoSCoW: Should · Release: Stretch",High,Should,Stretch,UC-03,E2,,2
+US-11,Story,US-11 Review and edit every detail before saving,"As a user, I want to review and edit every detail before saving.
+
+Acceptance criteria: One review screen; the piece exists only after Save
+
+Use case: UC-03 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-03,E2,Closet Sprint 1,2
+US-12,Story,US-12 Browse and filter my closet by category and status,"As a user, I want to browse and filter my closet by category and status.
+
+Acceptance criteria: Filters combine; counts update
+
+Use case: UC-04 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-04,E2,Closet Sprint 1,2
+US-71,Story,US-71 Edit a piece’s details later,"As a user, I want to edit a piece’s details later.
+
+Acceptance criteria: Changes appear in all outfits and filters
+
+Use case: UC-04 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-04,E2,Closet Sprint 1,2
+US-72,Story,US-72 Enter an optional purchase price,"As a user, I want to enter an optional purchase price.
+
+Acceptance criteria: Optional, ≥ 0, in EGP
+
+Use case: UC-04 · MoSCoW: Could · Release: Stretch",Medium,Could,Stretch,UC-04,E2,,2
+US-13,Story,US-13 Delete a piece with a reason,"As a user, I want to delete a piece with a reason.
+
+Acceptance criteria: Impossible without one of the 4 reasons; piece removed from saved and planned outfits
+
+Use case: UC-05 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-05,E2,Closet Sprint 2,2
+US-14,Story,US-14 Upload several pieces at once,"As a user, I want to upload several pieces at once.
+
+Acceptance criteria: Out of scope
+
+Use case: — · MoSCoW: Could · Release: Future",Medium,Could,Future,,E2,,
+US-56,Story,US-56 Set a status per piece (5 statuses),"As a user, I want to set a status per piece (5 statuses).
+
+Acceptance criteria: Exactly one status, shown as a badge
+
+Use case: UC-06 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-06,E3,Closet Sprint 1,2
+US-15,Story,US-15 Put a piece in the laundry basket and take it out,"As a user, I want to put a piece in the laundry basket and take it out.
+
+Acceptance criteria: One tap each way; basket lists all Laundry pieces
+
+Use case: UC-06 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-06,E3,Closet Sprint 1,2
+US-16,Story,US-16 Return everything with one “Wash done” tap,"As a user, I want to return everything with one “Wash done” tap.
+
+Acceptance criteria: All Laundry pieces become Available
+
+Use case: UC-06 · MoSCoW: Should · Release: S1",High,Should,Committed,UC-06,E3,Closet Sprint 1,2
+US-17,Story,US-17 Never get an outfit with an unavailable piece,"As a user, I want to never get an outfit with an unavailable piece.
+
+Acceptance criteria: Test: 100 generated outfits with random statuses contain 0 non-Available pieces
+
+Use case: UC-09 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-09,E3,Closet Sprint 2,2
+US-18,Story,US-18 Reminder for pieces long in the laundry,"As a user, I want to reminder for pieces long in the laundry.
+
+Acceptance criteria: Out of scope
+
+Use case: — · MoSCoW: Could · Release: Future",Medium,Could,Future,,E3,,
+US-19,Story,US-19 Choose an occasion and a style and get 3 outfits of 4 pieces,"As a user, I want to choose an occasion and a style and get 3 outfits of 4 pieces.
+
+Acceptance criteria: 3 outfits in ≤ 2 s; each complete; no two share more than 2 pieces when the closet allows
+
+Use case: UC-09 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-09,E4,Closet Sprint 2,8
+US-20,Story,US-20 Have the weather shape the outfits,"As a user, I want to have the weather shape the outfits.
+
+Acceptance criteria: ≥ 26 °C: no warm piece; < 19 °C: a warm layer; ≥ 38 °C or ≤ 8 °C: heat or cold note
+
+Use case: UC-09 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-09,E4,Closet Sprint 2,2
+US-21,Story,US-21 Filter by dress code and modest option,"As a user, I want to filter by dress code and modest option.
+
+Acceptance criteria: Every main piece suits the level; modest respected
+
+Use case: UC-09 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-09,E4,Closet Sprint 2,2
+US-57,Story,US-57 See why each outfit works,"As a user, I want to see why each outfit works.
+
+Acceptance criteria: 3–5 reason lines and a “rule score” label on every outfit
+
+Use case: UC-09 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-09,E4,Closet Sprint 2,2
+US-23,Story,US-23 Tap “Wear this” to log the outfit and its pieces,"As a user, I want to tap “Wear this” to log the outfit and its pieces.
+
+Acceptance criteria: Wear count +1 and last-worn = today for all 4 pieces; analytics update
+
+Use case: UC-12 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-12,E4,Closet Sprint 2,2
+US-24,Story,"US-24 Change one of the 4 pieces, the other 3 stay","As a user, I want to change one of the 4 pieces, the other 3 stay.
+
+Acceptance criteria: Only that slot changes; alternatives are Available; swap stored as feedback
+
+Use case: UC-09 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-09,E4,Closet Sprint 2,2
+US-26,Story,"US-26 Save an outfit, and mark it as a favorite","As a user, I want to save an outfit, and mark it as a favorite.
+
+Acceptance criteria: Saved list; favorite = a starred saved outfit
+
+Use case: UC-09 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-09,E4,Closet Sprint 2,2
+US-59,Story,US-59 “Style this piece”: 3 outfits with one piece fixed,"As a user, I want to “Style this piece”: 3 outfits with one piece fixed.
+
+Acceptance criteria: All 3 outfits contain that piece
+
+Use case: UC-08 · MoSCoW: Should · Release: S2",High,Should,Committed,UC-08,E4,Closet Sprint 2,2
+US-58,Story,US-58 Choose repeats: don’t mind / avoid last 7 days / something different,"As a user, I want to choose repeats: don’t mind / avoid last 7 days / something different.
+
+Acceptance criteria: “Avoid 7 days” uses no piece worn in the last 7 days when an alternative exists
+
+Use case: UC-09 · MoSCoW: Should · Release: Stretch",High,Should,Stretch,UC-09,E4,,2
+US-27,Story,US-27 See an outfit on a stylised avatar,"As a user, I want to see an outfit on a stylised avatar.
+
+Acceptance criteria: All 4 pieces drawn in their colours in ≤ 1 s on the phone; no photo of the user
+
+Use case: UC-09 · MoSCoW: Should · Release: S3",High,Should,Committed,UC-09,E5,Closet Sprint 3,8
+US-28,Story,US-28 Flip between the 3 looks in the try-on,"As a user, I want to flip between the 3 looks in the try-on.
+
+Acceptance criteria: Swipe switches looks
+
+Use case: UC-09 · MoSCoW: Could · Release: Stretch",Medium,Could,Stretch,UC-09,E5,,2
+US-29,Story,US-29 Choose the avatar’s skin tone,"As a user, I want to choose the avatar’s skin tone.
+
+Acceptance criteria: ≥ 6 tones, saved in profile
+
+Use case: UC-09 · MoSCoW: Could · Release: Stretch",Medium,Could,Stretch,UC-09,E5,,2
+US-30,Story,US-30 Try on with a photo of myself,"As a user, I want to try on with a photo of myself.
+
+Acceptance criteria: Out of scope
+
+Use case: — · MoSCoW: Could · Release: Future",Medium,Could,Future,,E5,,
+US-31,Story,"US-31 Chat with an agent that knows my closet, calendar and weather","As a user, I want to chat with an agent that knows my closet, calendar and weather.
+
+Acceptance criteria: Reply ≤ 8 s (p90); never names a piece the user does not own
+
+Use case: UC-07 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-07,E6,Closet Sprint 3,8
+US-76,Story,US-76 Have the agent act for me through Closet functions,"As a user, I want to have the agent act for me through Closet functions.
+
+Acceptance criteria: Only whitelisted functions; reply lists the function used; every change undoable
+
+Use case: UC-07 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-07,E6,Closet Sprint 3,8
+US-32,Story,US-32 Ask “what does my closet need?”,"As a user, I want to ask “what does my closet need?”.
+
+Acceptance criteria: Item types listed, each with a reason
+
+Use case: UC-14 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-14,E6,Closet Sprint 3,2
+US-33,Story,US-33 See torn or too-small pieces suggested for replacement,"As a user, I want to see torn or too-small pieces suggested for replacement.
+
+Acceptance criteria: Every Torn or Became-small deletion appears on the list
+
+Use case: UC-14 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-14,E6,Closet Sprint 3,2
+US-34,Story,US-34 Never be told to re-buy “no longer my style” pieces,"As a user, I want to never be told to re-buy “no longer my style” pieces.
+
+Acceptance criteria: No suggestion matches their category and colour
+
+Use case: UC-14 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-14,E6,Closet Sprint 3,2
+US-36,Story,US-36 Keep a shopping list,"As a user, I want to keep a shopping list.
+
+Acceptance criteria: Add from chat or list, remove, persists
+
+Use case: UC-14 · MoSCoW: Should · Release: S3",High,Should,Committed,UC-14,E6,Closet Sprint 3,2
+US-64,Story,US-64 See closet gaps by category and dress code,"As a user, I want to see closet gaps by category and dress code.
+
+Acceptance criteria: Gap = ≤ 1 piece at a level the user dresses for
+
+Use case: UC-14 · MoSCoW: Could · Release: S1",Medium,Could,Committed,UC-14,E6,Closet Sprint 1,2
+US-65,Story,US-65 Get a duplicate-purchase warning,"As a user, I want to get a duplicate-purchase warning.
+
+Acceptance criteria: Same category and colour as an owned piece shows that piece
+
+Use case: UC-14 · MoSCoW: Could · Release: S3",Medium,Could,Committed,UC-14,E6,Closet Sprint 3,2
+US-37,Story,"US-37 Have wears, swaps and rejections stored as feedback","As a user, I want to have wears, swaps and rejections stored as feedback.
+
+Acceptance criteria: Each event stored with time, outfit and pieces
+
+Use case: UC-09 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-09,E7,Closet Sprint 2,2
+US-60,Story,US-60 Give a reason when I reject a look,"As a user, I want to give a reason when I reject a look.
+
+Acceptance criteria: 7 reasons; each changes exactly one preference
+
+Use case: UC-09 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-09,E7,Closet Sprint 2,8
+US-61,Story,US-61 Hide a piece for 7 days without it being a dislike,"As a user, I want to hide a piece for 7 days without it being a dislike.
+
+Acceptance criteria: Returns after 7 days; rejection count unchanged
+
+Use case: UC-09 · MoSCoW: Should · Release: S1",High,Should,Committed,UC-09,E7,Closet Sprint 1,2
+US-62,Story,US-62 Rate an outfit after wearing it,"As a user, I want to rate an outfit after wearing it.
+
+Acceptance criteria: Wouldn’t repeat = combination never recommended again
+
+Use case: UC-12 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-12,E7,Closet Sprint 3,2
+US-38,Story,US-38 Be asked when I reject the same piece twice,"As a user, I want to be asked when I reject the same piece twice.
+
+Acceptance criteria: One in-app question at the 2nd rejection, within the daily limit
+
+Use case: UC-09 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-09,E7,Closet Sprint 3,2
+US-39,Story,US-39 Answer: don’t like it / not these days / keep suggesting,"As a user, I want to answer: don’t like it / not these days / keep suggesting.
+
+Acceptance criteria: Exclude, pause 2 weeks, or reset
+
+Use case: UC-09 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-09,E7,Closet Sprint 3,2
+US-40,Story,"US-40 See what Closet learned in plain words, and undo it","As a user, I want to see what Closet learned in plain words, and undo it.
+
+Acceptance criteria: One sentence per lesson; Undo restores the previous preference exactly
+
+Use case: UC-02 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-02,E7,Closet Sprint 3,2
+US-63,Story,US-63 Have favorites raise similar colours and styles,"As a user, I want to have favorites raise similar colours and styles.
+
+Acceptance criteria: Favoriting raises their weights
+
+Use case: UC-09 · MoSCoW: Could · Release: Stretch",Medium,Could,Stretch,UC-09,E7,,2
+US-75,Story,"US-75 Pause learning, reset it, or download my data","As a user, I want to pause learning, reset it, or download my data.
+
+Acceptance criteria: Pause stops updates; download gives a JSON file
+
+Use case: UC-02 · MoSCoW: Should · Release: Stretch",High,Should,Stretch,UC-02,E7,,2
+US-42,Story,"US-42 Pick a top/dress, bottom/layer, shoes and an extra","As a user, I want to pick a top/dress, bottom/layer, shoes and an extra.
+
+Acceptance criteria: Only Available pieces per slot
+
+Use case: UC-11 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-11,E8,Closet Sprint 2,2
+US-43,Story,US-43 See a rule score with pass/fail for the 5 criteria,"As a user, I want to see a rule score with pass/fail for the 5 criteria.
+
+Acceptance criteria: Criteria and formula as in 3.1
+
+Use case: UC-11 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-11,E8,Closet Sprint 2,8
+US-66,Story,US-66 Read one plain sentence that explains a mismatch,"As a user, I want to read one plain sentence that explains a mismatch.
+
+Acceptance criteria: Names the failing criterion
+
+Use case: UC-11 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-11,E8,Closet Sprint 2,2
+US-44,Story,US-44 Get one suggested swap that improves the score,"As a user, I want to get one suggested swap that improves the score.
+
+Acceptance criteria: Applying it raises the score
+
+Use case: UC-11 · MoSCoW: Could · Release: Stretch",Medium,Could,Stretch,UC-11,E8,,2
+US-45,Story,"US-45 Try on, save or wear a built outfit","As a user, I want to try on, save or wear a built outfit.
+
+Acceptance criteria: Same actions as a recommended outfit
+
+Use case: UC-11 · MoSCoW: Should · Release: Stretch",High,Should,Stretch,UC-11,E8,,2
+US-46,Story,US-46 Add events by hand and see them in a calendar,"As a user, I want to add events by hand and see them in a calendar.
+
+Acceptance criteria: Title, date, time and one occasion; month view
+
+Use case: UC-10 · MoSCoW: Must · Release: S1",Highest,Must,Committed,UC-10,E9,Closet Sprint 1,8
+US-47,Story,US-47 Get 3 outfits for an event,"As a user, I want to get 3 outfits for an event.
+
+Acceptance criteria: Uses the event’s dress code, that day’s forecast and Available pieces
+
+Use case: UC-10 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-10,E9,Closet Sprint 3,2
+US-48,Story,US-48 Choose one as the planned outfit,"As a user, I want to choose one as the planned outfit.
+
+Acceptance criteria: Shown on the event and on Home that day
+
+Use case: UC-10 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-10,E9,Closet Sprint 3,2
+US-50,Story,US-50 Sync events from Google Calendar,"As a user, I want to sync events from Google Calendar.
+
+Acceptance criteria: Read-only; next 30 days
+
+Use case: UC-10 · MoSCoW: Should · Release: Stretch",High,Should,Stretch,UC-10,E9,,2
+US-67,Story,US-67 Get a reminder the night before,"As a user, I want to get a reminder the night before.
+
+Acceptance criteria: One in-app notice at 21:00, within the daily limit
+
+Use case: UC-10 · MoSCoW: Could · Release: Stretch",Medium,Could,Stretch,UC-10,E9,,2
+US-79,Story,US-79 Be warned if a planned piece becomes unavailable,"As a user, I want to be warned if a planned piece becomes unavailable.
+
+Acceptance criteria: Warning with a one-tap swap
+
+Use case: UC-10 · MoSCoW: Could · Release: Stretch",Medium,Could,Stretch,UC-10,E9,,2
+US-68,Story,US-68 Packing assistant for trips,"As a user, I want to packing assistant for trips.
+
+Acceptance criteria: Out of scope
+
+Use case: — · MoSCoW: Could · Release: Future",Medium,Could,Future,,E9,,
+US-51,Story,US-51 See saved outfits and filter favorites,"As a user, I want to see saved outfits and filter favorites.
+
+Acceptance criteria: A saved outfit with a non-Available piece shows a warning and cannot be worn
+
+Use case: UC-09 · MoSCoW: Must · Release: S2",Highest,Must,Committed,UC-09,E10,Closet Sprint 2,2
+US-52,Story,US-52 See most and least worn pieces,"As a user, I want to see most and least worn pieces.
+
+Acceptance criteria: Top and bottom 5 by wear count
+
+Use case: UC-13 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-13,E10,Closet Sprint 3,2
+US-69,Story,US-69 See my wardrobe utilization,"As a user, I want to see my wardrobe utilization.
+
+Acceptance criteria: Formula in 3.1; matches a manual count in tests
+
+Use case: UC-13 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-13,E10,Closet Sprint 3,2
+US-54,Story,US-54 See forgotten pieces,"As a user, I want to see forgotten pieces.
+
+Acceptance criteria: Exactly the pieces matching 3.1; each has “Style it”
+
+Use case: UC-13 · MoSCoW: Must · Release: S3",Highest,Must,Committed,UC-13,E10,Closet Sprint 3,2
+US-53,Story,US-53 See cost per wear for priced pieces,"As a user, I want to see cost per wear for priced pieces.
+
+Acceptance criteria: Only priced pieces, with a note
+
+Use case: UC-13 · MoSCoW: Could · Release: Stretch",Medium,Could,Stretch,UC-13,E10,,2
+US-70,Story,US-70 Get a weekly forgotten-item challenge,"As a user, I want to get a weekly forgotten-item challenge.
+
+Acceptance criteria: One per week, within the daily limit
+
+Use case: UC-13 · MoSCoW: Could · Release: Stretch",Medium,Could,Stretch,UC-13,E10,,2
+US-74,Story,US-74 Control notification types and the daily limit,"As a user, I want to control notification types and the daily limit.
+
+Acceptance criteria: Types can be switched off; default 3 per day
+
+Use case: UC-02 · MoSCoW: Should · Release: Stretch",High,Should,Stretch,UC-02,E10,,2
