@@ -18,13 +18,13 @@ Closet is a mobile app that knows which clothes you own and which are in the lau
 
 | Deliverable | File |
 | --- | --- |
-| Requirements specification + architectural design and description | [docs/Closet_M1_Requirements_and_Architecture.pdf](docs/Closet_M1_Requirements_and_Architecture.pdf) |
-| UML use case diagram | [docs/Closet_Use_Case_Diagram.png](docs/Closet_Use_Case_Diagram.png) |
-| UML component diagram | [docs/Closet_Component_Diagram.png](docs/Closet_Component_Diagram.png) · [SVG](docs/Closet_Component_Diagram.svg) |
-| Clickable prototype | [prototype/index.html](prototype/index.html) – open in a browser (AI, weather and calendar are simulated and labelled) |
-| Product backlog (Jira import) | [backlog/closet_jira_import.csv](backlog/closet_jira_import.csv) |
+| Requirements specification + architectural design and description | [Closet_M1_Requirements_and_Architecture.pdf](Closet_M1_Requirements_and_Architecture.pdf) |
+| UML use case diagram | [Closet_Use_Case_Diagram.png](Closet_Use_Case_Diagram.png) |
+| UML component diagram | [Closet_Component_Diagram.png](Closet_Component_Diagram.png) · [SVG](Closet_Component_Diagram.svg) |
+| Clickable prototype | [index.html](index.html) – open in a browser (AI, weather and calendar are simulated and labelled) |
+| Product backlog (Jira import) | [closet_jira_import.csv](closet_jira_import.csv) |
 
-**Backlog:** 70 user stories in 10 epics (43 Must · 11 Should · 16 Could). 50 committed for December 1, 2026, 15 stretch, 5 future. Tracked in Jira: *add Jira link here*.
+**Backlog:** 70 user stories in 10 epics (43 Must · 11 Should · 16 Could). 50 committed for December 1, 2026, 15 stretch, 5 future. Tracked in Jira: https://aucegypt-team-r73i3oon.atlassian.net/jira/software/projects/SCRUM/boards/1.
 
 ## Architecture
 
