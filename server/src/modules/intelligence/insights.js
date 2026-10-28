@@ -131,13 +131,20 @@ function planDays(pieces, days, { prefs = {}, allowRepeats = false, maxWears = 1
   const plan = [];
   for (const d of days) {
     const blocked = allowRepeats ? [] : [...used.entries()].filter(([, n]) => n >= maxWears).map(([id]) => id);
-    const r = engine.recommend(pieces, { occasion: d.occasion, level: d.level, prefs: { ...prefs, repeatDays: 0 }, weather: d.weather, hiddenIds: blocked, today: new Date(`${d.date}T12:00:00`) });
+    const opts = { occasion: d.occasion, level: d.level, prefs: { ...prefs, repeatDays: 0 }, weather: d.weather, today: new Date(`${d.date}T12:00:00`) };
+    let r = engine.recommend(pieces, { ...opts, hiddenIds: blocked });
+    let repeated = [];
+    if (!r.outfits.length && blocked.length) { // the closet ran out: repeat as little as possible, and say so
+      r = engine.recommend(pieces, opts);
+      repeated = r.outfits[0] ? r.outfits[0].itemIds.filter((id) => blocked.includes(id)) : [];
+    }
     const best = r.outfits[0] || null;
     if (best) for (const id of best.itemIds) {
       const p = pieces.find((x) => x.id === id);
       if (['Top', 'Dress', 'Bottom'].includes(p.category)) used.set(id, (used.get(id) || 0) + 1);
     }
-    plan.push({ ...d, outfit: best, note: best ? null : r.note });
+    const names = repeated.map((id) => label(pieces.find((x) => x.id === id)));
+    plan.push({ ...d, outfit: best, repeated, note: best ? (names.length ? `Repeats your ${names.join(' and ')} — wash it first or swap it.` : null) : r.note });
   }
   return { days: plan, repeatsAllowed: allowRepeats, reusedPieces: [...used.entries()].filter(([, n]) => n > 1).map(([id]) => id) };
 }
