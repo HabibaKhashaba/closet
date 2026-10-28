@@ -21,6 +21,7 @@ const { detailsSchema, editSchema } = require('../../server/src/modules/wardrobe
 const { optionsSchema } = require('../../server/src/modules/recommendation/recommendationModule');
 const { eventSchema } = require('../../server/src/modules/planner/plannerModule');
 const { tripSchema } = require('../../server/src/modules/packing/packingModule');
+const { careSchema, tailorSchema, lendSchema } = require('../../server/src/modules/availability/availabilityModule');
 const { settingsSchema, profileSchema } = require('../../server/src/modules/profile/profileModule');
 
 const PHOTOS = (typeof window !== 'undefined' && window.__CLOSET_PHOTOS__) || {};
@@ -56,8 +57,10 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
       r.wear_count = worn; r.last_worn_at = worn && lastDays !== null ? new Date(Date.now() - lastDays * DAY) : null; r.created_at = new Date(Date.now() - 400 * DAY);
     }
     for (const [file, status, daysAgo, until, note] of seed.STATUSES) {
-      await m.availability.service.setStatus(uid, ids[file], status, { ...(until > 0 && { until: seed.inDays(until) }), ...(note && { note }) });
-      const st = S.status.get(ids[file]); st.changed_at = new Date(Date.now() - daysAgo * DAY); if (until < 0) st.until = seed.inDays(until);
+      if (status === 'Borrowed') await m.availability.service.lend(uid, ids[file], { person: note, lentOn: seed.inDays(-daysAgo), dueOn: seed.inDays(until) });
+      else if (/^Needs /.test(status)) await m.availability.service.needsCare(uid, ids[file], { kind: status === 'Needs repair' ? 'repair' : 'alteration', reason: note });
+      else await m.availability.service.setStatus(uid, ids[file], status, { ...(until > 0 && { until: seed.inDays(until) }), ...(note && { note }) });
+      const st = S.status.get(ids[file]); st.changed_at = new Date(Date.now() - daysAgo * DAY);
     }
     for (const [d, files, rating, occasion, tempC, condition, eventTitle] of seed.WEARS) {
       await repos.outfits.wear(uid, files.map((f) => ids[f]), seed.inDays(-d), rating, { occasion, tempC, condition, eventTitle });
@@ -86,7 +89,7 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   const R = [];
   const route = (method, pattern, fn) => R.push({ method, re: new RegExp(`^${pattern.replace(/:(\w+)/g, '(?<$1>[^/]+)')}$`), fn });
   route('GET', '/health', () => ({ status: 'ok', mode: 'offline demo' }));
-  route('GET', '/vocabulary', () => ({ ...vocabulary, STATUS_TRANSITIONS }));
+  route('GET', '/vocabulary', () => ({ ...vocabulary, STATUS_TRANSITIONS, STATUS_WHERE: require('../../server/src/shared/lifecycle').WHERE }));
   route('POST', '/auth/login', ({ body }) => {
     const email = String(body.email || '').trim().toLowerCase();
     if (email !== seed.EMAIL || body.password !== seed.PASSWORD) throw new AppError(401, 'BAD_LOGIN', 'Offline demo: sign in with demo@closet.app / Closet2026!');
@@ -115,9 +118,18 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   route('PATCH', '/items/:id/status', ({ p, body }) => sv().availability.setStatus(uid, p.id, v.validate({ status: { type: 'enum', values: vocabulary.STATUSES, required: true }, until: { type: 'date' }, note: { type: 'string', max: 60 } }, body).status, body));
   route('POST', '/items/:id/hide', ({ p }) => sv().outfits.hide(uid, p.id, 7));
   route('DELETE', '/items/:id/hide', ({ p }) => sv().outfits.unhide(uid, p.id));
-  route('POST', '/items/:id/rehome', ({ p, body }) => sv().wardrobe.startRehome(uid, p.id, v.validate({ method: { type: 'enum', values: Object.keys(vocabulary.REHOME_METHODS), required: true } }, body).method));
-  route('DELETE', '/items/:id/rehome', ({ p }) => sv().wardrobe.cancelRehome(uid, p.id));
-  route('POST', '/items/:id/rehome/done', ({ p }) => sv().wardrobe.completeRehome(uid, p.id));
+  // v1.6 Donation, Care, Borrow & lend — same services and request schemas as the server
+  route('POST', '/items/:id/donate', ({ p }) => sv().wardrobe.donate(uid, p.id));
+  route('DELETE', '/items/:id/donate', ({ p }) => sv().wardrobe.cancelDonation(uid, p.id));
+  route('POST', '/items/:id/donate/done', ({ p }) => sv().wardrobe.donationDone(uid, p.id));
+  route('GET', '/donation', () => sv().wardrobe.donation(uid));
+  route('POST', '/items/:id/care', ({ p, body }) => sv().availability.needsCare(uid, p.id, v.validate(careSchema, body)));
+  route('POST', '/items/:id/care/tailor', ({ p, body }) => sv().availability.sendToTailor(uid, p.id, v.validate(tailorSchema, body)));
+  route('POST', '/items/:id/care/done', ({ p }) => sv().availability.careDone(uid, p.id));
+  route('GET', '/care', () => sv().availability.care(uid));
+  route('POST', '/items/:id/lend', ({ p, body }) => sv().availability.lend(uid, p.id, v.validate(lendSchema, body)));
+  route('POST', '/items/:id/return', ({ p }) => sv().availability.returned(uid, p.id));
+  route('GET', '/lending', () => sv().availability.lending(uid));
   route('GET', '/laundry', async () => { const s = sv(); const lids = await s.availability.laundryIds(uid); const pieces = (await s.wardrobe.allPieces(uid)).filter((x) => lids.includes(x.id)); const st = await s.availability.settings(uid); return { items: pieces, count: pieces.length, laundryDays: st.laundryDays, autoReturn: st.autoReturn, laundryWeekday: st.laundryWeekday }; });
   route('POST', '/laundry/wash-done', () => sv().availability.washDone(uid));
   route('GET', '/closet/gaps', () => sv().wardrobe.gaps(uid));
@@ -180,6 +192,9 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   route('POST', '/intelligence/monitor/:eventId/adjust', ({ p, body }) => sv().pro.adjust(uid, p.eventId, body.itemId));
   route('GET', '/intelligence/borrowed', () => sv().pro.borrowed(uid));
   route('POST', '/intelligence/borrowed/:itemId/remind', ({ p, body }) => sv().pro.remindLater(uid, p.itemId, body.days));
+  route('POST', '/intelligence/rescue', ({ body }) => sv().pro.rescue(uid, v.validate({ occasion: { type: 'enum', values: Object.keys(vocabulary.OCCASIONS), required: true }, date: { type: 'date' } }, body)));
+  route('GET', '/intelligence/tailor', () => sv().pro.tailorDue(uid));
+  route('POST', '/intelligence/tailor/:itemId/remind', ({ p, body }) => sv().pro.tailorLater(uid, p.itemId, body.days));
   route('GET', '/intelligence/value', () => sv().pro.value(uid));
   route('GET', '/intelligence/memory', ({ query }) => sv().pro.memory(uid, { q: query.q, best: query.best === 'true' }));
   route('POST', '/intelligence/repeat', ({ body }) => sv().pro.repeat(uid, ids(body.itemIds, 2, 4)));
@@ -196,7 +211,8 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   route('GET', '/activity', async () => ({ activity: await sv().activity.list(uid) }));
 
   // Activity log, as the server's audit step would write it (a subset of gateway/audit.js RULES).
-  const AUDIT = [[/^POST \/laundry\/wash-done$/, 'Wash done'], [/^PATCH \/items\/[^/]+\/status$/, 'Status changed'], [/^POST \/outfits\/wear$/, 'Outfit worn'], [/^DELETE \/items\/[^/]+$/, 'Piece deleted'], [/^POST \/shopping\/list$/, 'Added to shopping list']];
+  const AUDIT = [[/^POST \/laundry\/wash-done$/, 'Wash done'], [/^PATCH \/items\/[^/]+\/status$/, 'Status changed'], [/^POST \/outfits\/wear$/, 'Outfit worn'], [/^DELETE \/items\/[^/]+$/, 'Piece deleted'], [/^POST \/shopping\/list$/, 'Added to shopping list'],
+    [/^POST \/items\/[^/]+\/care$/, 'Needs care'], [/^POST \/items\/[^/]+\/care\/tailor$/, 'Sent to the tailor'], [/^POST \/items\/[^/]+\/care\/done$/, 'Back from care'], [/^POST \/items\/[^/]+\/lend$/, 'Lent out'], [/^POST \/items\/[^/]+\/return$/, 'Returned'], [/^POST \/items\/[^/]+\/donate$/, 'Ready to donate'], [/^POST \/items\/[^/]+\/donate\/done$/, 'Donated']];
 
   async function handle(method, url, body, authorization) {
     await ready;

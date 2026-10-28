@@ -1,7 +1,7 @@
 // One look, as a flip card. Front: the garments (change any piece), match %, and the actions —
 // Try on, Wear, Save, Favourite, Not for me (with a reason). Back: why Closet chose it — the factors,
 // the four part scores behind the match % and the rule check. Wearing asks for a 1–5 rating.
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { Board, CountUp, Icon, Look, Modal, Criteria, Score, Stars, Why, matchWord, useApp } from '../ui.jsx';
 import { go } from '../App.jsx';
@@ -19,6 +19,14 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
   const [flipped, setFlipped] = useState(false);
   const ids = outfit.pieces.map((p) => p.id);
   const wearable = outfit.pieces.every((p) => p.status === 'Available' || p.backBy);
+  // v1.6 repeat intelligence: "You wore almost this exact look twice this week" / "You loved this look last time".
+  const [repeat, setRepeat] = useState(null);
+  const [repeatDone, setRepeatDone] = useState(false);
+  useEffect(() => {
+    let live = true;
+    if (!compact && !hideActions && ids.length >= 2) api.repeat(ids).then((r) => live && setRepeat(r.insight)).catch(() => {});
+    return () => { live = false; };
+  }, [ids.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function save() {
     if (savedId) return;
@@ -85,6 +93,20 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
           <Look pieces={outfit.pieces} onSwap={onSwap} labels highlight={flash?.id} />
           {outfit.explanation && <p className="why-line">{outfit.explanation}</p>}
           {extra}
+          {repeat && !repeatDone && !worn && !hideActions && (
+            <div className={`notice ${repeat.kind === 'loved' ? 'ok' : 'info'} repeat-note`} role="status">
+              <span className="small">{repeat.message}</span>
+              <div className="row wrap" style={{ marginTop: 6, gap: 6 }}>
+                {repeat.kind === 'loved' ? (
+                  <button type="button" className="btn sm" onClick={() => { setRepeatDone(true); wear(); }}><Icon name="check" size={14} />Wear again</button>
+                ) : (
+                  <button type="button" className="btn sm" onClick={() => setRepeatDone(true)}>Keep it</button>
+                )}
+                <button type="button" className="btn line sm" onClick={() => { setRepeatDone(true); toast('Tap any garment to change just that piece'); }}><Icon name="swap" size={14} />Change one piece</button>
+                {repeat.kind !== 'loved' && onReject && <button type="button" className="btn ghost sm" onClick={() => { setRepeatDone(true); reject('Wore this recently'); }}>Show an alternative</button>}
+              </div>
+            </div>
+          )}
           {hideActions ? null : worn ? (
             <div className="notice ok row between"><span className="small"><b>Worn today.</b> How did it feel?</span><Stars value={rating} onChange={rate} /></div>
           ) : (

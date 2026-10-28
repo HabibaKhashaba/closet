@@ -71,6 +71,14 @@ function History() {
   const [minRating, setMinRating] = useState(0);
   const h = useLoad(() => api.history({ from: since(range), ...(occasion && { occasion }), ...(minRating && { minRating }) }), [range, occasion, minRating]);
   const all = useLoad(() => api.history({ from: since(365) }), []);
+  const { toast, refresh } = useApp();
+  const [q, setQ] = useState('');
+  const [found, setFound] = useState(null);
+  async function search(e) { e.preventDefault(); try { setFound(q.trim() ? await api.memory(q.trim()) : null); } catch (er) { toast(er.message, true); } }
+  async function wearAgain(w) {
+    try { await api.wear(w.pieces.map((p) => p.id), null, { ...(w.occasion && { occasion: w.occasion }), ...(w.eventTitle && { note: `Again: ${w.eventTitle}`.slice(0, 120) }) }); toast('Worn again today — added to your outfit memory'); refresh(); h.reload(true); } catch (er) { toast(er.message, true); }
+  }
+  const wearsShown = found ? found.matches : h.data?.wears || [];
   return (
     <section className="card pad-lg" style={{ marginBottom: 22 }}>
       <div className="row between" style={{ marginBottom: 14 }}>
@@ -81,13 +89,24 @@ function History() {
           <select className="input" style={{ width: 'auto', borderRadius: 99 }} value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} aria-label="Rating"><option value={0}>Any rating</option><option value={4}>4★ and up</option><option value={5}>5★ only</option></select>
         </div>
       </div>
-      {h.loading ? <Skeleton h={240} /> : !h.data.wears.length ? <p className="muted small">No outfits match these filters.</p> : (
+      <form className="row" style={{ marginBottom: 12 }} onSubmit={search} aria-label="Outfit memory search">
+        <input className="input grow" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Outfit memory — e.g. Salma’s birthday, wedding, interview" aria-label="Search outfit memory" />
+        <button type="submit" className="btn line sm"><Icon name="search" size={14} />Find</button>
+        {found && <button type="button" className="btn ghost sm" onClick={() => { setFound(null); setQ(''); }}>Clear</button>}
+      </form>
+      {found && <p className="small muted" style={{ marginBottom: 8 }}>{found.matches.length ? `${found.matches.length} look${found.matches.length === 1 ? '' : 's'} from your memory` : 'Nothing in your outfit memory matches that.'}</p>}
+      {h.loading ? <Skeleton h={240} /> : !wearsShown.length ? (found ? null : <p className="muted small">No outfits match these filters.</p>) : (
         <div className="timeline">
-          {h.data.wears.slice(0, 8).map((w) => (
+          {wearsShown.slice(0, 8).map((w) => (
             <div key={w.id} className="tl-item">
               <div><b style={{ fontFamily: 'var(--serif)', fontSize: 16 }}>{fmtDate(w.date, { day: 'numeric', month: 'short' })}</b><div className="tiny muted">{w.eventTitle ? <b>{w.eventTitle} · </b> : null}{w.occasion || 'Outfit'}{w.weather ? ` · ${w.weather.tempC}°` : ''}</div></div>
               <div className="tl-pieces">{w.pieces.map((p) => <a key={p.id} href={`#/closet/${p.id}`} title={`${pieceName(p)} · worn ${p.wearCount}×`}><Tile piece={p} status={false} /></a>)}</div>
-              <span>{w.rating ? <Stars value={w.rating} onChange={() => {}} /> : <span className="tiny muted">not rated</span>}</span>
+              <span className="stack" style={{ gap: 6, alignItems: 'flex-end' }}>{w.rating ? <Stars value={w.rating} onChange={() => {}} /> : <span className="tiny muted">not rated</span>}
+                <span className="row" style={{ gap: 4 }}>
+                  <button type="button" className="btn line sm" disabled={!w.pieces.every((p) => p.status === 'Available')} title={w.pieces.every((p) => p.status === 'Available') ? '' : 'A piece is not available right now'} onClick={() => wearAgain(w)}>Wear again</button>
+                  <a className="btn ghost sm" href={`#/mix?ids=${w.pieces.map((p) => p.id).join(',')}`}>Create a variation</a>
+                </span>
+              </span>
             </div>
           ))}
         </div>
@@ -105,16 +124,12 @@ function StillLove() {
   return (
     <section className="card pad-lg" id="forgotten" style={{ marginBottom: 22 }}>
       <div className="card-head"><div><div className="row"><h2>Still love it?</h2><SprintTag n={3} short /></div><p className="small muted" style={{ marginTop: 4 }}>Pieces that haven’t made it into your rotation recently: everyday pieces after {thresholds.everyday} days, special-occasion pieces after {thresholds.special}. Seasonal pieces are only judged in their season; new, lent, packed or laundry pieces never.</p></div>
-        <span className="tiny muted">{stats.passedOn} passed on · {stats.kept} kept</span></div>
+        <span className="tiny muted">{stats.donated} donated · {stats.kept} kept</span></div>
       {!candidates.length ? <p className="small muted">Nothing to decide right now.</p> : (
         <div className="still-list">{candidates.slice(0, 3).map((c) => <StillLoveIt key={c.id} candidate={c} compact onChanged={() => f.reload(true)} />)}</div>
       )}
-      {pending.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <div className="eyebrow" style={{ marginBottom: 8 }}>Ready to leave</div>
-          <div className="row wrap">{pending.map((p) => <button key={p.id} type="button" className="pending-chip" onClick={() => setDonate(p)}><Tile piece={{ ...p, category: 'Top', status: 'Available' }} status={false} /><span className="small"><b>{p.name}</b><br /><span className="tiny muted">{p.rehome.label} · tap to confirm</span></span></button>)}</div>
-        </div>
-      )}
+      <div className="notice info small" style={{ marginTop: 16 }}><Icon name="heart" size={16} />
+        <span>{pending.length ? <><b>{pending.length} piece{pending.length === 1 ? ' is' : 's are'} ready to donate.</b> </> : ''}{f.data?.stats.donated ? `${f.data.stats.donated} donated so far. ` : ''}Everything waiting to be donated is under <a className="link" href="#/donation">Donation</a>.</span></div>
       {donate && <DonateFlow piece={donate} onClose={() => { setDonate(null); f.reload(true); }} onChanged={() => f.reload(true)} />}
     </section>
   );

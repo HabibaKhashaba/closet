@@ -44,14 +44,14 @@ with sync_playwright() as p:
     expect(pg.locator('.noticed')).to_be_visible()                      # Closet noticed: at most two notices
     assert pg.locator('.notice-card').count() <= 2, 'Home shows more than two proactive notices'
     expect(pg.locator('.still')).to_contain_text('denim jacket')         # Still love it? — the 104-day denim jacket
-    home_laundry = int(pg.locator('a.stat:has-text("in the laundry") b').inner_text())
+    home_laundry = int(pg.locator('.status-line:has-text("in the laundry") b').inner_text())
 
     # ---------- Laundry: one status, everywhere ----------
     go('/closet'); pg.click('.piece-card:has-text("Navy blazer")'); pg.wait_for_selector('text=Availability')
     pg.click('button:has-text("In laundry")'); pg.wait_for_selector('.status.Laundry'); shot('s02_blazer_laundry')
     go('/laundry'); expect(pg.locator('.basket-item:has-text("Navy blazer")')).to_have_count(1)
     go('/closet'); expect(pg.locator('.piece-card:has-text("Navy blazer") .meta')).to_contain_text('In laundry')
-    go('/'); pg.wait_for_selector('.today-card'); expect(pg.locator('a.stat:has-text("in the laundry") b')).to_have_text(str(home_laundry + 1))
+    go('/'); pg.wait_for_selector('.today-card'); expect(pg.locator('.status-line:has-text("in the laundry") b')).to_have_text(str(home_laundry + 1))
     rec = api('/recommendations', 'POST', {'occasion': 'University'})
     assert not any(piece('Navy blazer')['id'] in o['itemIds'] for o in rec['outfits']), 'a laundry piece was recommended'
     go('/laundry'); pg.click('button:has-text("Wash done")'); pg.wait_for_selector('text=Available again.'); pg.wait_for_timeout(700)
@@ -103,7 +103,7 @@ with sync_playwright() as p:
     go('/closet'); pg.click('.piece-card:has-text("Denim jacket")'); pg.wait_for_selector('text=Availability')
     pg.click('button.link:has-text("donate it")'); pg.wait_for_selector('text=Donate this item?'); shot('s08_donate')
     pg.click('.reason-card:has-text("Donate")'); pg.wait_for_selector('.modal button:has-text("Mark as donated")')
-    assert piece('Denim jacket')['rehome']['label'] == 'Ready to donate'
+    assert piece('Denim jacket')['status'] == 'Ready to donate'
     pg.click('.modal button:has-text("Mark as donated")'); pg.wait_for_timeout(1000)
     go('/closet'); expect(pg.locator('.piece-card:has-text("Denim jacket")')).to_have_count(0)
     assert piece('Denim jacket') is None and len(api('/shopping/list')['items']) == bag_before, 'donation created a replacement or left the piece'
@@ -112,7 +112,7 @@ with sync_playwright() as p:
     # ---------- Ask Closet: different questions → different, state-backed answers ----------
     go('/ask'); pg.wait_for_selector('text=Try asking')
     asked = []
-    for q in ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'Put the blazer in the wash.', 'Is my blazer clean?', 'Laundry is done.',
+    for q in ['What should I wear to university tomorrow?', 'Is my navy blazer clean?', 'Put the navy blazer in the wash.', 'Is my navy blazer clean?', 'Laundry is done.',
               'Do I need beige trousers?', 'Add this to my shopping list.', 'Who has my rose wrap dress?', 'What has the best cost per wear?',
               'Is tomorrow’s outfit still okay for the weather?', 'Pack me for 5 days in Paris with a carry-on', 'Tell me a joke']:
         asked.append((q, ask(q)))

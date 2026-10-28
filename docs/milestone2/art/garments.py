@@ -447,6 +447,7 @@ ITEMS = [
     lambda: midi_dress('navy_silk_midi_dress', '#24345a'),
     lambda: midi_dress('rose_wrap_dress', '#cf8f97'),
     lambda: blazer('navy_blazer', '#27355a'),
+    lambda: blazer('black_blazer', '#2a282c'),
     lambda: trench('beige_trench_coat', '#cdb18a'),
     lambda: denim_jacket('denim_jacket', '#7e9ec4'),
     lambda: cardigan('camel_cardigan', '#c9a27a'),

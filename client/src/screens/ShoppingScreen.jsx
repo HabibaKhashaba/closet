@@ -48,11 +48,11 @@ function Suggestion({ s, onAdd }) {
 
 function BuyCheck({ onAdded }) {
   const { vocab, toast } = useApp();
-  const [q, setQ] = useState({ category: 'Bottom', colour: 'Beige', styles: ['Minimal'] });
+  const [q, setQ] = useState({ category: 'Shoes', colour: 'Black', name: 'loafers', styles: ['Classic'] });
   const [r, setR] = useState(null);
   const [im, setIm] = useState(null);
   // "Do I need this?" (similarity) and "What would it add?" (purchase simulation) run together; nothing is saved.
-  async function run() { try { const [a, b] = await Promise.all([api.buyCheck(q), api.impact({ category: q.category, colour: q.colour, styles: q.styles })]); setR(a); setIm(b); } catch (e) { toast(e.message, true); } }
+  async function run() { try { const [a, b] = await Promise.all([api.buyCheck({ category: q.category, colour: q.colour, styles: q.styles, ...(q.name && q.name.trim() && { name: q.name.trim().slice(0, 60) }) }), api.impact({ category: q.category, colour: q.colour, styles: q.styles, ...(q.name && q.name.trim() && { name: q.name.trim().slice(0, 60) }) })]); setR(a); setIm(b); } catch (e) { toast(e.message, true); } }
   async function addAnyway() {
     try { await api.addToList({ title: `${q.colour} ${CATEGORY_ONE[q.category].toLowerCase()}`, category: q.category, colour: q.colour, source: 'manual', reason: r ? `Checked first: ${r.verdict.toLowerCase()}.` : undefined }); toast('Added to your bag'); onAdded(); } catch (e) { toast(e.message, true); }
   }
@@ -65,6 +65,7 @@ function BuyCheck({ onAdded }) {
         <select className="input" value={q.category} onChange={(e) => setQ({ ...q, category: e.target.value })} aria-label="Category">{vocab.CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_ONE[c]}</option>)}</select>
         <select className="input" value={q.colour} onChange={(e) => setQ({ ...q, colour: e.target.value })} aria-label="Colour">{vocab.COLOURS.map((c) => <option key={c}>{c}</option>)}</select>
       </div>
+      <input className="input" style={{ marginTop: 10 }} value={q.name || ''} maxLength={60} onChange={(e) => setQ({ ...q, name: e.target.value })} placeholder="What is it? e.g. loafers, fitted top (optional)" aria-label="What is it" />
       <div style={{ marginTop: 10 }}><Chips options={vocab.STYLES.slice(0, 6)} value={q.styles} onChange={(v) => setQ({ ...q, styles: v.slice(0, 4) })} /></div>
       <button type="button" className="btn block" style={{ marginTop: 12 }} onClick={run}><Icon name="search" size={15} />Check my closet</button>
       {r && (
@@ -72,15 +73,15 @@ function BuyCheck({ onAdded }) {
           <div className="verdict">{r.verdict}</div>
           <p className="small">{r.advice}</p>
           {im && (
-            <div>
+            <div className="impact-blocks" aria-label="Purchase impact">
               <div className="eyebrow">Purchase impact · simulated, not added</div>
               <div className="impact">
-                <div><b>{im.newCombinations}</b><span className="tiny muted">new outfits</span></div>
-                <div><b>{im.compatiblePieces}</b><span className="tiny muted">pieces it pairs with</span></div>
-                <div><b>{im.similarOwned}</b><span className="tiny muted">similar owned</span></div>
-                <div><b>{im.versatility}</b><span className="tiny muted">versatility</span></div>
+                <div><span className="tiny muted">New outfit combinations</span><b>{im.newCombinations}</b><span className="tiny muted">with {im.compatiblePieces} piece{im.compatiblePieces === 1 ? '' : 's'} you own</span></div>
+                <div><span className="tiny muted">Similar items owned</span><b>{im.similarOwned}</b><span className="tiny muted">{im.similar.length ? im.similar.slice(0, 2).map((x) => x.name).join(', ') : 'none'}</span></div>
+                <div><span className="tiny muted">Wardrobe gap</span><b style={{ fontSize: 15 }}>{im.fillsGap ? `${im.fillsGap.confidence}` : '—'}</b><span className="tiny muted">{im.fillsGap ? `fills a ${im.fillsGap.levelName.toLowerCase()} gap` : 'fills no gap'}</span></div>
+                <div><span className="tiny muted">Main occasions</span><b style={{ fontSize: 15 }}>{im.occasions.length ? im.occasions.slice(0, 2).join(', ') : '—'}</b><span className="tiny muted">{im.occasions.length > 2 ? `+${im.occasions.length - 2} more` : ''}</span></div>
               </div>
-              <p className="small" style={{ marginTop: 8 }}><b>{im.recommendation}.</b> {im.sentence}{im.fillsGap ? ` Fills a ${im.fillsGap.confidence.toLowerCase()}-confidence ${im.fillsGap.levelName.toLowerCase()} gap.` : ''}{im.occasions.length ? ` Main use: ${im.occasions.join(', ')}.` : ''}</p>
+              <p className="small" style={{ marginTop: 8 }}><span className="tiny muted">RECOMMENDATION · </span><b>{im.recommendation}.</b> {im.sentence}</p>
             </div>
           )}
           {r.duplicate && (

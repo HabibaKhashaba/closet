@@ -22,6 +22,7 @@ const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
 const { OCCASIONS } = require('../../shared/vocabulary');
 const { PASSED_ON } = require('../../shared/deletionPolicy');
+const { isLeaving, isOwned, WHERE } = require('../../shared/lifecycle');
 const ins = require('./insights');
 
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -52,10 +53,10 @@ function proactiveService({ repo, wardrobe, outfits, profile, planner, rec, avai
     async forgotten(userId) {
       const [pieces, w, snoozes, deletions] = await Promise.all([wardrobe().allPieces(userId), todayWeather(userId), snoozeMap(userId, 'keep'), wardrobe().deletions(userId)]);
       const candidates = ins.forgottenCandidates(pieces, { today: new Date(), tempC: w.tempC, snoozes });
-      const pending = pieces.filter((p) => p.rehome).map((p) => ({ id: p.id, name: p.name, photoUrl: p.photoUrl, rehome: p.rehome, lastWornAt: p.lastWornAt }));
+      const pending = pieces.filter(isLeaving).map((p) => ({ id: p.id, name: p.name, photoUrl: p.photoUrl, status: p.status, markedOn: p.statusSince, lastWornAt: p.lastWornAt }));
       return {
         candidates: candidates.map((c) => ({ ...c, piece: c.piece })), top: candidates[0] || null, pending,
-        stats: { passedOn: deletions.filter((d) => PASSED_ON.includes(d.reason)).length, kept: snoozes.size },
+        stats: { donated: deletions.filter((d) => d.reason === 'Donated').length, passedOn: deletions.filter((d) => PASSED_ON.includes(d.reason)).length, kept: snoozes.size },
         thresholds: ins.INACTIVITY_DAYS, weather: { tempC: w.tempC, source: w.source },
       };
     },
@@ -105,7 +106,7 @@ function proactiveService({ repo, wardrobe, outfits, profile, planner, rec, avai
       const alerts = [];
       for (const c of (await intelligence.conflicts(userId)).conflicts.filter((x) => x.kind === 'unavailable')) {
         alerts.push({ key: `availability:${c.eventId}:${c.itemId}`, kind: 'availability', eventId: c.eventId, event: c.event, itemId: c.itemId, piece: c.piece, status: c.status,
-          message: `Your ${label(c.piece)} is ${{ Laundry: 'in the laundry', Borrowed: 'lent out', Packed: 'packed', Unavailable: 'unavailable' }[c.status]}, but it’s part of the outfit for “${c.event.title}”.`,
+          message: `Your ${label(c.piece)} is ${WHERE[c.status] || 'not available'}${c.expectedBack ? ` until ${c.expectedBack}` : ''}, but it’s part of the outfit for “${c.event.title}”.`,
           actions: c.status === 'Laundry' ? ['Replace item', 'Wash first', 'Ignore'] : ['Replace item', 'Ignore'], replacement: c.replacement ? { id: c.replacement.piece.id, name: c.replacement.piece.name } : null });
       }
       for (const e of events) {
@@ -135,13 +136,43 @@ function proactiveService({ repo, wardrobe, outfits, profile, planner, rec, avai
       const [pieces, later] = await Promise.all([wardrobe().allPieces(userId), snoozeMap(userId, 'borrow')]);
       const t = today();
       const list = pieces.filter((p) => p.status === 'Borrowed').map((p) => {
-        const since = p.statusSince ? isoDay(p.statusSince) : null;
+        const since = p.loan && p.loan.lentOn ? p.loan.lentOn : p.statusSince ? isoDay(p.statusSince) : null;
         const days = since ? Math.round((new Date(`${t}T12:00:00Z`) - new Date(`${since}T12:00:00Z`)) / 86400000) : null;
         const overdue = Boolean(p.statusUntil && p.statusUntil < t);
         return { id: p.id, piece: p, borrowedBy: p.statusNote || null, since, expected: p.statusUntil, days, overdue, remindLater: later.get(p.id) || null,
           message: `Your ${label(p)} has been with ${p.statusNote || 'someone'} for ${days} day${days === 1 ? '' : 's'}${overdue ? ` (expected back ${p.statusUntil})` : ''}.` };
       });
       return { borrowed: list, overdue: list.filter((x) => x.overdue && !x.remindLater) };
+    },
+    // v1.6 Event rescue ("I have a wedding tomorrow and nothing to wear"): wardrobe first — Available pieces,
+    // the forecast and the dress code; a gap (and shopping) only when the closet really cannot do it.
+    async rescue(userId, { occasion = 'Everyday', date = null } = {}) {
+      const r = await rec().recommend(userId, { occasion, ...(date && { date }) });
+      const base = { occasion, date, levelName: r.levelName, level: r.level, weather: r.weather };
+      if (r.outfits.length) {
+        return { ...base, solved: true, outfits: r.outfits, gap: null, shopping: false,
+          message: `You already have what you need. Here are your ${r.outfits.length} strongest ${String(r.levelName).toLowerCase()} options for ${occasion.toLowerCase()}${date ? ` on ${date}` : ''}, all Available now (${r.weather.tempC} °C).` };
+      }
+      const g = await svc.gaps(userId);
+      const gap = g.gaps.find((x) => x.level === r.level) || null;
+      return { ...base, solved: false, outfits: [], gap, shopping: Boolean(gap),
+        message: `I couldn’t build a complete ${String(r.levelName).toLowerCase()} outfit from what’s Available${gap ? `: you’re missing ${gap.message.replace(/^0 /, 'any ')}` : ''}. ${r.note || ''}`.trim() };
+    },
+    // v1.6 Care: pieces at the tailor that should be ready (expected return today or earlier), unless "Remind me later".
+    async tailorDue(userId) {
+      const [pieces, later] = await Promise.all([wardrobe().allPieces(userId), snoozeMap(userId, 'tailor')]);
+      const t = today();
+      const due = pieces.filter((p) => p.status === 'At tailor' && p.statusUntil && p.statusUntil <= t && !later.has(p.id)).map((p) => {
+        const late = Math.round((new Date(`${t}T12:00:00Z`) - new Date(`${p.statusUntil}T12:00:00Z`)) / 86400000);
+        const who = p.care && p.care.tailor ? ` (${p.care.tailor})` : '';
+        return { id: p.id, piece: p, expectedBack: p.statusUntil, daysLate: late,
+          message: late === 0 ? `Your ${label(p)} should be ready from the tailor${who} today.` : `Your ${label(p)} was expected back from the tailor${who} ${late} day${late === 1 ? '' : 's'} ago.` };
+      });
+      return { due };
+    },
+    async tailorLater(userId, itemId, days = 2) {
+      const p = await own(userId, itemId);
+      return { itemId: p.id, until: await snooze(userId, `tailor:${p.id}`, days, 'Remind me later') };
     },
     async remindLater(userId, itemId, days = 3) {
       const p = await own(userId, itemId);
@@ -160,7 +191,7 @@ function proactiveService({ repo, wardrobe, outfits, profile, planner, rec, avai
       const [g, pieces, prefs, events, hist] = await Promise.all([wardrobe().gaps(userId), wardrobe().allPieces(userId), profile.preferences(userId), planner().upcoming(userId, 30), outfits().history(userId, { from: addDays(today(), -60) })]);
       const atLevel = (l) => events.filter((e) => e.dressCode === l).length + hist.wears.filter((w) => w.occasion && OCCASIONS[w.occasion] === l).length;
       const order = { HIGH: 0, MEDIUM: 1, LOW: 2 };
-      return { ...g, gaps: g.gaps.map((x) => ins.gapConfidence(x, pieces.filter((p) => !p.rehome), prefs, { eventsAtLevel: atLevel(x.level) })).sort((a, b) => order[a.confidence] - order[b.confidence] || b.limits - a.limits) };
+      return { ...g, gaps: g.gaps.map((x) => ins.gapConfidence(x, pieces.filter(isOwned), prefs, { eventsAtLevel: atLevel(x.level) })).sort((a, b) => order[a.confidence] - order[b.confidence] || b.limits - a.limits) };
     },
   };
   return svc;
@@ -184,6 +215,9 @@ function proactiveRoutes(svc) {
   r.post('/monitor/ignore', v.body({ key: { type: 'string', required: true, max: 110 } }), h((req) => svc.ignore(req.user.id, req.valid.key)));
   r.get('/borrowed', h((req) => svc.borrowed(req.user.id)));
   r.post('/borrowed/:itemId/remind', v.body({ days: { type: 'int', min: 1, max: 30 } }), h((req) => svc.remindLater(req.user.id, req.params.itemId, req.valid.days)));
+  r.post('/rescue', v.body({ occasion: { type: 'enum', values: Object.keys(OCCASIONS), required: true, label: 'Occasion' }, date: { type: 'date', label: 'Date' } }), h((req) => svc.rescue(req.user.id, req.valid)));
+  r.get('/tailor', h((req) => svc.tailorDue(req.user.id)));
+  r.post('/tailor/:itemId/remind', v.body({ days: { type: 'int', min: 1, max: 30 } }), h((req) => svc.tailorLater(req.user.id, req.params.itemId, req.valid.days)));
   r.get('/value', h((req) => svc.value(req.user.id)));
   r.get('/memory', v.query({ q: { type: 'string', max: 120 }, best: { type: 'bool' } }), h((req) => svc.memory(req.user.id, req.validQuery)));
   r.post('/repeat', h((req) => {

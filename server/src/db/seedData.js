@@ -19,6 +19,7 @@ const PIECES = [
   ['navy_silk_midi_dress', 'Navy silk midi dress', { category: 'Dress', colour: 'Navy', fabric: 'Silk', season: 'All seasons', size: 'S', styles: ['Elegant', 'Classic'], dressCodes: [2, 4, 5], modest: true }, 4, 20],
   ['rose_wrap_dress', 'Rose wrap dress', { category: 'Dress', colour: 'Pink', fabric: 'Polyester', season: 'Spring / Autumn', size: 'S', styles: ['Chic', 'Elegant'], dressCodes: [2, 4], modest: true }, 3, 26],
   ['navy_blazer', 'Navy blazer', { category: 'Layer', colour: 'Navy', fabric: 'Wool', season: 'Spring / Autumn', size: 'M', styles: ['Classic', 'Chic'], dressCodes: [2, 3, 4], modest: true }, 10, 8],
+  ['black_blazer', 'Black blazer', { category: 'Layer', colour: 'Black', fabric: 'Wool', season: 'All seasons', size: 'M', styles: ['Classic', 'Minimal', 'Chic'], dressCodes: [2, 3, 4], modest: true }, 8, 11],
   ['beige_trench_coat', 'Beige trench coat', { category: 'Layer', colour: 'Beige', fabric: 'Cotton', season: 'Spring / Autumn', size: 'M', styles: ['Classic', 'Elegant'], dressCodes: [1, 2, 3, 4], modest: true }, 6, 33],
   ['denim_jacket', 'Denim jacket', { category: 'Layer', colour: 'Blue', fabric: 'Denim', season: 'Spring / Autumn', size: 'M', styles: ['Casual', 'Streetwear'], dressCodes: [1, 2], modest: true }, 5, 104],
   ['camel_cardigan', 'Camel cardigan', { category: 'Layer', colour: 'Brown', fabric: 'Knit', season: 'Winter', size: 'M', styles: ['Comfortable', 'Classic'], dressCodes: [1, 2], modest: true }, 7, 61],
@@ -40,6 +41,7 @@ const STATUSES = [
   ['black_ribbed_top', 'Laundry', 0],
   ['rose_wrap_dress', 'Borrowed', 12, -5, 'Nour'],   // lent 12 days ago, was due back 5 days ago (borrow reminder)
   ['tan_sandals', 'Packed', 0, 6, 'Sahel weekend'],
+  ['camel_cardigan', 'Needs repair', 3, undefined, 'Loose button'],   // Care: waiting for a repair
 ];
 // Outfits worn in the last 30 days (feed utilization, wear history and outfit memory):
 // [daysAgo, pieces, rating, occasion, tempC, condition, eventTitle?]
@@ -75,14 +77,14 @@ const REMOVED = [
 
 // Optional purchase prices (demo values, EGP) for cost per wear. Price is never required.
 const PRICES = {
-  white_sneakers: 2200, black_loafers: 2400, navy_blazer: 3200, white_fitted_tee: 450, light_wash_jeans: 1300,
+  white_sneakers: 2200, black_loafers: 2400, navy_blazer: 3200, black_blazer: 2900, white_fitted_tee: 450, light_wash_jeans: 1300,
   ivory_silk_blouse: 1900, navy_silk_midi_dress: 4200, denim_jacket: 1600, nude_heels: 2100, structured_black_bag: 3500, beige_trench_coat: 3800,
 };
 
+// The app's "today" is the UTC day (every module uses isoDay(Date.now())); the seed uses the same day so dates
+// near midnight cannot disagree (found in the v1.6 run at 01:00 Cairo time: events were a day further away).
 function inDays(n) {
-  const m = new Date();
-  m.setDate(m.getDate() + n);
-  return `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(m.getDate()).padStart(2, '0')}`;
+  return new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
 }
 const EVENTS = [
   // plannedWeather = the forecast when the outfit was chosen; today's estimate is warmer, so Closet warns (weather monitor).
@@ -104,9 +106,11 @@ function demoPieces(today = new Date()) {
     id: file, name, ...d, styles: d.styles || [], dressCodes: d.dressCodes, modest: Boolean(d.modest),
     status: status[file] ? status[file].s : 'Available',
     statusNote: status[file] && status[file].note ? status[file].note : null,
+    loan: status[file] && status[file].s === 'Borrowed' ? { person: status[file].note, lentOn: new Date(today.getTime() - status[file].daysAgo * DAY).toISOString().slice(0, 10), dueOn: new Date(today.getTime() + status[file].until * DAY).toISOString().slice(0, 10), note: null, returnedOn: null } : null,
+    care: status[file] && /^Needs /.test(status[file].s) ? { kind: status[file].s === 'Needs repair' ? 'repair' : 'alteration', reason: status[file].note, notes: null, tailor: null, sentOn: null, expectedBack: null, cost: null, closedOn: null, outcome: null } : null,
     statusSince: status[file] ? new Date(today.getTime() - status[file].daysAgo * DAY).toISOString() : null,
     statusUntil: status[file] && status[file].until !== undefined ? new Date(today.getTime() + status[file].until * DAY).toISOString().slice(0, 10) : null,
-    price: PRICES[file] ?? null, currency: PRICES[file] ? 'EGP' : null, rehome: null,
+    price: PRICES[file] ?? null, currency: PRICES[file] ? 'EGP' : null,
     wearCount: worn, lastWornAt: worn && lastDays !== null ? new Date(today.getTime() - lastDays * DAY).toISOString() : null,
     createdAt: new Date(today.getTime() - 400 * DAY).toISOString(),
   }));

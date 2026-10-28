@@ -4,7 +4,7 @@
 // and a planned outfit (US-48).
 import React, { useMemo, useState } from 'react';
 import { api } from '../api.js';
-import { Field, Icon, Look, Modal, PageHead, Score, Skeleton, SprintNote, SprintTag, WeatherPill, fmtDate, pieceName, relDay, useApp, useLoad } from '../ui.jsx';
+import { Field, Icon, Look, Modal, PageHead, Score, Skeleton, SprintNote, SprintTag, Tile, WeatherPill, fmtDate, pieceName, relDay, useApp, useLoad } from '../ui.jsx';
 import OutfitCard from './OutfitCard.jsx';
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -61,6 +61,30 @@ function ConnectCalendar({ onClose, onDone }) {
         </div>
       </div>
     </Modal>
+  );
+}
+
+// v1.6 laundry-aware planning: several days of outfits from what will really be wearable — Laundry back in time,
+// lent / packed / at the tailor only if back by then, needs repair or ready to donate never; no top, bottom or
+// dress twice before a wash unless the closet runs out (then it says so).
+function PlanDays() {
+  const { toast } = useApp();
+  const [n, setN] = useState(3);
+  const [r, setR] = useState(null);
+  async function run() { try { setR(await api.planDays({ days: n })); } catch (e) { toast(e.message, true); } }
+  return (
+    <section className="card pad" aria-label="Plan several days">
+      <div className="card-head"><div className="row"><h3>Plan the next days</h3><SprintTag n={3} short /></div>
+        <span className="row" style={{ gap: 6 }}><select className="input" style={{ width: 'auto' }} value={n} onChange={(e) => setN(Number(e.target.value))} aria-label="Days">{[3, 4, 5, 7].map((d) => <option key={d} value={d}>{d} days</option>)}</select><button type="button" className="btn sm" onClick={run}><Icon name="calendar" size={14} />Plan</button></span></div>
+      <p className="tiny muted">Laundry-aware: only pieces that will be clean and at home on the day; no top, bottom or dress twice before a wash.</p>
+      {r && r.days.map((d) => (
+        <div key={d.date} className="care-row">
+          <div className="datebox"><span>{fmtDate(d.date, { weekday: 'short' })}</span><b>{Number(d.date.slice(8))}</b></div>
+          <div className="grow"><b className="small">{d.event || d.occasion}</b>{d.weather && <span className="tiny muted"> · {d.weather.tempC}°</span>}{d.note && <div className="tiny muted">{d.note}</div>}</div>
+          <div className="row" style={{ gap: 4 }}>{(d.outfit?.pieces || []).filter(Boolean).map((p) => <span key={p.id} style={{ width: 40 }}><Tile piece={p} status={false} /></span>)}</div>
+        </div>
+      ))}
+    </section>
   );
 }
 
@@ -203,6 +227,7 @@ export default function PlannerScreen({ query }) {
               ))}
             </div>
           </section>
+          <PlanDays />
           <SprintNote n={1}>Events and the month view are Sprint 1. Calendar import and wardrobe dates on the calendar are Sprint 2 (built early); outfits for an event, with that day’s forecast and laundry back in time, are a Sprint 3 preview.</SprintNote>
         </div>
       </div>

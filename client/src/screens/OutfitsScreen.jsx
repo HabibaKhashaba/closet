@@ -23,6 +23,30 @@ export function storedLooks() {
   try { return JSON.parse(sessionStorage.getItem('closet.looks') || 'null'); } catch { return null; }
 }
 
+// v1.6 Event rescue — "I have nothing to wear": the wardrobe first (Available pieces, weather, dress code),
+// a genuine gap only when the closet cannot do it. Same service as Ask Closet (POST /intelligence/rescue).
+function Rescue({ occasion, date }) {
+  const { toast } = useApp();
+  const [r, setR] = useState(null);
+  const [busy, setBusy] = useState(false);
+  async function run() { setBusy(true); try { setR(await api.rescue({ occasion, ...(date && { date }) })); } catch (e) { toast(e.message, true); } finally { setBusy(false); } }
+  return (
+    <section className="card pad rescue" aria-label="Nothing to wear">
+      <div className="row between wrap">
+        <div><div className="eyebrow">Nothing to wear?</div><p className="small muted" style={{ marginTop: 4 }}>For {occasion.toLowerCase()}{date ? ` on ${fmtDate(date)}` : ''}: Closet checks what’s Available, the forecast and the dress code before it ever suggests buying.</p></div>
+        <button type="button" className="btn line" disabled={busy} onClick={run}><Icon name="wand" size={16} />{busy ? 'Checking…' : 'Rescue me'}</button>
+      </div>
+      {r && (
+        <div style={{ marginTop: 14 }}>
+          <p className="small"><b>{r.solved ? 'Your closet can do this.' : 'A real gap.'}</b> {r.message}</p>
+          {r.solved && <div className="looks" style={{ marginTop: 12 }}>{r.outfits.map((o, i) => <OutfitCard key={o.itemIds.join()} outfit={o} index={i} occasion={occasion} date={`${r.levelName} · ${r.weather.tempC}°`} weather={r.weather} />)}</div>}
+          {!r.solved && r.shopping && <a className="btn sm" href="#/shopping" style={{ marginTop: 10 }}><Icon name="bag" size={14} />See what would fill it</a>}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function OutfitsScreen({ query }) {
   const { vocab, profile, toast, weather } = useApp();
   // Coming back from the dressing room: show the same three looks (including any changed piece).
@@ -115,6 +139,7 @@ export default function OutfitsScreen({ query }) {
             <button type="button" className="btn lg generate" onClick={() => setRequested(true)}><Icon name="sparkle" size={18} />Generate 3 looks</button>
           </div>
         </section>
+        <Rescue occasion={occasion} date={date} />
       </>
     );
   }

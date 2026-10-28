@@ -128,9 +128,20 @@ export const api = {
 
   // v1.5 proactive intelligence
   similarPieces: (d) => call('POST', '/items/similar', d),
-  rehome: (id, method) => call('POST', `/items/${id}/rehome`, { method }),
-  cancelRehome: (id) => call('DELETE', `/items/${id}/rehome`),
-  rehomeDone: (id) => call('POST', `/items/${id}/rehome/done`, {}),
+  // v1.6 Donation (donate only), Care, Borrow & lend
+  donate: (id) => call('POST', `/items/${id}/donate`, {}),
+  cancelDonation: (id) => call('DELETE', `/items/${id}/donate`),
+  donationDone: (id) => call('POST', `/items/${id}/donate/done`, {}),
+  donation: () => call('GET', '/donation'),
+  needsCare: (id, b) => call('POST', `/items/${id}/care`, b),
+  sendToTailor: (id, b) => call('POST', `/items/${id}/care/tailor`, b),
+  careDone: (id) => call('POST', `/items/${id}/care/done`, {}),
+  care: () => call('GET', '/care'),
+  rescue: (b) => call('POST', '/intelligence/rescue', b),
+  tailorLater: (id, days = 2) => call('POST', `/intelligence/tailor/${id}/remind`, { days }),
+  lend: (id, b) => call('POST', `/items/${id}/lend`, b),
+  returned: (id) => call('POST', `/items/${id}/return`, {}),
+  lending: () => call('GET', '/lending'),
   forgotten: () => call('GET', '/intelligence/forgotten'),
   keep: (id, body = {}) => call('POST', `/intelligence/forgotten/${id}/keep`, body),
   seasonal: () => call('GET', '/intelligence/seasonal'),

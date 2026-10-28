@@ -43,7 +43,7 @@ describe('Long-unworn pieces: style it, keep it or donate it (user decides)', ()
   });
   test('IN-07 wearing the piece resets the clock; a piece being donated is not suggested again', () => {
     const tee = piece({ lastWornAt: ago(0) });
-    const leaving = piece({ lastWornAt: ago(150), rehome: { method: 'donate' } });
+    const leaving = piece({ lastWornAt: ago(150), status: 'Ready to donate' });
     expect(ins.forgottenCandidates([tee, leaving], { today: TODAY, tempC: 24 })).toHaveLength(0);
   });
   test('IN-08 seeded closet: the denim jacket (104 days) is the candidate and the message is warm, not judgmental', () => {

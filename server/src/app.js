@@ -28,6 +28,7 @@ const { registerActivity } = require('./modules/activity/activityModule');
 const { audit } = require('./gateway/audit');
 const vocabulary = require('./shared/vocabulary');
 const { ALLOWED: STATUS_TRANSITIONS } = require('./modules/availability/statusMachine');
+const lifecycle = require('./shared/lifecycle');
 
 // Module wiring (shared by the HTTP server and the offline demo). `repos` lets a caller replace the
 // PostgreSQL repositories (the offline demo passes in-memory ones); every service and rule is the same.
@@ -76,7 +77,7 @@ function createApp(deps = {}) {
 
   api.get('/health', (_req, res) => res.json({ status: 'ok' }));
   // The client reads the status rules from here (one source of truth — defect D-12: the web app had its own copy).
-  api.get('/vocabulary', (_req, res) => res.json({ ...vocabulary, STATUS_TRANSITIONS }));
+  api.get('/vocabulary', (_req, res) => res.json({ ...vocabulary, STATUS_TRANSITIONS, STATUS_WHERE: lifecycle.WHERE }));
   const auditStep = audit(activity.service);
   api.use('/auth', auditStep, identityRoutes({ identity, auth }));
   api.use('/photos', wardrobe.photos); // protected by signed URLs instead of the login token
@@ -89,6 +90,9 @@ function createApp(deps = {}) {
   api.use('/items', outfits.routes.items); // POST/DELETE /items/:id/hide
   api.use('/items', wardrobe.routes);
   api.use('/laundry', availability.routes.laundry);
+  api.use('/care', availability.routes.care);         // v1.6 Care: repairs & alterations, at the tailor
+  api.use('/lending', availability.routes.lending);   // v1.6 Borrow & lend
+  api.use('/donation', wardrobe.donation);             // v1.6 Donation: ready to donate + donated history
   api.use('/closet/gaps', wardrobe.gaps);
   api.use('/events', planner.routes);
   api.use('/weather', rec.routes.weather);

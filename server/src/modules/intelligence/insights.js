@@ -16,13 +16,14 @@
 //   purchaseImpact        what a piece you might buy adds — simulated, never saved
 //   tripCapsule           a compact packing list with intentional reuse and a baggage limit
 //   explainHealth         what raises / lowers the Wardrobe Health score
+const { isWearable, isOwned } = require('../../shared/lifecycle');
 const engine = require('../recommendation/engine');
 const { DRESS_CODES, OCCASIONS } = require('../../shared/vocabulary');
 
 const DAY = 86400000;
 const daysBetween = (a, b) => Math.floor((new Date(b) - new Date(a)) / DAY);
 const label = (p) => (p.name || `${p.colour} ${p.category}`).toLowerCase();
-const isAvailable = (p) => p.status === 'Available' && !p.rehome;
+const isAvailable = (p) => isWearable(p);
 
 // ---------- seasons: weather first, calendar second ----------
 // Current season from the temperature the user will actually feel (bands are documented in SDD 5.14).
@@ -62,7 +63,7 @@ function inactivity(p, today) {
 function forgottenCandidates(pieces, { today = new Date(), tempC, snoozes = new Map(), thresholds = INACTIVITY_DAYS } = {}) {
   const out = [];
   for (const p of pieces) {
-    if (!isAvailable(p)) continue; // Laundry, Borrowed, Packed, Unavailable or already being rehomed: not now
+    if (!isAvailable(p)) continue; // any state other than Available (laundry, lent, packed, in care, ready to donate): not now
     if (p.createdAt && daysBetween(p.createdAt, today) < NEW_PIECE_DAYS) continue;
     const until = snoozes.get(p.id);
     if (until && new Date(until) > today) continue;
@@ -109,7 +110,7 @@ function laundryRisk(pieces, events, { today = new Date(), horizon = 7 } = {}) {
     for (const [kind, cats] of Object.entries(KINDS)) {
       const key = `${level}:${kind}`;
       if (seen.has(key)) continue;
-      const fit = pieces.filter((p) => cats.includes(p.category) && (p.dressCodes || []).includes(level) && !p.rehome);
+      const fit = pieces.filter((p) => cats.includes(p.category) && (p.dressCodes || []).includes(level) && isOwned(p));
       const top3 = [...fit].sort((a, b) => b.wearCount - a.wearCount || a.id.localeCompare(b.id)).slice(0, 3);
       const dirty = top3.filter((p) => p.status === 'Laundry');
       if (dirty.length >= 2) {
@@ -273,7 +274,7 @@ function gapConfidence(gap, pieces, prefs = {}, { eventsAtLevel = 0 } = {}) {
 // Every owned piece counts (a piece in the laundry still belongs to the wardrobe), except pieces
 // being donated. Combinations are counted with the same engine and rule threshold as recommendations.
 function purchaseImpact(pieces, want, { prefs = {}, similar = [], gaps = [] } = {}) {
-  const owned = pieces.filter((p) => !p.rehome).map((p) => ({ ...p, status: 'Available', lastWornAt: null }));
+  const owned = pieces.filter(isOwned).map((p) => ({ ...p, status: 'Available', lastWornAt: null }));
   const hyp = { id: 'hypothetical', name: want.name || null, category: want.category, colour: want.colour, fabric: want.fabric || 'Cotton', season: want.season || 'All seasons',
     styles: want.styles || prefs.styles || [], dressCodes: want.dressCodes || [prefs.dressCode || 2], modest: true, status: 'Available', wearCount: 0, lastWornAt: null };
   // Distinct outfits = distinct sets of MAJOR garments (+ the new piece); accessory variations of the same

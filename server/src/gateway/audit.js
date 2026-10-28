@@ -1,7 +1,7 @@
 // Audit step of the API Gateway (Interceptor): after a successful request, records what the
 // user did in the activity log (US-93). Only actions listed in RULES are recorded; reads never are.
 // The piece name is looked up before the handler runs, so a deleted piece is still named.
-const STATUS_ACTION = { Laundry: 'Moved to Laundry', Packed: 'Marked Packed', Borrowed: 'Lent out', Available: 'Marked Available', Unavailable: 'Marked Unavailable' };
+const STATUS_ACTION = { Laundry: 'Moved to Laundry', Packed: 'Marked Packed', Borrowed: 'Lent out', Available: 'Marked Available', Unavailable: 'Marked Unavailable', 'Needs repair': 'Needs repair', 'Needs alteration': 'Needs alteration', 'At tailor': 'Sent to the tailor', 'Ready to donate': 'Ready to donate' };
 
 const RULES = [
   { method: 'POST', path: /^\/register$/, action: 'Account created' },
@@ -13,6 +13,14 @@ const RULES = [
   { method: 'PATCH', path: /^\/items\/([0-9a-f-]{36})$/i, action: 'Piece edited', piece: true },
   { method: 'DELETE', path: /^\/items\/([0-9a-f-]{36})$/i, action: 'Piece deleted', piece: true, detail: (req) => req.body && req.body.reason },
   { method: 'PATCH', path: /^\/items\/([0-9a-f-]{36})\/status$/i, action: (req) => STATUS_ACTION[req.body && req.body.status] || 'Status changed', piece: true, detail: (req) => req.body && req.body.note },
+  { method: 'POST', path: /^\/items\/([0-9a-f-]{36})\/care$/i, action: (req) => (req.body && req.body.kind === 'alteration' ? 'Needs alteration' : 'Needs repair'), piece: true, detail: (req) => req.body && req.body.reason },
+  { method: 'POST', path: /^\/items\/([0-9a-f-]{36})\/care\/tailor$/i, action: 'Sent to the tailor', piece: true, detail: (req) => req.body && req.body.tailor },
+  { method: 'POST', path: /^\/items\/([0-9a-f-]{36})\/care\/done$/i, action: 'Back from care', piece: true },
+  { method: 'POST', path: /^\/items\/([0-9a-f-]{36})\/lend$/i, action: 'Lent out', piece: true, detail: (req) => req.body && req.body.person },
+  { method: 'POST', path: /^\/items\/([0-9a-f-]{36})\/return$/i, action: 'Returned', piece: true },
+  { method: 'POST', path: /^\/items\/([0-9a-f-]{36})\/donate$/i, action: 'Ready to donate', piece: true },
+  { method: 'DELETE', path: /^\/items\/([0-9a-f-]{36})\/donate$/i, action: 'Donation cancelled', piece: true },
+  { method: 'POST', path: /^\/items\/([0-9a-f-]{36})\/donate\/done$/i, action: 'Donated', piece: true },
   { method: 'POST', path: /^\/laundry\/wash-done$/, action: 'Wash done', detail: (_req, body) => body && `${body.returned} piece${body.returned === 1 ? '' : 's'}` },
   { method: 'POST', path: /^\/outfits\/wear$/, action: 'Outfit worn' },
   { method: 'POST', path: /^\/events$/, action: 'Event added', detail: (req) => req.body && req.body.title },

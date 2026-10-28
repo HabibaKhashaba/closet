@@ -12,7 +12,8 @@ const EFFECTS = {
   'Became too small': { replacement: true, learn: false, effect: 'A replacement in the next size is added to your shopping list.' },
   'No longer my style': { replacement: false, learn: true, effect: 'Closet will not suggest it again and learns from it.' },
   Other: { replacement: false, learn: false, effect: 'Closet keeps the reason only.' },
-  // v1.5 intentional exits (the user chose to pass the piece on): history kept, no replacement.
+  // Intentional exit (v1.6: donation only). History kept, no replacement.
+  // 'Given away' and 'Sold / rehomed' are kept only to read deletions recorded by build v1.5.
   Donated: { replacement: false, learn: false, effect: 'Thank you for passing it on. Closet keeps it in your history and adds no replacement.' },
   'Given away': { replacement: false, learn: false, effect: 'Closet keeps it in your history and adds no replacement.' },
   'Sold / rehomed': { replacement: false, learn: false, effect: 'Closet keeps it in your history and adds no replacement.' },

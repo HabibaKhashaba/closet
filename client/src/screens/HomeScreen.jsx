@@ -195,12 +195,18 @@ export default function HomeScreen() {
           </section>
 
           <section className="card pad">
-            <div className="card-head"><div className="row"><h3>Your closet today</h3><SprintTag n={1} short /></div><a href="#/closet">Open</a></div>
+            <div className="card-head"><div className="row"><h3>Wardrobe status</h3><SprintTag n={1} short /></div><a href="#/closet">Open</a></div>
             <div className="stat-row" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
               <div className="stat"><b><CountUp value={total} /></b><span>pieces</span></div>
-              <div className="stat"><b style={{ color: 'var(--ok)' }}>{counts.Available ?? '–'}</b><span>ready to wear</span></div>
-              <a className="stat" href="#/laundry"><b style={{ color: '#3e6a9a' }}>{counts.Laundry ?? '–'}</b><span>in the laundry</span></a>
-              <div className="stat"><b style={{ color: '#9a6326' }}>{(counts.Borrowed || 0) + (counts.Packed || 0) + (counts.Unavailable || 0)}</b><span>borrowed / packed</span></div>
+              <a className="stat" href="#/closet?status=Available"><b style={{ color: 'var(--ok)' }}>{counts.Available ?? '–'}</b><span>ready to wear</span></a>
+            </div>
+            {/* One line per lifecycle state that has pieces in it; each count opens the place where it is managed. */}
+            <div className="status-list" aria-label="Wardrobe status">
+              {[['Laundry', 'in the laundry', '#/laundry'], ['Borrowed', 'borrowed', '#/lending'], ['Packed', 'packed', '#/closet?status=Packed'], ['At tailor', 'at the tailor', '#/care/repairs'],
+                ['Needs repair', 'need repair', '#/care/repairs'], ['Needs alteration', 'need alteration', '#/care/repairs'], ['Ready to donate', 'ready to donate', '#/donation'], ['Unavailable', 'unavailable', '#/closet?status=Unavailable']]
+                .filter(([k]) => counts[k]).map(([k, label, href]) => (
+                  <a key={k} className="status-line" href={href}><b>{counts[k]}</b><span>{label}</span><Icon name="arrow" size={13} /></a>
+                ))}
             </div>
           </section>
         </div>

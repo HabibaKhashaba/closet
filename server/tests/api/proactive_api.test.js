@@ -40,28 +40,38 @@ describe('Long-unworn pieces → style, keep or donate (user decides)', () => {
     expect(k.status).toBe(200);
     expect((await api('get', '/intelligence/forgotten')).body.candidates.map((c) => c.id)).not.toContain(P.denim.id);
   });
-  test('API-PR02 Donate: Ready to donate → left out of outfits → Mark as donated → gone, history kept, NO replacement', async () => {
-    expect((await api('post', `/items/${P.denim.id}/rehome/done`).send({})).status).toBe(409); // must be marked first
-    const m = await api('post', `/items/${P.denim.id}/rehome`).send({ method: 'donate' });
-    expect(m.body.rehome).toMatchObject({ method: 'donate', label: 'Ready to donate' });
-    expect((await api('get', `/items/${P.denim.id}`)).body.rehome.label).toBe('Ready to donate'); // still in the closet
+  test('API-PR02 Donate: Ready to donate → listed under Donation → left out of outfits → Mark as donated → gone, history kept, NO replacement', async () => {
+    expect((await api('post', `/items/${P.denim.id}/donate/done`).send({})).status).toBe(409); // must be marked first
+    const m = await api('post', `/items/${P.denim.id}/donate`).send({});
+    expect(m.body.status).toBe('Ready to donate');
+    expect((await api('get', `/items/${P.denim.id}`)).body.status).toBe('Ready to donate'); // still in the closet
+    const area = (await api('get', '/donation')).body;
+    expect(area.ready.map((p) => p.id)).toEqual([P.denim.id]);
+    expect(area.ready[0].markedOn).toBe(day(0));
     const looks = await api('post', '/recommendations').send({ occasion: 'University', tempC: 15 });
     expect(looks.body.outfits.some((o) => o.itemIds.includes(P.denim.id))).toBe(false);
-    const d = await api('post', `/items/${P.denim.id}/rehome/done`).send({});
+    const d = await api('post', `/items/${P.denim.id}/donate/done`).send({});
     expect(d.body).toMatchObject({ deleted: true, reason: 'Donated', addedToShoppingList: null });
     expect((await api('get', `/items/${P.denim.id}`)).status).toBe(404);
     expect((await api('get', '/items')).body.items.map((i) => i.id)).not.toContain(P.denim.id);
     expect((await api('get', '/shopping/list')).body.items).toHaveLength(0);
     const { rows } = await pool.query('SELECT reason, name FROM wardrobe.deletions WHERE user_id = $1', [u.user.id]);
     expect(rows).toEqual([{ reason: 'Donated', name: 'Denim jacket' }]);
-    expect((await api('get', '/intelligence/forgotten')).body.stats.passedOn).toBe(1);
+    const after = (await api('get', '/donation')).body;
+    expect(after.ready).toHaveLength(0);
+    expect(after.count).toBe(1);
+    expect(after.donated[0]).toMatchObject({ name: 'Denim jacket', donatedAt: expect.anything() });
+    expect((await api('get', '/intelligence/forgotten')).body.stats.donated).toBe(1);
   });
-  test('API-PR03 Cancel brings the piece back to normal; invalid method → 400; someone else’s piece → 404', async () => {
-    expect((await api('post', `/items/${P.denim.id}/rehome`).send({ method: 'burn' })).status).toBe(400);
+  test('API-PR03 Cancel donation → Available; only donation exists (no give / sell); someone else’s piece → 404; a piece in the laundry cannot be donated', async () => {
     const other = await registerUser(app, 'salma2@example.com');
-    expect((await api('post', `/items/${P.denim.id}/rehome`, other.token).send({ method: 'give' })).status).toBe(404);
-    await api('post', `/items/${P.denim.id}/rehome`).send({ method: 'give' });
-    expect((await api('delete', `/items/${P.denim.id}/rehome`)).body.rehome).toBeNull();
+    expect((await api('post', `/items/${P.denim.id}/donate`, other.token).send({})).status).toBe(404);
+    expect((await api('post', `/items/${P.denim.id}/rehome`).send({ method: 'give' })).status).toBe(404); // the v1.5 give / sell routes are gone
+    await api('post', `/items/${P.denim.id}/donate`).send({});
+    expect((await api('delete', `/items/${P.denim.id}/donate`)).body.status).toBe('Available');
+    expect((await api('delete', `/items/${P.denim.id}/donate`)).status).toBe(409);
+    await api('patch', `/items/${P.knit.id}/status`).send({ status: 'Laundry' });
+    expect((await api('post', `/items/${P.knit.id}/donate`).send({})).status).toBe(409);
   });
 });
 
@@ -153,8 +163,8 @@ describe('Planned-outfit monitor: weather + availability, one system', () => {
 
 describe('Borrow tracker', () => {
   test('API-PR40 borrower and dates persist; overdue reminder; Remind me later; Mark returned → Available', async () => {
-    await api('patch', `/items/${P.blazer.id}/status`).send({ status: 'Borrowed', note: 'Salma', until: day(3) });
-    await pool.query("UPDATE availability.item_status SET changed_at = now() - interval '12 days', until = CURRENT_DATE - 5 WHERE item_id = $1", [P.blazer.id]);
+    // v1.6: a loan that started earlier is recorded with its real dates (Lend item: person, date lent, due date)
+    await api('post', `/items/${P.blazer.id}/lend`).send({ person: 'Salma', lentOn: day(-12), dueOn: day(-5) });
     const b = (await api('get', '/intelligence/borrowed')).body;
     expect(b.borrowed[0]).toMatchObject({ id: P.blazer.id, borrowedBy: 'Salma', days: 12, overdue: true });
     expect((await api('get', '/notifications')).body.notifications.some((n) => n.type === 'BORROW_RETURN' && /12 days/.test(n.text))).toBe(true);
@@ -282,9 +292,10 @@ describe('Ask Closet routes to real state (several different intents)', () => {
   });
   test('API-PR92 “Mark the denim jacket for donation” then “I donated the denim jacket” → gone, no replacement', async () => {
     await chat('Mark the denim jacket for donation.');
-    expect((await api('get', `/items/${P.denim.id}`)).body.rehome.method).toBe('donate');
+    expect((await api('get', `/items/${P.denim.id}`)).body.status).toBe('Ready to donate');
+    expect((await chat('What clothes are ready to donate?')).body).toMatchObject({ function: 'donation_list', reply: expect.stringMatching(/1 piece is ready to donate: denim jacket/) });
     const done = (await chat('I donated the denim jacket.')).body;
-    expect(done.function).toBe('rehome_done');
+    expect(done.function).toBe('donate_done');
     expect((await api('get', `/items/${P.denim.id}`)).status).toBe(404);
     expect((await api('get', '/shopping/list')).body.items).toHaveLength(0);
   });

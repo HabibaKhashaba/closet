@@ -9,7 +9,7 @@ describe('Keyword parser: message → one whitelisted function (EP)', () => {
     ['AI-01', 'What should I wear to dinner tomorrow?', 'recommend'],
     ['AI-02', 'Change the shoes', 'change_piece'],
     ['AI-03', 'Put my blue jeans in the laundry', 'set_status'],
-    ['AI-04', 'I lent my red jacket to Salma', 'set_status'],
+    ['AI-04', 'I lent my red jacket to Salma', 'lend_piece'],
     ['AI-05', 'Laundry is done', 'wash_done'],
     ['AI-06', 'What haven’t I worn lately?', 'forgotten'],
     ['AI-07', 'What does my closet need?', 'closet_needs'],

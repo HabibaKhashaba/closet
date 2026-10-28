@@ -4,7 +4,7 @@ const { OCCASIONS, STYLES, COLOURS, STATUSES } = require('../../shared/vocabular
 
 const FUNCTIONS = ['recommend', 'change_piece', 'set_status', 'wash_done', 'forgotten', 'style_piece', 'closet_needs', 'buy_check', 'add_to_shopping', 'similar_owned', 'weather', 'hide_piece', 'plan_event',
   // Milestone 2 final: wardrobe questions that read state, and the proactive-intelligence intents.
-  'availability', 'laundry_list', 'laundry_risk', 'week_plan', 'borrowed', 'donate_candidates', 'keep_piece', 'rehome_piece', 'rehome_done',
+  'availability', 'laundry_list', 'laundry_risk', 'week_plan', 'borrowed', 'donate_candidates', 'keep_piece', 'donate_piece', 'donate_done', 'donation_list', 'care_list', 'lend_piece', 'unpacked',
   'seasonal', 'memory', 'repeat_check', 'health', 'plan_check', 'event_rescue', 'trip_pack', 'value', 'help'];
 
 const OCCASION_WORDS = [
@@ -25,7 +25,8 @@ const NAME_WORDS = ['blazer', 'trench', 'cardigan', 'loafers', 'sneakers', 'boot
 const nameWord = (text) => NAME_WORDS.find((w) => new RegExp(`\\b${w}\\b`).test(text)) || null;
 const SLOT_WORDS = [[/\bshoes?|sneakers|boots|flats|heels\b/, 2], [/\b(top|shirt|blouse|dress)\b/, 0], [/\b(bottom|jeans|trousers|pants|skirt|layer|jacket|coat)\b/, 1], [/\b(extra|hat|cap|accessory|bag)\b/, 3]];
 const STATUS_WORDS = [[/\b(laundry|wash|washing|dirty)\b/, 'Laundry'], [/\b(lent|lend|borrowed|gave)\b/, 'Borrowed'], [/\b(packed|pack|suitcase)\b/, 'Packed'],
-  [/\b(unavailable|repair|tailor|broken|torn)\b/, 'Unavailable'], [/\b(back|available|returned|clean|got back)\b/, 'Available']];
+  [/\b(alteration|altered|alter|too long|too short|too big|hem|take in)\b/, 'Needs alteration'], [/\b(repair|broken|torn|fix|ripped|loose button)\b/, 'Needs repair'],
+  [/\b(unavailable)\b/, 'Unavailable'], [/\b(back|available|returned|clean|got back|collected|picked up)\b/, 'Available']];
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 function parseDate(text, now = new Date()) {
@@ -67,11 +68,22 @@ function parse(message, now = new Date()) {
   const NUM = { two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7 };
   const nDays = days ? (NUM[days] || Number(days)) : null;
 
-  // Donation / rehoming (user always decides): candidates, keep, mark for donation, donated.
-  if (/\b(donate|donation|give away|giving away|give it away|pass on|rehome|charity)\b/.test(t) && /\b(what|which|could|should|anything|show)\b/.test(t) && !/\bi (donated|gave)\b/.test(t)) return { fn: 'donate_candidates', args: {} };
-  if (/\b(i (donated|gave away|gave)|been donated|is donated|was donated|i sold)\b/.test(t) && (piece || it)) return { fn: 'rehome_done', args: { piece, useContext: !piece, how: /\bsold\b/.test(t) ? 'sell' : /\bgave\b/.test(t) ? 'give' : 'donate' } };
-  if (/\b(mark|set|put)\b.*\b(for donation|to donate|as donation|for donating|to give away|ready to donate)\b/.test(t)) return { fn: 'rehome_piece', args: { piece, useContext: !piece, how: /give away/.test(t) ? 'give' : 'donate' } };
+  // Donation (v1.6: donate only; the user always decides): what is waiting, candidates, keep, mark, donated.
+  const marking = /\b(mark|set|put)\b.*\b(for donation|to donate|as donation|for donating|ready to donate|donation pile)\b/.test(t);
+  if (!marking && /\b(ready to donate|waiting to be donated|waiting for donation|marked (for|to) donat\w*|in my donation)\b/.test(t) && /\b(what|which|show|list|anything|any)\b/.test(t)) return { fn: 'donation_list', args: {} };
+  if (/\b(donate|donation|give away|giving away|give it away|pass on|charity)\b/.test(t) && /\b(what|which|could|should|anything|show)\b/.test(t) && !/\bi (donated|gave)\b/.test(t) && !marking) return { fn: 'donate_candidates', args: {} };
+  if (/\b(i (donated|gave away|gave)|been donated|is donated|was donated)\b/.test(t) && (piece || it)) return { fn: 'donate_done', args: { piece, useContext: !piece } };
+  if (marking) return { fn: 'donate_piece', args: { piece, useContext: !piece } };
   if (/\b(keep|keeping)\b/.test(t) && (piece || it) && !/\b(keep me|keeps)\b/.test(t)) return { fn: 'keep_piece', args: { piece, useContext: !piece } };
+
+  // Care (v1.6): what needs repair / alteration / is at the tailor; when is a piece back from the tailor.
+  if (!piece && /\b(needs? (an? )?(repair|repairing|fixing|mending|alteration|altering|tailoring)|to be (repaired|fixed|altered)|at the tailor|at the tailors|with the tailor|in care|broken|torn)\b/.test(t) && /\b(what|which|anything|any|show|list)\b/.test(t)) return { fn: 'care_list', args: {} };
+  if (piece && /\b(tailor|tailors|repair|repaired|alteration|altered|fixed)\b/.test(t) && /\b(when|is|are|has|back|ready)\b/.test(t)) return { fn: 'availability', args: { piece, tailor: /\btailors?\b/.test(t) } };
+  // Lend a piece to someone ("Lend my black blazer to Nour until Friday").
+  const lendTo = t.match(/\b(?:lend|lent|loan|loaned|give|gave)\b.*?\bto\s+([a-z][a-z-]{1,20})\b/);
+  if (lendTo && piece && !/\b(shopping|list|bag|wash|laundry|tailor|donat)\w*/.test(t) && !['my', 'the', 'her', 'him', 'them', 'someone', 'a', 'be'].includes(lendTo[1])) return { fn: 'lend_piece', args: { piece, person: lendTo[1].replace(/^./, (c) => c.toUpperCase()), date } };
+  // Packing progress ("What haven't I packed?")
+  if (/\b(havent|have not|not yet|still need to|left to|didnt|did not)\b( i)? ?(pack|packed)\b|\bwhat (is|s) (not|left) (packed|to pack)\b|\bunpacked\b/.test(t)) return { fn: 'unpacked', args: {} };
 
   // Borrowed: who has it / what have I lent out (questions; "I lent my … to Salma" is a status change below).
   if (/\bwho has\b/.test(t) || (/\b(lent out|have i lent|borrowed from me|lent to|lend out)\b/.test(t) && /\b(what|which|who)\b/.test(t))) return { fn: 'borrowed', args: { piece } };
@@ -114,10 +126,10 @@ function parse(message, now = new Date()) {
   if (/\b(change|swap|replace|different)\b/.test(t) && (SLOT_WORDS.find(([re]) => re.test(t)))) return { fn: 'change_piece', args: { slot: SLOT_WORDS.find(([re]) => re.test(t))[1] } };
   if (/\b(hide|dont show|do not show|skip)\b/.test(t) && piece) return { fn: 'hide_piece', args: { piece } };
   if (/\b(similar|already (have|own)|do i (have|own)|own anything like|own something like)\b/.test(t) && piece) return { fn: 'similar_owned', args: { piece } };
-  const impact = /\b(what would .* add|would (this|these|a|an) .* (be useful|add)|how many outfits could i make|add to my wardrobe|is (this|it) (purchase )?worth)\b/.test(t);
+  const impact = /\b(what would .* add|would (this|these|a|an) .* (be useful|add)|would .{3,40} add (anything|something|much)|how many outfits could i make|add to my wardrobe|is (this|it) (purchase )?worth)\b/.test(t);
   if ((/\b(buy|buying|purchase|get a|getting|need another|need a new|need new|need a|do i need|do i actually need|should i get)\b/.test(t) || impact) && piece && piece.category) return { fn: 'buy_check', args: { piece, word: pieceWord(t), impact } };
   const status = (STATUS_WORDS.find(([re]) => re.test(t)) || [])[1];
-  if (status && piece && /\b(put|move|mark|set|lent|lend|gave|packed|pack|got|is|are|in the|back|took)\b/.test(t)) return { fn: 'set_status', args: { piece, status } };
+  if (status && piece && (/\b(put|move|mark|set|lent|lend|gave|packed|pack|got|is|are|in the|back|took|needs?|has)\b/.test(t) || /^Needs /.test(status))) return { fn: 'set_status', args: { piece, status, ...(/^Needs /.test(status) && { reason: String(message).trim().slice(0, 80) }) } };
   if (/\b(forgot|forgotten|havent( i)? worn|have not( i)? worn|never wear|not worn|haven t worn|lately)\b/.test(t)) return { fn: 'forgotten', args: {} };
   if (/\b(need|buy|shopping|missing|gaps?|lacking)\b/.test(t)) return { fn: 'closet_needs', args: {} };
   if (/\b(weather|temperature|hot|cold|rain)\b/.test(t) && !/\b(wear|outfit)\b/.test(t)) return { fn: 'weather', args: { date } };

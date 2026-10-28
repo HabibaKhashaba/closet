@@ -60,10 +60,11 @@ async function main() {
       await pool.query("UPDATE wardrobe.items SET created_at = now() - interval '400 days' WHERE id = $1", [piece.id]);
     }
     for (const [file, status, daysAgo, until, note] of STATUSES) {
-      // A return date in the past cannot be entered through the API (validation), so an overdue loan is back-dated with SQL.
-      await call('PATCH', `/items/${ids[file]}/status`, { status, ...(until > 0 && { until: inDays(until) }), ...(note && { note }) }, token);
+      // Through the same endpoints the app uses: Lend item (person, date lent, due date), Repair / Alter, or a plain status change.
+      if (status === 'Borrowed') await call('POST', `/items/${ids[file]}/lend`, { person: note, lentOn: inDays(-daysAgo), dueOn: inDays(until) }, token);
+      else if (/^Needs /.test(status)) await call('POST', `/items/${ids[file]}/care`, { kind: status === 'Needs repair' ? 'repair' : 'alteration', reason: note }, token);
+      else await call('PATCH', `/items/${ids[file]}/status`, { status, ...(until > 0 && { until: inDays(until) }), ...(note && { note }) }, token);
       await pool.query("UPDATE availability.item_status SET changed_at = now() - ($2 || ' days')::interval WHERE item_id = $1", [ids[file], String(daysAgo)]);
-      if (until < 0) await pool.query('UPDATE availability.item_status SET until = $2 WHERE item_id = $1', [ids[file], inDays(until)]);
     }
     for (const [d, files, rating, occasion, tempC, condition, eventTitle] of WEARS) {
       await pool.query("INSERT INTO outfits.wears (user_id, item_ids, worn_on, rating, occasion, temp_c, conditions, event_title) VALUES ($1, $2, CURRENT_DATE - ($3 || ' days')::interval, $4, $5, $6, $7, $8)", [user.id, files.map((f) => ids[f]), String(d), rating, occasion, tempC, condition, eventTitle || null]);

@@ -7,50 +7,45 @@ import { Icon, Modal, SprintTag, Tile, fmtDate, pieceName, relDay, useApp, useLo
 import { go } from '../App.jsx';
 
 const KEEP_REASONS = ['Still love it', 'Sentimental', 'Seasonal', 'Special occasion', 'Other'];
-const METHODS = [
-  { m: 'donate', title: 'Donate', sub: 'To someone who may need it', icon: 'heart' },
-  { m: 'give', title: 'Give to someone', sub: 'A friend or family member', icon: 'user' },
-  { m: 'sell', title: 'Sell / rehome', sub: 'Find it a new home', icon: 'bag' },
-];
-
-// "Donate this item?" — two steps, nothing leaves the closet until the user confirms it has gone.
+// "Donate this item?" — v1.6: donation is the only way a piece is passed on. Two steps: Ready to donate
+// (still in the closet, listed under Donation, left out of outfits) → Mark as donated (archived, no replacement).
 export function DonateFlow({ piece, onClose, onChanged }) {
   const { toast, refresh } = useApp();
-  const [step, setStep] = useState(piece.rehome ? 'ready' : 'choose');
   const [current, setCurrent] = useState(piece);
+  const ready = current.status === 'Ready to donate';
   const [busy, setBusy] = useState(false);
-  async function mark(method) {
+  async function mark() {
     setBusy(true);
-    try { const p = await api.rehome(piece.id, method); setCurrent(p); setStep('ready'); toast(`${pieceName(p)}: ${p.rehome.label.toLowerCase()}`); onChanged && onChanged(p); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+    try { const p = await api.donate(piece.id); setCurrent(p); toast(`${pieceName(p)} is ready to donate — it’s waiting under Donation`); refresh(); onChanged && onChanged(p); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
   }
   async function done() {
     setBusy(true);
-    try { const r = await api.rehomeDone(piece.id); toast(r.effect); refresh(); onChanged && onChanged(null); onClose(); go('/closet'); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+    try { const r = await api.donationDone(piece.id); toast(r.effect); refresh(); onChanged && onChanged(null); onClose(); go('/donation'); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
   }
   async function cancel() {
-    try { const p = await api.cancelRehome(piece.id); toast('Back in your rotation'); onChanged && onChanged(p); onClose(); } catch (e) { toast(e.message, true); }
+    try { const p = await api.cancelDonation(piece.id); toast('Donation cancelled — back in your outfits'); refresh(); onChanged && onChanged(p); onClose(); } catch (e) { toast(e.message, true); }
   }
   const since = current.lastWornAt ? Math.floor((Date.now() - new Date(current.lastWornAt)) / 86400000) : null;
   return (
-    <Modal title={step === 'choose' ? 'Donate this item?' : current.rehome ? current.rehome.label : 'Ready'} sub={step === 'choose' ? 'Closet will keep it in your closet until you confirm it has left.' : 'It stays in your closet, left out of new outfits, until it has actually gone.'} onClose={onClose}>
+    <Modal title={ready ? 'Ready to donate' : 'Donate this item?'} sub={ready ? 'It stays in your closet, left out of new outfits, until you confirm it has been donated.' : 'Donate it to someone who may need it. Nothing leaves your closet until you confirm.'} onClose={onClose}>
       <div className="donate-head">
         <Tile piece={current} status={false} />
         <div><b>{pieceName(current)}</b><span className="small muted">{since === null ? 'Never worn' : `Last worn ${since} days ago`}{current.wearCount ? ` · worn ${current.wearCount}×` : ''}</span></div>
       </div>
-      {step === 'choose' ? (
+      {!ready ? (
         <>
-          <div className="reason-cards" role="radiogroup" aria-label="How it leaves">
-            {METHODS.map(({ m, title, sub, icon }) => (
-              <button key={m} type="button" className="reason-card" disabled={busy} onClick={() => mark(m)}><i><Icon name={icon} size={18} /></i><b>{title}</b><span>{sub}</span></button>
-            ))}
+          <div className="reason-cards" role="group" aria-label="Donate">
+            <button type="button" className="reason-card" disabled={busy || !(current.status === 'Available' || /^Needs /.test(current.status))} onClick={mark}><i><Icon name="heart" size={18} /></i><b>Donate</b><span>To someone who may need it</span></button>
           </div>
-          <p className="tiny muted" style={{ marginTop: 10 }}>Closet isn’t connected to charities or marketplaces — this keeps your closet accurate. No replacement is added to your shopping bag.</p>
+          {!(current.status === 'Available' || /^Needs /.test(current.status)) && <p className="small" style={{ marginTop: 10 }}>It is {current.status.toLowerCase()} right now — it can be donated once it’s back.</p>}
+          <p className="tiny muted" style={{ marginTop: 10 }}>Closet isn’t connected to charities — this keeps your closet accurate. No replacement is added to your shopping bag.</p>
           <div className="row end" style={{ marginTop: 16 }}><button type="button" className="btn line" onClick={onClose}>Cancel</button></div>
         </>
       ) : (
-        <div className="row end" style={{ marginTop: 18 }}>
-          <button type="button" className="btn ghost" onClick={cancel}>Keep it after all</button>
-          <button type="button" className="btn" disabled={busy} onClick={done}><Icon name="check" size={15} />{current.rehome?.method === 'give' ? 'Mark as given away' : current.rehome?.method === 'sell' ? 'Mark as rehomed' : 'Mark as donated'}</button>
+        <div className="row end wrap" style={{ marginTop: 18 }}>
+          <a className="btn ghost" href="#/donation" onClick={onClose}>Open Donation</a>
+          <button type="button" className="btn line" onClick={cancel}>Cancel donation</button>
+          <button type="button" className="btn" disabled={busy} onClick={done}><Icon name="check" size={15} />Mark as donated</button>
         </div>
       )}
     </Modal>

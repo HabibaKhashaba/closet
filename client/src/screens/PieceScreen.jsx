@@ -2,19 +2,26 @@
 // delete with a reason (US-13), hide for 7 days (US-61), "Style this piece" (US-59).
 import React, { useState } from 'react';
 import { api, ApiError } from '../api.js';
-import { CATEGORY_ONE, Field, Icon, Modal, PageHead, Spinner, SprintTag, STATUS_LABEL, Tile, daysSince, dressName, fmtDate, pieceName, useApp, useLoad, COLOUR_SWATCH } from '../ui.jsx';
+import { CATEGORY_ONE, Field, Icon, Modal, PageHead, Spinner, SprintTag, STATUS_LABEL, statusClass, Tile, daysSince, dressName, fmtDate, pieceName, useApp, useLoad, COLOUR_SWATCH } from '../ui.jsx';
 import { go } from '../App.jsx';
 import PieceForm, { cleanDetails } from './PieceForm.jsx';
-import { BorrowInfo, CostPerWear, DonateFlow } from './Proactive.jsx';
+import { CostPerWear, DonateFlow } from './Proactive.jsx';
+import { LendModal, LifecycleInfo, RepairModal, TailorModal } from './Lifecycle.jsx';
 
 // Allowed moves come from the server's state machine (GET /vocabulary → STATUS_TRANSITIONS): one source of truth.
 const STATUS_HELP = {
   Available: 'Clean and ready — can appear in outfits.',
   Laundry: 'In the basket. Comes back by itself after your laundry time.',
-  Borrowed: 'Lent to someone. Add who has it and when it comes back.',
-  Packed: 'In a suitcase. Add when you unpack.',
-  Unavailable: 'At the tailor, needs repair, or put away.',
+  Borrowed: 'Lent to someone — listed under Borrow & lend until it’s back.',
+  Packed: 'In a suitcase or seasonal storage. Add when you unpack.',
+  'Needs repair': 'Waiting for a repair — listed under Care, left out of outfits.',
+  'Needs alteration': 'Waiting for an alteration — listed under Care, left out of outfits.',
+  'At tailor': 'At the tailor — Closet reminds you when it should be ready.',
+  'Ready to donate': 'Waiting to be donated — listed under Donation, left out of outfits.',
+  Unavailable: 'Put away for now.',
 };
+// Simple one-tap moves; lending, repairs, the tailor and donation have their own flows (with their details).
+const SIMPLE = ['Available', 'Laundry', 'Packed', 'Unavailable'];
 // US-13: exactly four reasons, each with a visible effect (SRS FR "delete reason", SDD 5.8).
 const DELETE_REASONS = [
   { r: 'Torn / damaged', icon: 'alert', effect: 'A replacement goes on your shopping bag.' },
@@ -35,6 +42,8 @@ export default function PieceScreen({ id }) {
   const [reason, setReason] = useState('');
   const [hidden, setHidden] = useState(false);
   const [donating, setDonating] = useState(false);
+  const [flow, setFlow] = useState(null); // 'repair' | 'tailor' | 'lend'
+  const [more, setMore] = useState(false);
 
   if (error) return <div className="card pad">This piece doesn’t exist or isn’t yours. <a className="link" href="#/closet">Back to closet</a></div>;
   if (!p) return <Spinner />;
@@ -82,30 +91,36 @@ export default function PieceScreen({ id }) {
               <button type="button" className="btn line sm" onClick={() => setDeleting(true)} title="Sprint 2 · built early"><Icon name="trash" size={15} />Remove</button></>} />
 
           <section className="card pad">
-            <div className="card-head"><h3>Availability</h3><span className="row" style={{ gap: 6 }}>{p.rehome && <span className="tag rose">{p.rehome.label}</span>}<span className={`status ${p.status}`} style={{ background: 'var(--bg-2)' }}>{STATUS_LABEL[p.status]}</span></span></div>
-            {p.rehome && (
-              <div className="notice" style={{ display: 'block', marginBottom: 12 }}>
-                <b>{p.rehome.label}.</b> It stays in your closet and is left out of new outfits until it has left.
-                <div className="row" style={{ marginTop: 8 }}><button type="button" className="btn sm" onClick={() => setDonating(true)}><Icon name="check" size={14} />{p.rehome.method === 'give' ? 'Mark as given away' : p.rehome.method === 'sell' ? 'Mark as rehomed' : 'Mark as donated'}</button></div>
-              </div>
-            )}
+            <div className="card-head"><h3>Availability</h3><span className={statusClass(p.status)} style={{ background: 'var(--bg-2)' }}>{STATUS_LABEL[p.status]}</span></div>
             <p className="small muted" style={{ marginBottom: 14 }}>
               {STATUS_HELP[p.status]}
-              {p.statusNote && <> With <b>{p.statusNote}</b>.</>}
-              {p.expectedBack && <> Back <b>{fmtDate(p.expectedBack)}</b>.</>}
+              {['Packed', 'Unavailable'].includes(p.status) && p.statusNote && <> <b>{p.statusNote}</b>.</>}
+              {['Laundry', 'Packed', 'Unavailable'].includes(p.status) && p.expectedBack && <> Back <b>{fmtDate(p.expectedBack)}</b>.</>}
             </p>
-            <div className="row">
-              {(vocab.STATUS_TRANSITIONS?.[p.status] || []).map((s) => (
-                <button key={s} type="button" className="btn line sm" onClick={() => (['Borrowed', 'Packed', 'Unavailable'].includes(s) ? setMoving(s) : move(s))}>
-                  {s === 'Available' ? <Icon name="check" size={14} /> : s === 'Laundry' ? <Icon name="laundry" size={14} /> : <Icon name="arrow" size={14} />}{s === 'Available' ? (p.status === 'Borrowed' ? 'Mark returned' : 'Mark available') : STATUS_LABEL[s]}
+            <div className="row wrap">
+              {(vocab.STATUS_TRANSITIONS?.[p.status] || []).filter((s) => SIMPLE.includes(s) && !(s === 'Available' && ['Borrowed', 'At tailor', 'Needs repair', 'Needs alteration', 'Ready to donate'].includes(p.status))).map((s) => (
+                <button key={s} type="button" className="btn line sm" onClick={() => (['Packed', 'Unavailable'].includes(s) ? setMoving(s) : move(s))}>
+                  {s === 'Available' ? <Icon name="check" size={14} /> : s === 'Laundry' ? <Icon name="laundry" size={14} /> : <Icon name="arrow" size={14} />}{s === 'Available' ? 'Mark available' : STATUS_LABEL[s]}
                 </button>
               ))}
+              {p.status === 'Available' && (
+                <span className="more-wrap">
+                  <button type="button" className="btn line sm" aria-haspopup="menu" aria-expanded={more} onClick={() => setMore(!more)}><Icon name="more" size={14} />More actions</button>
+                  {more && (
+                    <span className="menu" role="menu">
+                      <button type="button" role="menuitem" onClick={() => { setMore(false); setFlow('repair'); }}><Icon name="alert" size={14} />Repair / Alter</button>
+                      <button type="button" role="menuitem" onClick={() => { setMore(false); setFlow('lend'); }}><Icon name="user" size={14} />Lend item</button>
+                      <button type="button" role="menuitem" onClick={() => { setMore(false); setDonating(true); }}><Icon name="heart" size={14} />Donate</button>
+                    </span>
+                  )}
+                </span>
+              )}
             </div>
-            <BorrowInfo piece={p} onChanged={() => reload(true)} />
+            <LifecycleInfo piece={p} onChanged={() => reload(true)} onTailor={() => setFlow('tailor')} />
             {moving && (
               <div className="notice" style={{ marginTop: 14, display: 'block' }}>
                 <div className="grid g2" style={{ gap: '0 12px' }}>
-                  <Field label={moving === 'Borrowed' ? 'Who has it?' : 'Note'}><input value={note} maxLength={60} onChange={(e) => setNote(e.target.value)} placeholder={moving === 'Borrowed' ? 'Nour' : moving === 'Packed' ? 'Sahel weekend' : 'At the tailor'} /></Field>
+                  <Field label="Note"><input value={note} maxLength={60} onChange={(e) => setNote(e.target.value)} placeholder={moving === 'Packed' ? 'Sahel weekend' : 'Put away'} /></Field>
                   <Field label={moving === 'Packed' ? 'Unpack on' : 'Back on'}><input type="date" value={until} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setUntil(e.target.value)} /></Field>
                 </div>
                 <div className="row end"><button type="button" className="btn ghost sm" onClick={() => setMoving(null)}>Cancel</button><button type="button" className="btn sm" onClick={() => move(moving, { ...(until && { until }), ...(note && { note }) })}>Mark {STATUS_LABEL[moving].toLowerCase()}</button></div>
@@ -132,7 +147,7 @@ export default function PieceScreen({ id }) {
                 <div className="stat" style={{ background: 'rgba(255,255,255,.6)' }}><b>{p.wearCount}×</b><span>worn</span></div>
                 <div className="stat" style={{ background: 'rgba(255,255,255,.6)' }}><b>{since === null ? '—' : since === 0 ? 'Today' : `${since}d`}</b><span>since last worn</span></div>
               </div>
-              {since !== null && since >= 40 && <p className="small" style={{ marginTop: 12 }}>Not worn for {since} days — <a className="link" href={`#/outfits?fixed=${p.id}`}>style it</a>{!p.rehome && <> or <button type="button" className="link" onClick={() => setDonating(true)}>donate it</button></>}.</p>}
+              {since !== null && since >= 40 && <p className="small" style={{ marginTop: 12 }}>Not worn for {since} days — <a className="link" href={`#/outfits?fixed=${p.id}`}>style it</a>{p.status === 'Available' && <> or <button type="button" className="link" onClick={() => setDonating(true)}>donate it</button></>}.</p>}
               <div className="divider" />
               <div className="eyebrow" style={{ marginBottom: 6 }}>Cost per wear</div>
               <CostPerWear piece={p} />
@@ -145,6 +160,9 @@ export default function PieceScreen({ id }) {
       </div>
 
       {donating && <DonateFlow piece={p} onClose={() => setDonating(false)} onChanged={(x) => (x ? setData(x) : null)} />}
+      {flow === 'repair' && <RepairModal piece={p} onClose={() => setFlow(null)} onDone={() => reload(true)} />}
+      {flow === 'tailor' && <TailorModal piece={p} onClose={() => setFlow(null)} onDone={() => reload(true)} />}
+      {flow === 'lend' && <LendModal piece={p} onClose={() => setFlow(null)} onDone={() => reload(true)} />}
       {editing && (
         <Modal title="Edit piece" onClose={() => setEditing(null)}>
           <PieceForm value={editing} onChange={setEditing} errors={errors} />

@@ -1,6 +1,7 @@
 // Outfits: save and favorite (US-26), wear this (US-23), reject with a reason (US-60),
 // hide a piece for 7 days (US-61), wear analytics and forgotten pieces (US-52, US-54, US-69).
 // Publishes OutfitWorn on the event bus.
+const { isWearable } = require('../../shared/lifecycle');
 const express = require('express');
 const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
@@ -226,7 +227,8 @@ function outfitsService({ repo, wardrobe, bus }) {
       const daysSince = (d) => Math.floor((now - new Date(d)) / 86400000);
       const worn30 = new Set(await repo.wornSince(userId, 30));
       const sorted = [...pieces].sort((a, b) => b.wearCount - a.wearCount || String(a.name).localeCompare(String(b.name)) || a.id.localeCompare(b.id));
-      const forgotten = pieces.filter((p) => p.wearCount > 0 && p.lastWornAt && daysSince(p.lastWornAt) >= 40)
+      // Only pieces that can be worn now (not in care, lent, packed or ready to donate): “Another chance” must be possible.
+      const forgotten = pieces.filter((p) => isWearable(p) && p.wearCount > 0 && p.lastWornAt && daysSince(p.lastWornAt) >= 40)
         .map((p) => ({ ...p, daysSince: daysSince(p.lastWornAt) })).sort((a, b) => b.daysSince - a.daysSince);
       return {
         total: pieces.length,

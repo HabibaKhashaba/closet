@@ -64,7 +64,7 @@ describe('Diversity-aware ranking on the seeded closet', () => {
 });
 
 describe('Style this piece / Another chance keeps the chosen piece in every look (regression D-06)', () => {
-  test.each([['denim_jacket', 'University', 29], ['camel_cardigan', 'Everyday', 31], ['denim_jacket', 'Everyday', 15], ['cream_knit_sweater', 'University', 30]])(
+  test.each([['denim_jacket', 'University', 29], ['beige_trench_coat', 'Everyday', 31], ['denim_jacket', 'Everyday', 15], ['cream_knit_sweater', 'University', 30]])(
     'DV-06 %s for %s at %d °C: 3 looks, all contain it, other majors still diverse', (fixedId, occasion, tempC) => {
       const pieces = closet(); const map = byId(pieces);
       const level = Math.min(...map.get(fixedId).dressCodes);

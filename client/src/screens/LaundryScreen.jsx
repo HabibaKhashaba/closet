@@ -95,7 +95,7 @@ function LaundryRoom({ washing }) {
   );
 }
 
-export default function LaundryScreen() {
+export default function LaundryScreen({ embedded = false }) {
   const { toast, refresh } = useApp();
   const { data, loading, reload } = useLoad(() => api.laundry(), []);
   const closet = useLoad(() => api.items(), []);
@@ -133,7 +133,7 @@ export default function LaundryScreen() {
 
   return (
     <>
-      <PageHead title="Laundry room" sprint={1} sub="What’s in the wash — and when it’s back." />
+      {!embedded && <PageHead title="Laundry room" sprint={1} sub="What’s in the wash — and when it’s back." />}
       <div className="laundry-room">
         <section className="hamper-stage">
           <LaundryRoom washing={phase === 'washing'} />

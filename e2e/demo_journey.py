@@ -244,7 +244,7 @@ with sync_playwright() as p:
     after_undo = api('/profile')
     for k in ('styles', 'avoidStyles', 'dressCode', 'colours'): assert after_undo.get(k) == before.get(k), f'Undo did not restore {k}'
     go('/'); pg.wait_for_selector('.today-card .look'); pg.wait_for_timeout(1000); shot('54_end_home')
-    assert len(api('/items')['items']) == 29, 'Home: the closet should now hold 29 pieces (the scarf was deleted)'
+    assert len(api('/items')['items']) == 30, 'Home: the closet should now hold 30 pieces (31 seeded, the scarf was deleted)'
     import json as _json; open(f'{S}results.json', 'w').write(_json.dumps(results, indent=1, ensure_ascii=False))
 
     # ---------- admin ----------

@@ -155,6 +155,9 @@ img { display: block; max-width: 100%; }
 .status.Borrowed { color: #9a6326; }
 .status.Packed { color: #6a4b87; }
 .status.Unavailable { color: #a24b47; }
+.status.Needs-repair, .status.Needs-alteration { color: #a85a2a; }
+.status.At-tailor { color: #7a5a8c; }
+.status.Ready-to-donate { color: #9c5f5b; }
 .score { white-space: nowrap; flex: none; display: inline-flex; align-items: center; gap: 6px; background: var(--ok-soft); color: #2f6b4a; border-radius: 99px; padding: 4px 10px; font-weight: 700; font-size: 12.5px; }
 .score.mid { background: var(--warn-soft); color: #8a5a1e; }
 .score.low { background: var(--bad-soft); color: var(--bad); }
@@ -951,3 +954,23 @@ details.purchase summary { cursor: pointer; font-weight: 600; }
 button.link { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
 .lining-item { position: relative; display: block; }
 .lining-x { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(30,22,20,.72); color: #fff; display: grid; place-items: center; cursor: pointer; }
+
+/* v1.6 lifecycle: Wardrobe status, Care / Borrow & lend / Donation rows, More actions menu */
+.status-list { display: grid; gap: 6px; margin-top: 12px; }
+.status-line { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--bg); }
+.status-line b { font-family: var(--serif); font-size: 20px; font-weight: 500; }
+.status-line span { font-size: 13px; color: var(--muted); }
+.status-line:hover { border-color: var(--rose); }
+.care-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+.care-row:first-of-type { border-top: 0; }
+.care-row.late b { color: inherit; }
+.care-pic { width: 64px; flex: none; }
+.care-pic .tile { border-radius: 12px; }
+.care-row .grow { min-width: 0; }
+.piece-pick { display: grid; gap: 6px; text-align: left; background: none; border: 1px solid var(--line); border-radius: 14px; padding: 8px; cursor: pointer; }
+.piece-pick:hover { border-color: var(--rose); }
+.more-wrap { position: relative; display: inline-flex; }
+.more-wrap .menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; display: grid; min-width: 190px; padding: 6px; background: var(--card, #fff); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 14px 34px rgba(30, 24, 25, .14); }
+.more-wrap .menu button { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 0; background: none; border-radius: 10px; font: inherit; font-size: 14px; color: var(--ink); cursor: pointer; text-align: left; }
+.more-wrap .menu button:hover { background: var(--bg-2); }
+.reason-card.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink) inset; }

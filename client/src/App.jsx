@@ -8,7 +8,9 @@ import HomeScreen from './screens/HomeScreen.jsx';
 import ClosetScreen from './screens/ClosetScreen.jsx';
 import AddPieceScreen from './screens/AddPieceScreen.jsx';
 import PieceScreen from './screens/PieceScreen.jsx';
-import LaundryScreen from './screens/LaundryScreen.jsx';
+import CareScreen from './screens/CareScreen.jsx';
+import LendingScreen from './screens/LendingScreen.jsx';
+import DonationScreen from './screens/DonationScreen.jsx';
 import PlannerScreen from './screens/PlannerScreen.jsx';
 import ProfileScreen from './screens/ProfileScreen.jsx';
 import OutfitsScreen from './screens/OutfitsScreen.jsx';
@@ -40,7 +42,7 @@ export const go = (path) => { window.location.hash = path; };
 // Navigation with the sprint each part belongs to (honest labelling for the demo).
 const NAV = [
   ['Today', [['/', 'home', 'Home', null]]],
-  ['Wardrobe', [['/closet', 'closet', 'Closet', 1], ['/laundry', 'laundry', 'Laundry', 1]]],
+  ['Wardrobe', [['/closet', 'closet', 'Closet', 1], ['/care', 'laundry', 'Care', 1], ['/lending', 'user', 'Borrow & lend', 3], ['/donation', 'heart', 'Donation', 3]]],
   ['Style', [['/outfits', 'sparkle', 'Style me · 3 looks', 2], ['/mix', 'grid', 'Mix & Match', 2], ['/tryon', 'mirror', 'Virtual try-on', 3], ['/saved', 'bookmark', 'Lookbook', 2]]],
   ['Assistant', [['/ask', 'brain', 'Ask Closet', 3]]],
   ['Plan', [['/planner', 'calendar', 'Planner', 1], ['/packing', 'suitcase', 'Packing', 4]]],
@@ -125,8 +127,11 @@ export default function App() {
   if (section === 'quiz') screen = <QuizScreen />;
   else if (section === 'closet' && id === 'new') screen = <AddPieceScreen />;
   else if (section === 'closet' && id) screen = <PieceScreen id={id} />;
-  else if (section === 'closet') screen = <ClosetScreen />;
-  else if (section === 'laundry') screen = <LaundryScreen />;
+  else if (section === 'closet') screen = <ClosetScreen key={q.status || ''} query={q} />;
+  else if (section === 'laundry') screen = <CareScreen tab="laundry" />;
+  else if (section === 'care') screen = <CareScreen tab={id === 'repairs' ? 'repairs' : 'laundry'} />;
+  else if (section === 'lending') screen = <LendingScreen />;
+  else if (section === 'donation') screen = <DonationScreen />;
   else if (section === 'planner') screen = <PlannerScreen query={q} />;
   else if (section === 'profile') screen = <ProfileScreen />;
   else if (section === 'outfits') screen = <OutfitsScreen key={JSON.stringify(q)} query={q} />;
@@ -141,7 +146,7 @@ export default function App() {
   else screen = <HomeScreen />;
 
   const current = `/${section || ''}`;
-  const isOn = (path) => (path === '/' ? current === '/' : current === path);
+  const isOn = (path) => (path === '/' ? current === '/' : current === path || (path === '/care' && current === '/laundry'));
   const name = profile?.displayName || user.email.split('@')[0];
   if (section === 'quiz') return <AppContext.Provider value={ctx}>{screen}{toastView}</AppContext.Provider>;
 
@@ -152,7 +157,7 @@ export default function App() {
         {items.map(([path, icon, label, sprint]) => (
           <a key={path} href={`#${path}`} className={isOn(path) ? 'on' : ''} onClick={() => setMoreOpen(false)}>
             <Icon name={icon} size={18} />{label}
-            {path === '/laundry' && laundryCount > 0 ? <span className="count">{laundryCount}</span> : sprint && <span className={`dot ${SPRINT[sprint].cls}`} title={SPRINT[sprint].label} />}
+            {path === '/care' && laundryCount > 0 ? <span className="count">{laundryCount}</span> : sprint && <span className={`dot ${SPRINT[sprint].cls}`} title={SPRINT[sprint].label} />}
           </a>
         ))}
         {group === 'You' && user.role === 'admin' && (

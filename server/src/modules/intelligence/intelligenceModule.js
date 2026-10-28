@@ -8,6 +8,7 @@
 //   GET  /intelligence/conflicts                planned outfits with a piece that will not be back (US-79)
 //   POST /intelligence/conflicts/:eventId/fix   replace that piece with the best Available one
 //   GET  /notifications, POST /notifications/read   Notification Center (US-92)
+const { isOwned } = require('../../shared/lifecycle');
 const express = require('express');
 const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
@@ -22,7 +23,7 @@ const KEY = /^[a-z0-9:-]{3,80}$/;
 const isoDay = (d) => new Date(d).toISOString().slice(0, 10);
 const addDays = (day, n) => isoDay(new Date(`${day}T12:00:00Z`).getTime() + n * 86400000);
 const pieceName = (p) => (p.name || `${p.colour} ${p.category}`).toLowerCase();
-const WHERE = { Laundry: 'in the laundry', Borrowed: 'lent out', Packed: 'packed for a trip', Unavailable: 'unavailable' };
+const { WHERE } = require('../../shared/lifecycle'); // one wording for every state (v1.6)
 const RAIN = /rain|shower|drizzle|thunder/i;
 const PUSH_LIMIT = 3; // NFR-13: at most 3 highlighted notices a day
 
@@ -51,7 +52,7 @@ function intelligenceService({ db, repo: givenRepo, wardrobe, outfits, profile, 
   async function health(userId) {
     const [pieces, worn, gaps] = await Promise.all([wardrobe().allPieces(userId), outfits().wornIds(userId, 30), wardrobe().gaps(userId)]);
     const missingBasics = BASICS.filter((b) => !pieces.some(b.has)).map((b) => b.title);
-    const h = wardrobeHealth({ pieces: pieces.filter((p) => !p.rehome), worn30: new Set(worn), gaps, missingBasics, basicsTotal: BASICS.length });
+    const h = wardrobeHealth({ pieces: pieces.filter(isOwned), worn30: new Set(worn), gaps, missingBasics, basicsTotal: BASICS.length });
     return { ...h, explain: explainHealth(h) };
   }
 
@@ -76,7 +77,8 @@ function intelligenceService({ db, repo: givenRepo, wardrobe, outfits, profile, 
         if (!usage.has(p.id)) usage.set(p.id, []);
         usage.get(p.id).push(e);
         if (p.status === 'Available') continue;
-        if (p.expectedBack && p.expectedBack <= e.date) continue; // back in time: not a conflict
+        if (p.expectedBack && p.expectedBack <= e.date) continue; // back in time (laundry, loan, trip, tailor): not a conflict
+        // Needs repair / alteration and Ready to donate have no return date: always a conflict.
         out.push({
           key: `conflict:${e.id}:${p.id}`, kind: 'unavailable', eventId: e.id, event: { title: e.title, date: e.date, time: e.time, occasion: e.occasion },
           itemId: p.id, piece: p, status: p.status, expectedBack: p.expectedBack || null,
@@ -155,9 +157,9 @@ function intelligenceService({ db, repo: givenRepo, wardrobe, outfits, profile, 
     async notifications(userId) {
       const today = isoDay(Date.now());
       const pro = this.proactive;
-      const [monitor, laundry, borrowed, seasonal, forgotten] = pro ? await Promise.all([
-        pro.monitor(userId), pro.laundryRisk(userId), pro.borrowed(userId), pro.seasonal(userId), pro.forgotten(userId),
-      ]) : [{ alerts: [] }, { warnings: [] }, { overdue: [] }, {}, {}];
+      const [monitor, laundry, borrowed, seasonal, forgotten, tailor] = pro ? await Promise.all([
+        pro.monitor(userId), pro.laundryRisk(userId), pro.borrowed(userId), pro.seasonal(userId), pro.forgotten(userId), pro.tailorDue(userId),
+      ]) : [{ alerts: [] }, { warnings: [] }, { overdue: [] }, {}, {}, { due: [] }];
       const [rem, conf, insights, readRows, trips, recent] = await Promise.all([
         planner().reminders(userId), conflicts(userId), outfits().insights(userId),
         repo.readKeys(userId),
@@ -185,6 +187,7 @@ function intelligenceService({ db, repo: givenRepo, wardrobe, outfits, profile, 
       for (const a of monitor.alerts.filter((x) => x.kind === 'weather')) add({ key: a.key, kind: 'weather-change', type: 'WEATHER_CHANGE', priority: a.event.date <= addDays(today, 1) ? 5 : 4, title: 'Weather changed for a planned outfit', text: a.message, link: '#/planner', date: a.event.date, action: a.itemId ? { label: 'Adjust outfit', eventId: a.eventId, itemId: a.itemId } : null });
       for (const w of laundry.warnings) add({ key: w.key, kind: 'laundry-risk', type: 'LAUNDRY_WARNING', priority: 3, title: 'Laundry may affect your plans', text: w.message, link: '#/laundry', date: w.date, action: { label: 'Open laundry', link: '#/laundry' } });
       for (const b of borrowed.overdue) add({ key: `borrow:${b.id}:${today}`, kind: 'borrow', type: 'BORROW_RETURN', priority: 3, title: 'A lent piece is overdue', text: b.message, link: `#/closet/${b.id}`, date: today, action: { label: 'Mark returned', itemId: b.id } });
+      for (const t of tailor.due) add({ key: `tailor:${t.id}:${today}`, kind: 'tailor', type: 'TAILOR_READY', priority: 4, title: 'Ready at the tailor', text: t.message, link: '#/care/repairs', date: today, action: { label: 'Mark collected', itemId: t.id } });
       if (seasonal.headline) add({ key: `season:${seasonal.season}:${today.slice(0, 7)}`, kind: 'seasonal', type: 'SEASONAL_ROTATION', priority: 1, title: 'Seasonal rotation', text: seasonal.headline, link: '#/analytics#seasonal', date: today, action: { label: 'Review', link: '#/analytics#seasonal' } });
       const f = forgotten.top || null;
       if (f) add({ key: `donate:${f.id}:${week}`, kind: 'forgotten', type: 'FORGOTTEN_DONATION', priority: 1, title: 'Still love it?', text: f.message, link: '#/analytics#forgotten', itemId: f.id, date: today, action: { label: 'Style it', link: `#/outfits?piece=${f.id}` } });

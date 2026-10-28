@@ -29,11 +29,19 @@ async function call(token, method, url, body, form) {
   const T = login.data.token; const api = (m, u, b) => call(T, m, u, b);
   const items = (await api('GET', '/items')).data.items;
   const by = (n) => items.find((p) => p.name === n);
-  ok(items.length === 30, 'the seeded closet has 30 pieces', `${items.length}`);
+  ok(items.length === 31, 'the seeded closet has 31 pieces', `${items.length}`);
   for (const n of ['Navy blazer', 'Silk scarf', 'Denim jacket', 'Red cropped tee', 'Beige wide-leg trousers', 'Breton striped top', 'Ivory silk blouse'])
     ok(Boolean(by(n)), `piece “${n}” exists`);
   ok(by('Navy blazer')?.status === 'Available', 'Navy blazer is Available (Act 2 moves it to the laundry)', by('Navy blazer')?.status);
   ok(by('Silk scarf')?.status === 'Available', 'Silk scarf is Available (Act 6 deletes it)');
+  // v1.6 lifecycle: the demo starts with one repair waiting, the black blazer free for the repair + lending acts, nothing to donate yet
+  ok(by('Black blazer')?.status === 'Available', 'Black blazer is Available (Acts 3–4: alteration at the tailor, then lent to Nour)', by('Black blazer')?.status);
+  const care0 = (await api('GET', '/care')).data;
+  ok(care0.needsRepair.length === 1 && care0.needsRepair[0].name === 'Camel cardigan' && care0.atTailor.length === 0, 'Care: the camel cardigan needs a repair (loose button); nothing at the tailor', care0.needsRepair.map((p) => `${p.name} · ${p.care && p.care.reason}`).join(', '));
+  const lend0 = (await api('GET', '/lending')).data;
+  ok(lend0.current.length === 1 && lend0.current[0].loan.person === 'Nour' && lend0.overdue === 1, 'Borrow & lend: the rose wrap dress is with Nour and overdue', lend0.current.map((p) => `${p.name} · ${p.overdueDays} days overdue`).join(', '));
+  const don0 = (await api('GET', '/donation')).data;
+  ok(don0.ready.length === 0, 'Donation: nothing is waiting yet (Act 7 adds the denim jacket)');
   const laundry = (await api('GET', '/laundry')).data;
   const inWash = (laundry.items || laundry.basket || []).map((p) => p.name);
   ok(inWash.length === 3, 'three pieces wait in the laundry basket', inWash.join(', '));
@@ -82,7 +90,7 @@ async function call(token, method, url, body, form) {
   const buy = (await api('POST', '/chat', { message: 'I want to buy beige trousers. Do I need them?' })).data;
   ok(buy.function === 'buy_check', 'Ask Closet answers “Do I need beige trousers?”', `${buy.function} · ${String(buy.reply).slice(0, 70)}…`);
   // v1.5: different questions → different functions (no replayed answer)
-  const qs = ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'What could I donate?', 'Who has my rose wrap dress?', 'Do I need to do laundry before Monday?',
+  const qs = ['What should I wear to university tomorrow?', 'Is my navy blazer clean?', 'What could I donate?', 'Who has my rose wrap dress?', 'Do I need to do laundry before Monday?',
     'What did I wear to Salma’s birthday?', 'Why is my wardrobe health low?', 'Is tomorrow’s outfit still okay for the weather?', 'Pack me for 5 days in Paris', 'Tell me a joke'];
   const fns = [];
   for (const q of qs) fns.push((await api('POST', '/chat', { message: q })).data);

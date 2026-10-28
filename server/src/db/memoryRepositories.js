@@ -12,16 +12,17 @@ const sameSet = (a, b) => a.length === b.length && a.every((x) => b.includes(x))
 
 function createMemoryStore() {
   return {
-    users: [], profiles: new Map(), items: [], rehoming: new Map(), deletions: [], status: new Map(), history: [],
+    users: [], profiles: new Map(), items: [], careJobs: [], loans: [], deletions: [], status: new Map(), history: [],
     outfits: [], wears: [], feedback: [], hidden: [], events: [], actions: [], decisions: [], listItems: [],
-    learned: [], read: [], snoozes: [], activity: [], trips: [], seq: { wear: 0, activity: 0, history: 0, deletion: 0 },
+    learned: [], read: [], snoozes: [], activity: [], trips: [], seq: { wear: 0, activity: 0, history: 0, deletion: 0, job: 0, loan: 0 },
   };
 }
 
 function memoryRepositories(S = createMemoryStore()) {
   // deterministic ids, continued after a restore (the counter lives in the store)
   const uuid = () => { S.seq.uuid = (S.seq.uuid || 0) + 1; return `00000000-0000-4000-8000-${String(S.seq.uuid).padStart(12, '0')}`; };
-  const itemRow = (r) => (r ? { ...r, rehome_method: S.rehoming.get(r.id)?.method || null, rehome_started: S.rehoming.get(r.id)?.started_at || null } : null);
+  const itemRow = (r) => (r ? { ...r } : null);
+  const day = () => iso(Date.now());
   const own = (list, userId, id) => list.find((x) => x.id === id && x.user_id === userId) || null;
 
   const profile = {
@@ -51,8 +52,6 @@ function memoryRepositories(S = createMemoryStore()) {
     },
     async list(userId, category) { return S.items.filter((r) => r.user_id === userId && (!category || r.category === category)).sort((a, b) => b.created_at - a.created_at).map((r) => itemRow({ ...r })); },
     async get(userId, id) { return itemRow(own(S.items, userId, id) && { ...own(S.items, userId, id) }); },
-    async startRehome(userId, id, method) { if (!own(S.items, userId, id)) return false; const prev = S.rehoming.get(id); S.rehoming.set(id, { method, started_at: prev ? prev.started_at : now() }); return true; },
-    async cancelRehome(userId, id) { if (!own(S.items, userId, id) || !S.rehoming.has(id)) return false; S.rehoming.delete(id); return true; },
     async update(userId, id, d) {
       const r = own(S.items, userId, id); if (!r) return null;
       for (const [k, col] of [['category', 'category'], ['colour', 'colour'], ['styles', 'styles'], ['dressCodes', 'dress_codes'], ['modest', 'modest']]) if (d[k] !== undefined && d[k] !== null) r[col] = d[k];
@@ -73,7 +72,7 @@ function memoryRepositories(S = createMemoryStore()) {
     },
     async remove(userId, id, reason, note) {
       const r = own(S.items, userId, id); if (!r) return null;
-      S.items = S.items.filter((x) => x !== r); S.rehoming.delete(id); S.status.delete(id); S.hidden = S.hidden.filter((h) => h.item_id !== id);
+      S.items = S.items.filter((x) => x !== r); S.status.delete(id); S.careJobs = S.careJobs.filter((j) => j.item_id !== id); S.loans = S.loans.filter((l) => l.item_id !== id); S.hidden = S.hidden.filter((h) => h.item_id !== id);
       S.seq.deletion += 1;
       S.deletions.unshift({ id: S.seq.deletion, user_id: userId, name: r.name, category: r.category, colour: r.colour, wear_count: r.wear_count, reason, note: note || null, styles: r.styles || [], dress_codes: r.dress_codes || [], fabric: r.fabric || null, deleted_at: now() });
       return { ...r };
@@ -83,6 +82,29 @@ function memoryRepositories(S = createMemoryStore()) {
   };
 
   const availability = {
+    // Care jobs and loans (same row shapes as availability.care_jobs / availability.loans)
+    async openJob(userId, itemId, kind, reason, notes) {
+      if (S.careJobs.some((j) => j.item_id === itemId && !j.closed_on)) return;
+      S.seq.job = (S.seq.job || 0) + 1;
+      S.careJobs.unshift({ id: S.seq.job, item_id: itemId, user_id: userId, kind, reason, notes: notes || null, tailor: null, sent_on: null, expected_back: null, cost: null, closed_on: null, outcome: null, created_at: now() });
+    },
+    async updateJob(userId, itemId, d) {
+      const j = S.careJobs.find((x) => x.item_id === itemId && x.user_id === userId && !x.closed_on); if (!j) return;
+      for (const [k, col] of [['tailor', 'tailor'], ['sentOn', 'sent_on'], ['expectedBack', 'expected_back'], ['cost', 'cost'], ['kind', 'kind'], ['reason', 'reason'], ['notes', 'notes']]) if (d[k] !== undefined && d[k] !== null) j[col] = d[k];
+    },
+    async closeJob(userId, itemId, outcome, on) {
+      const j = S.careJobs.find((x) => x.item_id === itemId && x.user_id === userId && !x.closed_on); if (j) Object.assign(j, { closed_on: on || day(), outcome });
+    },
+    async jobs(userId) { return S.careJobs.filter((j) => j.user_id === userId).map((j) => ({ ...j })); },
+    async openLoan(userId, itemId, person, lentOn, dueOn, note) {
+      if (S.loans.some((l) => l.item_id === itemId && !l.returned_on)) return;
+      S.seq.loan = (S.seq.loan || 0) + 1;
+      S.loans.unshift({ id: S.seq.loan, item_id: itemId, user_id: userId, person, lent_on: lentOn || day(), due_on: dueOn || null, note: note || null, returned_on: null, created_at: now() });
+    },
+    async closeLoan(userId, itemId, on) {
+      const l = S.loans.find((x) => x.item_id === itemId && x.user_id === userId && !x.returned_on); if (l) l.returned_on = on || day();
+    },
+    async loans(userId) { return S.loans.filter((l) => l.user_id === userId).sort((a, b) => String(b.lent_on).localeCompare(String(a.lent_on)) || b.id - a.id).map((l) => ({ ...l })); },
     async init(userId, itemId) { if (!S.status.has(itemId)) S.status.set(itemId, { item_id: itemId, user_id: userId, status: 'Available', changed_at: now(), until: null, note: null }); },
     async all(userId) { return [...S.status.values()].filter((r) => r.user_id === userId).map((r) => ({ ...r })); },
     async sweepLaundry(userId, days) {
@@ -215,7 +237,7 @@ function memoryRepositories(S = createMemoryStore()) {
 
 // The store as JSON (Maps → arrays) so the offline demo can keep state across a page refresh in the
 // same tab (sessionStorage), and back again (ISO timestamps → Date).
-const MAPS = ['profiles', 'rehoming', 'status'];
+const MAPS = ['profiles', 'status'];
 function serializeStore(S) { return JSON.stringify({ ...S, ...Object.fromEntries(MAPS.map((k) => [k, [...S[k].entries()]])) }); }
 function restoreStore(json) {
   const o = JSON.parse(json, (k, v) => (typeof v === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d/.test(v) ? new Date(v) : v));

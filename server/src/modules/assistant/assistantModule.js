@@ -8,7 +8,7 @@ const { canMove } = require('../availability/statusMachine');
 const { CATEGORIES, COLOURS } = require('../../shared/vocabulary');
 
 const UUID = /^[0-9a-f-]{36}$/i;
-const SUGGESTIONS = ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'Do I need beige trousers?', 'What could I donate?', 'Do I need to do laundry before Monday?', 'Pack me for 5 days in Paris', 'Who has my rose wrap dress?', 'What has the best cost per wear?', 'Why is my wardrobe health low?', 'What is missing from my wardrobe?'];
+const SUGGESTIONS = ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'What needs repair?', 'Who has my black blazer?', 'What clothes are ready to donate?', 'Do I need beige trousers?', 'What could I donate?', 'Do I need to do laundry before Monday?', 'Pack me for 5 days in Paris', 'Who has my rose wrap dress?', 'What has the best cost per wear?', 'Why is my wardrobe health low?', 'What is missing from my wardrobe?'];
 const NOUN = { Top: 'top', Dress: 'dress', Bottom: 'bottom', Layer: 'layer', Shoes: 'shoes', Bag: 'bag', Extra: 'accessory' };
 const label = (p) => p.name || [p.colour, p.fabric && p.fabric !== 'Other' ? p.fabric.toLowerCase() : null, NOUN[p.category]].filter(Boolean).join(' ');
 const lower = (p) => label(p).toLowerCase();
@@ -22,7 +22,8 @@ function matchPieces(pieces, q) {
   const named = base.filter((p) => String(p.name || '').toLowerCase().includes(stem));
   return named.length ? named : base;
 }
-const WHERE = { Available: 'Available — clean and at home', Laundry: 'in the laundry', Borrowed: 'lent out', Packed: 'packed', Unavailable: 'unavailable' };
+const { WHERE: WHERE_STATE, LABEL } = require('../../shared/lifecycle');
+const WHERE = { ...WHERE_STATE, Available: 'Available — clean and at home' };
 const SCOPE = 'I can help with your wardrobe, outfits, laundry, shopping, weather and planner.';
 
 function assistantRepository(db) {
@@ -89,10 +90,10 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
       if (r.none) return { reply: `I couldn’t find a ${describe(a.piece)} in your closet.` };
       if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
       const p = r.piece;
-      if (p.status === a.status) return { reply: `Your ${lower(p)} is already ${a.status}.` };
-      await availability.setStatus(userId, p.id, a.status);
+      if (p.status === a.status) return { reply: `Your ${lower(p)} is already ${WHERE_STATE[a.status]}.` };
+      await availability.setStatus(userId, p.id, a.status, a.reason ? { care: { reason: a.reason } } : {});
       const undoId = await logAction(userId, 'set_status', { type: 'status', items: [{ id: p.id, status: p.status }] });
-      return { reply: `Done: your ${lower(p)} is now ${a.status}.${a.status === 'Available' ? '' : ' It won’t appear in outfits until it’s back.'}`, pieces: [{ ...p, status: a.status }], undoId };
+      return { reply: `Done: your ${lower(p)} is now ${a.status === 'Laundry' ? 'Laundry' : LABEL[a.status]}.${a.status === 'Available' ? '' : ' It won’t appear in outfits until it’s back.'}`, pieces: [{ ...p, status: a.status }], undoId };
     },
     async wash_done(userId) {
       const ids = await availability.laundryIds(userId);
@@ -198,8 +199,16 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
       if (r.none) return notFound(a);
       if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
       const p = r.piece;
-      const extra = p.status === 'Available' ? '' : `${p.statusNote && p.status === 'Borrowed' ? ` (with ${p.statusNote})` : ''}${p.expectedBack ? `, expected back ${p.expectedBack}` : ''}`;
-      return { reply: `Your ${lower(p)} is ${WHERE[p.status]}${extra}.${p.rehome ? ` It is marked “${p.rehome.label}”.` : ''}`, pieces: [p], context: { pieceId: p.id } };
+      if (a.tailor && p.status !== 'At tailor') {
+        const why = p.care ? ` It ${p.status === 'Needs alteration' ? 'needs an alteration' : 'needs a repair'} (${p.care.reason.toLowerCase()}) but hasn’t been sent yet.` : '';
+        return { reply: `Your ${lower(p)} isn’t at the tailor — it is ${WHERE_STATE[p.status]}.${why}`, pieces: [p], context: { pieceId: p.id } };
+      }
+      let extra = '';
+      if (p.status === 'Borrowed') extra = `${p.statusNote ? ` (with ${p.statusNote})` : ''}${p.expectedBack ? `, expected back ${p.expectedBack}` : ''}`;
+      else if (p.status === 'At tailor') extra = `${p.care && p.care.tailor ? ` (${p.care.tailor})` : ''}${p.care ? ` for ${p.care.kind === 'alteration' ? 'an alteration' : 'a repair'}: ${p.care.reason.toLowerCase()}` : ''}${p.expectedBack ? `. Expected back ${p.expectedBack}` : ''}`;
+      else if (p.care) extra = ` (${p.care.reason.toLowerCase()})`;
+      else if (p.status !== 'Available' && p.expectedBack) extra = `, expected back ${p.expectedBack}`;
+      return { reply: `Your ${lower(p)} is ${WHERE[p.status]}${extra}.`, pieces: [p], context: { pieceId: p.id } };
     },
     async laundry_list(userId) {
       const ids = await availability.laundryIds(userId);
@@ -245,26 +254,62 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
       const undoId = await logAction(userId, 'keep_piece', { type: 'snooze', key: `keep:${r.piece.id}` });
       return { reply: k.message, context: { pieceId: r.piece.id }, undoId };
     },
-    async rehome_piece(userId, a, ctx, pieceId) {
+    async donate_piece(userId, a, ctx, pieceId) {
       const r = await pieceFor(userId, a, ctx, pieceId);
       if (r.none) return notFound(a);
       if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
-      const method = a.how === 'give' ? 'give' : a.how === 'sell' ? 'sell' : 'donate';
-      const p = await wardrobe().startRehome(userId, r.piece.id, method);
-      const undoId = await logAction(userId, 'rehome_piece', { type: 'rehome', itemId: p.id });
-      return { reply: `Marked your ${lower(p)} “${p.rehome.label}”. It stays in your closet until it has left; Closet won’t suggest it in outfits meanwhile. When it’s gone, say “I donated the ${lower(p)}”.`, pieces: [p], context: { pieceId: p.id }, undoId };
+      const p = await wardrobe().donate(userId, r.piece.id);
+      const undoId = await logAction(userId, 'donate_piece', { type: 'donate', itemId: p.id });
+      return { reply: `Marked your ${lower(p)} Ready to donate. It stays under Donation until it has left; Closet won’t suggest it in outfits meanwhile. When it’s gone, say “I donated the ${lower(p)}”.`, pieces: [p], context: { pieceId: p.id }, undoId };
     },
-    async rehome_done(userId, a, ctx, pieceId) {
+    async donate_done(userId, a, ctx, pieceId) {
       const r = await pieceFor(userId, a, ctx, pieceId);
       if (r.none) return notFound(a);
       if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
       const p = r.piece;
-      if (!p.rehome) {
-        await wardrobe().startRehome(userId, p.id, a.how === 'give' ? 'give' : a.how === 'sell' ? 'sell' : 'donate');
-        return { reply: `I’ve marked your ${lower(p)} as ready to donate. Open the piece and tap “Mark as donated” to confirm it has left — that removes it from your active closet.`, pieces: [p], confirmRehome: p.id, context: { pieceId: p.id } };
+      if (p.status !== 'Ready to donate') {
+        await wardrobe().donate(userId, p.id);
+        return { reply: `I’ve marked your ${lower(p)} as ready to donate. Open Donation and tap “Mark as donated” to confirm it has left — that removes it from your active closet.`, pieces: [p], confirmDonation: p.id, context: { pieceId: p.id } };
       }
-      const done = await wardrobe().completeRehome(userId, p.id);
-      return { reply: `${done.effect} Your ${lower(p)} has left your active closet. Nothing was added to your shopping bag.`, rehomed: done.piece };
+      const done = await wardrobe().donationDone(userId, p.id);
+      return { reply: `${done.effect} Your ${lower(p)} has left your active closet. Nothing was added to your shopping bag.`, donated: done.piece };
+    },
+    async donation_list(userId) {
+      const d = await wardrobe().donation(userId);
+      if (!d.ready.length) return { reply: `Nothing is waiting to be donated.${d.count ? ` You have donated ${d.count} piece${d.count === 1 ? '' : 's'} so far.` : ''} Ask “What could I donate?” for ideas.` };
+      return { reply: `${d.ready.length} piece${d.ready.length === 1 ? ' is' : 's are'} ready to donate: ${d.ready.map((p) => `${lower(p)} (marked ${p.markedOn})`).join(', ')}. Open Donation to mark them as donated once they’ve left.`, pieces: d.ready, piecesTitle: 'Ready to donate' };
+    },
+    // ---------- v1.6 Care and Borrow & lend ----------
+    async care_list(userId) {
+      const c = await availability.care(userId);
+      const lines = [
+        ...c.needsRepair.map((p) => `${label(p)} needs a repair: ${p.care ? p.care.reason.toLowerCase() : 'no reason given'}`),
+        ...c.needsAlteration.map((p) => `${label(p)} needs an alteration: ${p.care ? p.care.reason.toLowerCase() : 'no reason given'}`),
+        ...c.atTailor.map((p) => `${label(p)} is at the tailor${p.care && p.care.tailor ? ` (${p.care.tailor})` : ''}, expected back ${p.statusUntil}${p.due ? ' — ready to collect' : ''}`),
+      ];
+      if (!lines.length) return { reply: `Nothing needs repair or alteration, and nothing is at the tailor.${c.laundry ? ` ${c.laundry} piece${c.laundry === 1 ? ' is' : 's are'} in the laundry.` : ''}` };
+      return { reply: `• ${lines.join('\n• ')}`, pieces: [...c.needsRepair, ...c.needsAlteration, ...c.atTailor], piecesTitle: 'In Care' };
+    },
+    async lend_piece(userId, a, ctx, pieceId) {
+      const r = await resolve(userId, a.piece, pieceId, (p) => p.status === 'Available');
+      if (r.none) return notFound(a);
+      if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
+      const p = r.piece;
+      if (p.status !== 'Available') return { reply: `Your ${lower(p)} is ${WHERE[p.status]}, so it can’t be lent right now.`, pieces: [p] };
+      const due = a.date || addDays(isoDay(Date.now()), 7);
+      await availability.lend(userId, p.id, { person: a.person, dueOn: due });
+      const undoId = await logAction(userId, 'lend_piece', { type: 'lend', itemId: p.id });
+      return { reply: `Done: your ${lower(p)} is lent to ${a.person}, due back ${due}. It won’t appear in outfits until it’s back.`, pieces: [{ ...p, status: 'Borrowed' }], undoId, context: { pieceId: p.id } };
+    },
+    async unpacked(userId) {
+      const trips = packing ? await packing().trips(userId) : [];
+      const t = trips.filter((x) => x.endDate >= isoDay(Date.now())).sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
+      if (!t) return { reply: 'You have no upcoming trip. Plan one in Packing.' };
+      const pieces = (await wardrobe().allPieces(userId)).filter((p) => t.itemIds.includes(p.id));
+      const left = pieces.filter((p) => p.status !== 'Packed');
+      if (!left.length) return { reply: `Everything for ${t.destination} is packed (${pieces.length} pieces).` };
+      const blocked = left.filter((p) => p.status !== 'Available');
+      return { reply: `For ${t.destination} (${t.startDate}) you still need to pack ${left.length} of ${pieces.length} pieces.${blocked.length ? ` ${blocked.map((p) => `Your ${lower(p)} is ${WHERE[p.status]}`).join('; ')}.` : ''}`, pieces: left, piecesTitle: 'Not packed yet' };
     },
     async seasonal(userId, a) {
       const s = await proactive().seasonal(userId);
@@ -309,13 +354,9 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
       return { reply: m.alerts.map((x) => x.message).join('\n'), alerts: m.alerts, link: '#/planner' };
     },
     async event_rescue(userId, a) {
-      const r = await rec().recommend(userId, { occasion: a.occasion, date: a.date || undefined });
-      if (r.outfits.length) {
-        return { reply: `You already have what you need. Here are your ${r.outfits.length} strongest ${r.levelName.toLowerCase()} options for ${a.occasion.toLowerCase()}${a.date ? ` on ${a.date}` : ''}, all Available now (${r.weather.tempC} °C).`, outfits: r.outfits, context: { occasion: a.occasion, date: a.date } };
-      }
-      const g = await proactive().gaps(userId);
-      const gap = g.gaps.find((x) => x.level === r.level);
-      return { reply: `I couldn’t build a complete ${r.levelName.toLowerCase()} outfit from what’s Available${gap ? `: you’re missing ${gap.message.replace(/^0 /, 'any ')}` : ''}. ${r.note || ''}`.trim(), gaps: gap ? [gap] : [], shopping: Boolean(gap) };
+      const r = await proactive().rescue(userId, { occasion: a.occasion, date: a.date || null });
+      if (r.solved) return { reply: r.message, outfits: r.outfits, context: { occasion: a.occasion, date: a.date } };
+      return { reply: r.message, gaps: r.gap ? [r.gap] : [], shopping: r.shopping };
     },
     async trip_pack(userId, a) {
       const start = a.date || addDays(isoDay(Date.now()), 7);
@@ -358,7 +399,8 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
       if (a.undo.type === 'hide') await outfits().unhide(userId, a.undo.itemId);
       if (a.undo.type === 'shopping') await shopping().removeFromList(userId, a.undo.itemId).catch(() => null);
       if (a.undo.type === 'snooze') await proactive().unsnooze(userId, a.undo.key);
-      if (a.undo.type === 'rehome') await wardrobe().cancelRehome(userId, a.undo.itemId).catch(() => null);
+      if (a.undo.type === 'donate') await wardrobe().cancelDonation(userId, a.undo.itemId).catch(() => null);
+      if (a.undo.type === 'lend') await availability.returned(userId, a.undo.itemId).catch(() => null);
       await repo.markUndone(id);
       return { undone: true, function: a.function };
     },

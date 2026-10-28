@@ -3,10 +3,10 @@ import React, { useMemo, useState } from 'react';
 import { api } from '../api.js';
 import { CATEGORY_LABEL, Chips, Empty, Icon, Modal, PageHead, PieceCard, Skeleton, SprintTag, STATUS_LABEL, Tabs, useApp, useLoad } from '../ui.jsx';
 
-export default function ClosetScreen() {
+export default function ClosetScreen({ query: q = {} }) {
   const { vocab } = useApp();
   const [category, setCategory] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState(q.status || '');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState('new');
   const all = useLoad(() => api.items(), []);
@@ -66,6 +66,8 @@ export default function ClosetScreen() {
 function GapsModal({ onClose }) {
   const { vocab } = useApp();
   const { data } = useLoad(() => api.gaps(), []);
+  const smart = useLoad(() => api.smartGaps(), []); // v1.6: the same gaps with confidence, priority and reasons
+  const conf = (g) => (smart.data?.gaps || []).find((x) => x.group === g.group && x.level === g.level);
   return (
     <Modal wide title="Closet gaps" sub="How many pieces you have at each dress-code level. A gap is one piece or fewer at a level you dress for." onClose={onClose}>
       <div className="row" style={{ marginBottom: 14 }}><SprintTag n={1} /><span className="small muted">US-64 · levels you dress for: {data ? data.levels.map((l) => l.name).join(', ') : '…'}</span></div>
@@ -84,7 +86,11 @@ function GapsModal({ onClose }) {
           </table>
           <div className="stack" style={{ marginTop: 16, gap: 8 }}>
             {!data.gaps.length ? <div className="notice ok small">No gaps: at least two pieces of each kind for every level you dress for.</div>
-              : data.gaps.map((g) => <div key={g.group + g.level} className="notice warn small"><Icon name="tag" size={16} />Gap: {g.message}</div>)}
+              : data.gaps.map((g) => { const c = conf(g); return (
+                <div key={g.group + g.level} className="notice warn small" style={{ display: 'block' }}>
+                  <div className="row" style={{ gap: 8 }}><Icon name="tag" size={16} /><span className="grow">Gap: {g.message}</span>{c && <span className={`tag ${c.confidence === 'HIGH' ? 'rose' : c.confidence === 'MEDIUM' ? 'warn' : 'plain'}`}>{c.confidence} confidence · {c.priority}</span>}</div>
+                  {c && c.reasons?.length > 0 && <ul className="tiny muted" style={{ margin: '6px 0 0 24px' }}>{c.reasons.slice(0, 3).map((x) => <li key={x}>{x}</li>)}</ul>}
+                </div>); })}
           </div>
           <a className="btn line sm" href="#/shopping" style={{ marginTop: 14 }} onClick={onClose}><Icon name="bag" size={14} />What should I buy? <SprintTag n={3} short /></a>
         </>

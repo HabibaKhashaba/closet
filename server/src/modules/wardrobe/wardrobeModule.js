@@ -4,7 +4,8 @@ const express = require('express');
 const multer = require('multer');
 const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
-const { CATEGORIES, COLOURS, FABRICS, SEASONS, STYLES, STATUSES, DELETE_REASONS, CURRENCIES, REHOME_METHODS } = require('../../shared/vocabulary');
+const { isOwned } = require('../../shared/lifecycle');
+const { CATEGORIES, COLOURS, FABRICS, SEASONS, STYLES, STATUSES, DELETE_REASONS, CURRENCIES, DONATED } = require('../../shared/vocabulary');
 const { costPerWear } = require('../intelligence/insights');
 const { TOPICS } = require('../../events/eventBus');
 const { sniffType } = require('./photoStorage');
@@ -58,7 +59,8 @@ function toApi(row, info, storage) {
     currency: row.price === null || row.price === undefined ? null : (row.currency || 'EGP'),
     purchaseDate: row.purchase_date ? String(row.purchase_date).slice(0, 10) : null,
     costPerWear: costPerWear({ price: row.price === null || row.price === undefined ? null : Number(row.price), currency: row.currency, wearCount: row.wear_count }),
-    rehome: row.rehome_method ? { method: row.rehome_method, label: { donate: 'Ready to donate', give: 'Ready to give away', sell: 'Ready to sell / rehome' }[row.rehome_method], since: row.rehome_started } : null,
+    care: st.care || null,   // open repair / alteration (Care)
+    loan: st.loan || null,   // open loan (Borrow & lend)
     photoUrl: storage.signedUrl(row.photo_key),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -80,8 +82,7 @@ function wardrobeRepository(db) {
     // Every query is scoped by user_id: a user can never reach another user's pieces.
     async list(userId, category) {
       const { rows } = await db.query(
-        `SELECT i.*, r.method AS rehome_method, r.started_at AS rehome_started FROM wardrobe.items i
-           LEFT JOIN wardrobe.rehoming r ON r.item_id = i.id
+        `SELECT i.* FROM wardrobe.items i
           WHERE i.user_id = $1 AND ($2::text IS NULL OR i.category = $2)
          ORDER BY i.created_at DESC`,
         [userId, category || null],
@@ -90,20 +91,8 @@ function wardrobeRepository(db) {
     },
     async get(userId, id) {
       if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
-      const { rows } = await db.query(`SELECT i.*, r.method AS rehome_method, r.started_at AS rehome_started FROM wardrobe.items i
-        LEFT JOIN wardrobe.rehoming r ON r.item_id = i.id WHERE i.id = $1 AND i.user_id = $2`, [id, userId]);
+      const { rows } = await db.query('SELECT i.* FROM wardrobe.items i WHERE i.id = $1 AND i.user_id = $2', [id, userId]);
       return rows[0] || null;
-    },
-    // Rehoming (v1.5): the piece is still owned until the user confirms it has left.
-    async startRehome(userId, id, method) {
-      const { rows } = await db.query(`INSERT INTO wardrobe.rehoming (item_id, user_id, method)
-        SELECT id, user_id, $3 FROM wardrobe.items WHERE id = $1 AND user_id = $2
-        ON CONFLICT (item_id) DO UPDATE SET method = EXCLUDED.method RETURNING item_id`, [id, userId, method]);
-      return rows.length === 1;
-    },
-    async cancelRehome(userId, id) {
-      const { rowCount } = await db.query('DELETE FROM wardrobe.rehoming WHERE item_id = $1 AND user_id = $2', [id, userId]);
-      return rowCount === 1;
     },
     async update(userId, id, d) {
       const { rows } = await db.query(
@@ -211,24 +200,35 @@ function wardrobeService({ repo, storage, bus, availability, profile }) {
     },
     async deletions(userId) { return repo.deletions(userId); },
 
-    // v1.5 Donate / give / sell: two steps, the user stays in control.
-    //   start  → "Ready to donate": still in the closet, left out of new outfits
-    //   done   → leaves the active closet with reason Donated / Given away / Sold / rehomed (history kept, no replacement)
-    //   cancel → back to normal
-    async startRehome(userId, id, method) {
+    // v1.6 Donation (donate only): two steps, the user stays in control.
+    //   donate → status Ready to donate: still in the closet, left out of new outfits, listed under Donation
+    //   done   → archived with reason Donated: leaves the active closet, wear history kept, NO replacement
+    //   cancel → Available again
+    async donate(userId, id) {
       const p = await this.getPiece(userId, id);
-      if (!(await repo.startRehome(userId, id, method))) throw errors.notFound('Piece');
-      return { ...p, rehome: { method, label: { donate: 'Ready to donate', give: 'Ready to give away', sell: 'Ready to sell / rehome' }[method], since: new Date().toISOString() } };
-    },
-    async cancelRehome(userId, id) {
-      if (!(await repo.cancelRehome(userId, id))) throw errors.notFound('Donation');
+      if (p.status !== 'Ready to donate') await availability.setStatus(userId, id, 'Ready to donate');
       return this.getPiece(userId, id);
     },
-    async completeRehome(userId, id) {
+    async cancelDonation(userId, id) {
       const p = await this.getPiece(userId, id);
-      if (!p.rehome) throw errors.conflict('NOT_MARKED', 'Mark the piece as ready to donate, give or sell first.');
-      const reason = REHOME_METHODS[p.rehome.method];
-      return { ...(await this.deletePiece(userId, id, reason)), piece: { id: p.id, name: p.name, category: p.category, colour: p.colour } };
+      if (p.status !== 'Ready to donate') throw errors.conflict('NOT_MARKED', 'This piece is not waiting to be donated.');
+      await availability.setStatus(userId, id, 'Available');
+      return this.getPiece(userId, id);
+    },
+    async donationDone(userId, id) {
+      const p = await this.getPiece(userId, id);
+      if (p.status !== 'Ready to donate') throw errors.conflict('NOT_MARKED', 'Mark the piece as ready to donate first.');
+      return { ...(await this.deletePiece(userId, id, DONATED)), piece: { id: p.id, name: p.name, category: p.category, colour: p.colour } };
+    },
+    // Donation area: what is waiting to be taken, and what has been donated (history, newest first).
+    async donation(userId) {
+      const pieces = await this.allPieces(userId);
+      const ready = pieces.filter((p) => p.status === 'Ready to donate').map((p) => ({
+        ...p, markedOn: p.statusSince ? new Date(p.statusSince).toISOString().slice(0, 10) : null,
+        daysSinceWorn: p.lastWornAt ? Math.floor((Date.now() - new Date(p.lastWornAt)) / 86400000) : null,
+      })).sort((a, b) => String(a.markedOn).localeCompare(String(b.markedOn)));
+      const donated = (await repo.deletions(userId)).filter((d) => d.reason === DONATED);
+      return { ready, donated: donated.map((d) => ({ name: d.name, category: d.category, colour: d.colour, wearCount: d.wearCount, donatedAt: d.deletedAt })), count: donated.length };
     },
 
     async gaps(userId) {
@@ -239,7 +239,7 @@ function wardrobeService({ repo, storage, bus, availability, profile }) {
     // v1.5 duplicate detection on Add (also used by Ask Closet and Smart Shopping through similarOwned).
     async similar(userId, d) {
       const { similarOwned } = require('../shopping/shoppingModule');
-      const pieces = (await this.allPieces(userId)).filter((p) => !p.rehome);
+      const pieces = (await this.allPieces(userId)).filter(isOwned);
       const want = { category: d.category, colour: d.colour, styles: d.styles || [], dressCodes: d.dressCodes || [], season: d.season };
       const list = similarOwned(pieces, want);
       const noun = { Top: 'top', Dress: 'dress', Bottom: 'bottom', Layer: 'layer', Shoes: 'pair of shoes', Bag: 'bag', Extra: 'accessory' }[d.category];
@@ -295,14 +295,14 @@ function wardrobeRoutes({ wardrobe }) {
   r.post('/similar', v.body({ ...Object.fromEntries(Object.entries(detailsSchema).map(([k, x]) => [k, { ...x, required: ['category', 'colour'].includes(k) }])), dressCodes: { ...detailsSchema.dressCodes, required: false } }), async (req, res, next) => {
     try { res.json(await wardrobe.similar(req.user.id, req.valid)); } catch (e) { next(e); }
   });
-  r.post('/:id/rehome', v.body({ method: { type: 'enum', values: Object.keys(REHOME_METHODS), required: true, label: 'How' } }), async (req, res, next) => {
-    try { res.json(await wardrobe.startRehome(req.user.id, req.params.id, req.valid.method)); } catch (e) { next(e); }
+  r.post('/:id/donate', async (req, res, next) => {
+    try { res.json(await wardrobe.donate(req.user.id, req.params.id)); } catch (e) { next(e); }
   });
-  r.delete('/:id/rehome', async (req, res, next) => {
-    try { res.json(await wardrobe.cancelRehome(req.user.id, req.params.id)); } catch (e) { next(e); }
+  r.delete('/:id/donate', async (req, res, next) => {
+    try { res.json(await wardrobe.cancelDonation(req.user.id, req.params.id)); } catch (e) { next(e); }
   });
-  r.post('/:id/rehome/done', async (req, res, next) => {
-    try { res.json(await wardrobe.completeRehome(req.user.id, req.params.id)); } catch (e) { next(e); }
+  r.post('/:id/donate/done', async (req, res, next) => {
+    try { res.json(await wardrobe.donationDone(req.user.id, req.params.id)); } catch (e) { next(e); }
   });
   r.get('/', v.query(filterSchema), async (req, res, next) => {
     try { res.json(await wardrobe.browse(req.user.id, req.validQuery)); } catch (e) { next(e); }
@@ -345,7 +345,11 @@ function registerWardrobe({ db, repo: givenRepo, bus, storage, availability, pro
   gapsRouter.get('/', async (req, res, next) => {
     try { res.json(await service.gaps(req.user.id)); } catch (e) { next(e); }
   });
-  return { service, routes: wardrobeRoutes({ wardrobe: service }), photos: photoRoutes({ storage }), gaps: gapsRouter };
+  const donationRouter = express.Router();
+  donationRouter.get('/', async (req, res, next) => {
+    try { res.json(await service.donation(req.user.id)); } catch (e) { next(e); }
+  });
+  return { service, routes: wardrobeRoutes({ wardrobe: service }), photos: photoRoutes({ storage }), gaps: gapsRouter, donation: donationRouter };
 }
 
 module.exports = { registerWardrobe, wardrobeService, wardrobeRepository, detailsSchema, editSchema, toApi };

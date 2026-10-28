@@ -1,6 +1,7 @@
 // Recommendation Engine (Pipe & Filter): filter → combine → score → explain.
 // Pure functions only, so every rule can be unit tested. The scorer is a Strategy:
 // a learned scorer can replace ruleScorer later without changing the callers.
+const { isLeaving } = require('../../shared/lifecycle');
 const { DRESS_CODES, OCCASIONS } = require('../../shared/vocabulary');
 
 const NEUTRALS = ['Black', 'White', 'Grey', 'Beige', 'Navy', 'Brown'];
@@ -21,7 +22,7 @@ function filterPieces(pieces, { level, prefs = {}, weather, hiddenIds = [], toda
   const repeat = prefs.repeatDays || 0; // recycle time: do not repeat a piece worn in the last N days
   return pieces.filter((p) => {
     if (p.status !== 'Available') return false; // US-17: never an unavailable piece
-    if (p.rehome) return false; // being donated / given away: the user decided it is leaving
+    if (isLeaving(p)) return false; // ready to donate: the user decided it is leaving
     if (hidden.has(p.id)) return false; // US-61: hidden for 7 days
     if (prefs.modest && !p.modest) return false; // US-21: modest respected
     if ((isMain(p) || isAccent(p)) && !p.dressCodes.includes(level)) return false; // US-21: suits the dress code

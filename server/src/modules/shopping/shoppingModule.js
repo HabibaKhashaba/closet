@@ -5,6 +5,7 @@
 //   Never: a replacement or suggestion that matches a piece deleted as "No longer my style" (US-34).
 //   "Do I need this?" (US-88) and the duplicate warning (US-65) use the similarity score below.
 // Requires IWardrobe, IPreferences and the engine; owns only shopping.decisions and shopping.list_items.
+const { isOwned } = require('../../shared/lifecycle');
 const express = require('express');
 const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
@@ -33,7 +34,7 @@ const NOUN = { Top: 'top', Dress: 'dress', Bottom: 'bottom', Layer: 'layer', Sho
 // v1.5: every piece the user OWNS counts (a piece in the laundry is still part of the wardrobe), so a
 // full laundry basket never makes a purchase look more useful than it is. Pieces being donated do not count.
 function outfitsWith(pieces, hyp, { level, prefs }) {
-  const available = pieces.filter((p) => !p.rehome).map((p) => ({ ...p, status: 'Available' }));
+  const available = pieces.filter(isOwned).map((p) => ({ ...p, status: 'Available' }));
   const pool = engine.filterPieces([...available, hyp], { level, prefs: { ...prefs, repeatDays: 0 } });
   if (!pool.some((p) => p.id === hyp.id)) return { count: 0, pairs: [] };
   const combos = engine.combine(pool, { fixedId: hyp.id, cap: 8 }).filter((o) => engine.ruleScore(engine.criteria(o, { level, prefs })) >= 83);
@@ -184,7 +185,7 @@ function shoppingService({ db, repo: givenRepo, wardrobe, profile }) {
     // nothing is saved. Reuses duplicate detection (similarity) and gap confidence.
     async impact(userId, { category, colour, styles, dressCodes, season, fabric, name }) {
       const [pieces, prefs] = await Promise.all([wardrobe().allPieces(userId), profile.preferences(userId)]);
-      const owned = pieces.filter((p) => !p.rehome);
+      const owned = pieces.filter(isOwned);
       const levels = dressCodes && dressCodes.length ? dressCodes : wantFor(prefs, category, colour || 'Black').dressCodes;
       const similar = colour ? similarOwned(owned, { category, colour, styles: styles || prefs.styles || [], dressCodes: levels, season, name }) : owned.filter((p) => p.category === category && (!name || subtypeOf(p) === null || subtypeOf(p) === subtypeOf({ name })));
       const gaps = closetGaps(owned.map((p) => ({ category: p.category, dressCodes: p.dressCodes })), prefs).gaps.map((g) => ins.gapConfidence(g, owned, prefs));

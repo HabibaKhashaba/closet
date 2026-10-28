@@ -106,7 +106,10 @@ export function PageHead({ title, sub, sprint, actions, eyebrow }) {
 // ---------- garments ----------
 export const CATEGORY_LABEL = { Top: 'Tops', Bottom: 'Bottoms', Dress: 'Dresses', Layer: 'Outerwear', Shoes: 'Shoes', Bag: 'Bags', Extra: 'Accessories' };
 export const CATEGORY_ONE = { Top: 'Top', Bottom: 'Bottom', Dress: 'Dress', Layer: 'Outerwear', Shoes: 'Shoes', Bag: 'Bag', Extra: 'Accessory' };
-export const STATUS_LABEL = { Available: 'Available', Laundry: 'In laundry', Borrowed: 'Borrowed', Packed: 'Packed', Unavailable: 'Unavailable' };
+// The garment lifecycle (server: shared/lifecycle.js; the allowed moves come from GET /vocabulary).
+export const STATUS_LABEL = { Available: 'Available', Laundry: 'In laundry', Borrowed: 'Borrowed', Packed: 'Packed', 'Needs repair': 'Needs repair', 'Needs alteration': 'Needs alteration', 'At tailor': 'At tailor', 'Ready to donate': 'Ready to donate', Unavailable: 'Unavailable' };
+// CSS class for a status badge: "At tailor" → "At-tailor" (one class, no spaces).
+export const statusClass = (s) => `status ${String(s || 'Available').replace(/\s+/g, '-')}`;
 export const COLOUR_SWATCH = {
   Black: '#26232a', White: '#f8f6f2', Grey: '#a3a0a4', Beige: '#dcc7aa', Brown: '#7b5538', Navy: '#28365c', Blue: '#86a7d1', Green: '#94b090',
   Red: '#b8323f', Pink: '#e8b4c0', Purple: '#8f6eaa', Yellow: '#e3c062', Orange: '#e39a6b', Multicolour: 'conic-gradient(#e8b4c0,#e3c062,#94b090,#86a7d1,#8f6eaa,#e8b4c0)',
@@ -126,7 +129,7 @@ export function Tile({ piece, status = true, children, className = '', dim, onCl
   return (
     <div className={`tile ${piece.category} ${dim || (status && piece.status !== 'Available') ? 'dim' : ''} ${className}`} onClick={onClick} style={style}>
       <img src={piece.photoUrl} alt={pieceName(piece)} loading="lazy" />
-      {status && piece.status && piece.status !== 'Available' && <span className={`status ${piece.status}`}>{STATUS_LABEL[piece.status]}</span>}
+      {status && piece.status && piece.status !== 'Available' && <span className={statusClass(piece.status)}>{STATUS_LABEL[piece.status]}</span>}
       {children}
     </div>
   );
@@ -185,7 +188,7 @@ export function Look({ pieces, onSwap, labels = false, className = '', style, an
           <img src={p.photoUrl} alt={pieceName(p)} loading="lazy" onClick={onSwap ? () => onSwap(i) : undefined} title={onSwap ? `Replace ${pieceName(p).toLowerCase()}` : undefined} />
           {labels && <span className="look-label">{pieceName(p)}</span>}
           {onSwap && <button type="button" className="slot-btn" onClick={() => onSwap(i)}><Icon name="swap" size={13} /> Change</button>}
-          {p.status && p.status !== 'Available' && !p.backBy && <span className={`status ${p.status}`}>{STATUS_LABEL[p.status]}</span>}
+          {p.status && p.status !== 'Available' && !p.backBy && <span className={statusClass(p.status)}>{STATUS_LABEL[p.status]}</span>}
         </div>
       ))}
     </div>

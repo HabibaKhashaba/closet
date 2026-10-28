@@ -16,10 +16,11 @@ const byName = async (name) => (await get('/items')).items.find((p) => p.name ==
 beforeEach(async () => { local = createLocalApi(); await local.ready; });
 
 describe('Offline demo = real services on in-memory data', () => {
-  test('OF-01 seeded like npm run seed: 30 pieces, 3 in the laundry, the denim jacket forgotten for 104 days', async () => {
+  test('OF-01 seeded like npm run seed: 31 pieces, 3 in the laundry, 1 waiting for a repair, the denim jacket forgotten for 104 days', async () => {
     const items = await get('/items');
-    expect(items.total).toBe(30);
+    expect(items.total).toBe(31);
     expect(items.counts.status.Laundry).toBe(3);
+    expect(items.counts.status['Needs repair']).toBe(1);
     expect((await get('/intelligence/forgotten')).top).toMatchObject({ days: 104, piece: { name: 'Denim jacket' } });
   });
   test('OF-02 without the session token every protected call is 401', async () => {
@@ -61,8 +62,10 @@ describe('Offline demo = real services on in-memory data', () => {
   test('OF-07 Donate: mark → done → gone from the closet, no replacement, history kept', async () => {
     const denim = await byName('Denim jacket');
     const bag = (await get('/shopping/list')).items.length;
-    await call('POST', `/items/${denim.id}/rehome`, { method: 'donate' });
-    expect((await call('POST', `/items/${denim.id}/rehome/done`)).data.reason).toBe('Donated');
+    await call('POST', `/items/${denim.id}/donate`);
+    expect((await get('/donation')).ready.map((p) => p.name)).toEqual(['Denim jacket']);
+    expect((await call('POST', `/items/${denim.id}/donate/done`)).data.reason).toBe('Donated');
+    expect((await get('/donation')).count).toBe(1);
     expect(await byName('Denim jacket')).toBeUndefined();
     expect((await get('/shopping/list')).items).toHaveLength(bag);
     expect(local.store.deletions.some((d) => d.name === 'Denim jacket' && d.reason === 'Donated')).toBe(true);
@@ -73,10 +76,30 @@ describe('Offline demo = real services on in-memory data', () => {
     const saved = serializeStore(local.store);
     local = createLocalApi({ saved }); await local.ready;
     expect((await byName('Navy blazer')).status).toBe('Laundry');
-    expect((await get('/items')).total).toBe(30);
+    expect((await get('/items')).total).toBe(31);
   });
   test('OF-09 the planned-outfit monitor sees the warmer forecast on the seeded presentation outfit', async () => {
     const a = (await get('/intelligence/monitor')).alerts;
     expect(a.some((x) => x.kind === 'weather' && /navy blazer/.test(x.message))).toBe(true);
+  });
+  test('OF-10 Care offline: Needs alteration → At tailor → Care lists it → not styled → Mark collected → Available', async () => {
+    const bb = await byName('Black blazer');
+    await call('POST', `/items/${bb.id}/care`, { kind: 'alteration', reason: 'Sleeves too long' });
+    const due = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+    expect((await call('POST', `/items/${bb.id}/care/tailor`, { tailor: 'Hany', expectedBack: due })).data.status).toBe('At tailor');
+    expect((await get('/care')).atTailor.map((p) => p.name)).toEqual(['Black blazer']);
+    expect((await call('POST', '/recommendations', { occasion: 'Work', fixedId: bb.id })).data.outfits).toHaveLength(0);
+    expect((await call('POST', `/items/${bb.id}/care/done`)).data.status).toBe('Available');
+    expect((await get('/care')).history[0]).toMatchObject({ name: 'Black blazer', outcome: 'collected' });
+  });
+  test('OF-11 Borrow & lend offline: Lend item → Borrowed + Ask “Who has my black blazer?” → Mark returned, history kept', async () => {
+    const bb = await byName('Black blazer');
+    const due = new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10);
+    await call('POST', `/items/${bb.id}/lend`, { person: 'Nour', dueOn: due });
+    expect((await get('/lending')).current.map((p) => p.name)).toContain('Black blazer');
+    expect((await call('POST', '/chat', { message: 'Who has my black blazer?' })).data.reply).toMatch(/Nour/);
+    await call('POST', `/items/${bb.id}/return`);
+    expect((await byName('Black blazer')).status).toBe('Available');
+    expect((await get('/lending')).history.some((h) => h.name === 'Black blazer' && h.person === 'Nour')).toBe(true);
   });
 });
