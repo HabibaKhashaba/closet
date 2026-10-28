@@ -1,0 +1,65 @@
+ℹ file                       | line % | branch % | funcs % | uncovered lines
+ℹ src                        |        |          |         | 
+ℹ  app.js                    |  95.80 |    85.71 |   93.55 | 109-113
+ℹ  config.js                 |  92.59 |    40.00 |  100.00 | 9-10
+ℹ  db                        |        |          |         | 
+ℹ   memoryRepositories.js    |  93.36 |    68.42 |   65.57 | 68-72 102-106 148-149 157-159
+ℹ   seedData.js              | 100.00 |    90.00 |  100.00 | 
+ℹ  events                    |        |          |         | 
+ℹ   eventBus.js              | 100.00 |   100.00 |  100.00 | 
+ℹ  gateway                   |        |          |         | 
+ℹ   accessControl.js         | 100.00 |   100.00 |  100.00 | 
+ℹ   audit.js                 | 100.00 |    87.50 |   95.00 | 
+ℹ   authenticate.js          | 100.00 |   100.00 |  100.00 | 
+ℹ   errorHandler.js          |  92.86 |    80.00 |  100.00 | 17-18
+ℹ   security.js              |  83.33 |    66.67 |   75.00 | 38-46
+ℹ  modules                   |        |          |         | 
+ℹ   activity                 |        |          |         | 
+ℹ    activityModule.js       | 100.00 |    86.36 |  100.00 | 
+ℹ   admin                    |        |          |         | 
+ℹ    adminModule.js          | 100.00 |    65.63 |  100.00 | 
+ℹ   assistant                |        |          |         | 
+ℹ    assistantModule.js      |  83.33 |    60.17 |   80.25 | 59 105-107 122-125 170-173 205-208 211-214 217-219 230-231 263-265 272-274 276 283-286 290-297 304-309 316-317 321-325 329-335 342
+ℹ    keywordParser.js        | 100.00 |   100.00 |  100.00 | 
+ℹ    llmAdapter.js           |  97.75 |    70.97 |   87.50 | 74 77
+ℹ   availability             |        |          |         | 
+ℹ    availabilityModule.js   |  96.09 |    89.47 |   94.44 | 101 112 121-123 129-130
+ℹ    statusMachine.js        | 100.00 |   100.00 |  100.00 | 
+ℹ   identity                 |        |          |         | 
+ℹ    identityRepository.js   | 100.00 |   100.00 |  100.00 | 
+ℹ    identityRoutes.js       | 100.00 |    93.33 |  100.00 | 
+ℹ    identityService.js      |  93.27 |    90.91 |   91.67 | 95-101
+ℹ    passwords.js            | 100.00 |   100.00 |  100.00 | 
+ℹ    tokens.js               | 100.00 |   100.00 |  100.00 | 
+ℹ   intelligence             |        |          |         | 
+ℹ    health.js               | 100.00 |    88.33 |  100.00 | 
+ℹ    insights.js             |  99.72 |    86.61 |   94.16 | 301
+ℹ    intelligenceModule.js   |  99.17 |    80.82 |  100.00 | 180-181
+ℹ    learning.js             |  93.07 |    83.72 |   94.74 | 38-44
+ℹ    proactive.js            |  99.49 |    74.11 |   90.00 | 78
+ℹ   outfits                  |        |          |         | 
+ℹ    outfitsModule.js        |  97.35 |    81.88 |   89.01 | 15-16 76-77 184-185 278 288
+ℹ   packing                  |        |          |         | 
+ℹ    packingModule.js        | 100.00 |    76.70 |   94.55 | 
+ℹ   planner                  |        |          |         | 
+ℹ    plannerModule.js        |  98.01 |    74.44 |   88.00 | 159-161 264 267 279
+ℹ   privacy                  |        |          |         | 
+ℹ    privacyModule.js        | 100.00 |   100.00 |  100.00 | 
+ℹ   profile                  |        |          |         | 
+ℹ    profileModule.js        | 100.00 |    72.34 |  100.00 | 
+ℹ   recommendation           |        |          |         | 
+ℹ    engine.js               |  99.74 |    92.49 |   96.67 | 299
+ℹ    recommendationModule.js |  99.15 |    89.71 |   97.06 | 108
+ℹ    weatherAdapter.js       | 100.00 |    88.46 |   83.33 | 
+ℹ   shopping                 |        |          |         | 
+ℹ    shoppingModule.js       |  99.68 |    82.86 |   94.57 | 305
+ℹ   wardrobe                 |        |          |         | 
+ℹ    closetGaps.js           | 100.00 |    92.31 |  100.00 | 
+ℹ    photoStorage.js         | 100.00 |    92.50 |  100.00 | 
+ℹ    wardrobeModule.js       |  98.58 |    86.36 |   98.31 | 175-177 264-265
+ℹ  shared                    |        |          |         | 
+ℹ   deletionPolicy.js        | 100.00 |    91.67 |   90.91 | 
+ℹ   errors.js                | 100.00 |   100.00 |  100.00 | 
+ℹ   validate.js              |  98.98 |    97.62 |  100.00 | 58
+ℹ   vocabulary.js            | 100.00 |   100.00 |  100.00 | 
+ℹ all files                  |  97.24 |    83.42 |   91.09 | 

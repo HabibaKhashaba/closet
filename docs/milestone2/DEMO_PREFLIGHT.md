@@ -1,7 +1,7 @@
-# Closet — Demo preflight (Milestone 2)
+# Closet — Demo preflight (Milestone 2 final · build v1.5)
 
-Run this checklist **once, about 15 minutes before presenting**, on the laptop that will show the demo.
-Every value below was verified on 26 Oct 2026: three runs from a fresh seed gave identical results.
+Run this **once, about 15 minutes before presenting**, on the laptop that will show the demo.
+The expected values below come from `npm run demo:check` on build v1.5 (identical over 3 fresh seeds, 28 Oct 2026).
 
 ## 1. Start from a clean state (2 min)
 
@@ -12,49 +12,43 @@ WEATHER_MODE=estimate npm start                # (re)start the server AFTER seed
 npm run demo:check                             # must end with "Ready: every demo check passed."
 ```
 
-- **Restart the server for every rehearsal.** Sign-in is limited to 30 attempts per 15 minutes
-  (a security feature). Several rehearsals in a row without a restart hit the limit.
-- `WEATHER_MODE=estimate` uses the seasonal estimate instead of live weather, so the looks
-  cannot change because the weather changed. The app labels it "Seasonal estimate".
-- If `demo:check` prints a ✗, each line says what to fix. Do not present until it passes.
+- **Restart the server for every rehearsal.** Sign-in is limited to 30 attempts per 15 minutes (security feature).
+- `WEATHER_MODE=estimate` makes the weather repeatable (30 °C, labelled “Typical for the season”). The planned presentation was saved at 24 °C, so the Planner shows the weather-change alert.
+- If `demo:check` prints a ✗, the line says what to fix. Do not present until it passes.
 
 ## 2. Browser (1 min)
 
-- Chrome, one window, zoom 100 %, `http://localhost:4000`, bookmarks bar hidden.
-- Sign in as **demo@closet.app / Closet2026!** and leave it on Home.
-- Try-on photo: use only a photo of the team member who agreed to it. It stays in this browser
-  tab (session storage) and is never uploaded. Without a photo, the stylised avatar is used.
-- Backup: `Closet_Demo.html` (offline recording of the same flow) open in a second tab.
+- Chrome, one window, zoom 100 %, `http://localhost:4000`, bookmarks bar hidden. Sign in as **demo@closet.app / Closet2026!**, leave it on Home.
+- Try-on: only a photo of a team member who agreed to it. It stays in the browser tab and is never uploaded. Otherwise use the stylised avatar.
+- Backups, open in other tabs: `Closet_Demo.html` (offline demo — the **same services and rules** on in-memory data, works without a server or internet; Reset badge restores the seed) and `Closet_Demo_FINAL.mp4` (3:43).
 
 ## 3. What the audience will see (expected values)
 
-The seven “wow” moments are in **bold**; everything else supports them. Aim for 4–6 minutes.
+Aim for 5–6 minutes. **Bold** = the moment to pause on.
 
 | # | Step | Expected |
 |---|---|---|
-| 1 | Home | Greeting, weather (seasonal estimate), Today's Look, Wardrobe Health, forgotten pieces, upcoming event |
-| 2 | Closet → Navy blazer → **In laundry** | The blazer shows the Laundry status |
-| 3 | Laundry → **Wash done** | The blazer is in the basket (4 pieces), then “Available again.” |
-| 4 | **Style me → University → Generate 3 looks** | Exactly 3 looks: **Campus Stripes · Classic Midi · Relaxed Linen** — each with pieces, match %, weather and a reason |
-| 5 | **Click the top of LOOK 01 → choose a piece** | Tray: Sage linen shirt · Blue Oxford shirt · Red cropped tee; only that piece changes, the score moves, the change stays |
-| 6 | **Try on** → photo → next look → Favourite | The changed piece is worn; label “Virtual Try-On Preview · simulated on your photo” |
-| 7 | **Analytics → Forgotten pieces → Denim jacket → Another chance** | Exactly 3 looks, every one with the denim jacket |
-| 8 | **Mix & Match → Work → Start from a suggested look → top = Red cropped tee → Suggest a fix** | **98 % → 82 % → 98 %**, “red cropped tee → ivory silk blouse” |
-| 9 | **Closet → Silk scarf → Remove → Torn / damaged → Remove piece** | Scarf gone; the bag shows “Silk scarf” tagged **Replacement** with the reason |
-| 10 | Ask Closet: “Do I need beige trousers?” → “Add this to my shopping list” → Shopping bag | “Probably not. You already own 4 similar beige bottoms…”; bag item **Added by Ask Closet** with “You already own…” |
-| 11 | **Analytics → Closet has learned** → flip → Confirm → Undo | Cards start closed; evidence, confidence, Confirm / Not accurate; Confirm saves, Undo restores |
-| 12 | Home | Reflects the changes (closet now 29 pieces) |
+| 1 | Home | Today’s look, weather 30 °C (estimate), **Closet noticed** with at most 2 notices, **Still love it?** denim jacket · 104 days |
+| 2 | Closet → Navy blazer → **In laundry** | Status badge Laundry; it appears in the Laundry basket (4 pieces) |
+| 3 | Laundry → **Wash done** | “Available again.” — the basket is empty |
+| 4 | **Style me → University → Generate 3 looks** | **Campus Stripes · Clean Oxford · Relaxed Midi** — any two share at most one major garment |
+| 5 | Click the top of LOOK 01 | Tray: **Blue Oxford shirt 99 % · Sage linen shirt 99 % · Red cropped tee 90 %**; only that piece changes |
+| 6 | **Try on** → avatar or consenting photo → next look → Favourite | Label “Virtual Try-On Preview” — a simulated overlay; Favourite + Save keep one record |
+| 7 | Home → Still love it? → **Style it** | Three looks, every one with the denim jacket |
+| 8 | Closet → Denim jacket → donate it → **Donate** → Mark as donated | “Ready to donate” first; then gone, history kept, **nothing added to the Shopping bag** |
+| 9 | **Mix & Match → Work → Start from a suggested look → top = Red cropped tee → Suggest a fix** | **98 % → 82 % → 98 %** |
+| 10 | Closet → Silk scarf → Remove → **Torn / damaged** | Scarf gone; Shopping bag: “Silk scarf” tagged **Replacement** |
+| 11 | Ask Closet: “Do I need beige trousers?” → “Add this to my shopping list” → “Is my blazer clean?” → “Who has my rose wrap dress?” | “Probably not. You already own **2** similar beige bottoms…”; bag item **Added by Ask Closet**; “Your navy blazer is Available”; “with Nour for 12 days (expected back …)” |
+| 12 | **Planner** → weather alert → **Adjust outfit** | “It’s now expected to be 30 °C instead of 24 °C … navy blazer may be too warm” → only the blazer changes |
+| 13 | **Analytics → Closet has learned** → flip → Confirm → Undo | Cards start closed; Confirm saves, Undo restores |
+| 14 | Home | Reflects the changes (28 pieces: jacket donated, scarf removed) |
 
-“No longer my style” (no replacement, learning updated) is checked by `demo:check` on a throwaway account, not shown live.
-
-## 4. Hand-off and return
-
-- Slide “Instead of explaining it, we'll show you.” → click **Live demo** (or anywhere) → the app fills the screen → switch to Chrome.
-- After the demo switch back: the same picture → “What the user sees is simple.” → click → “What happens behind one click?”
-- The date, greeting and weather on Home change, so retake the hand-off picture on the day:
-  `python3 tools/handoff_shot.py handoff.jpg 1920x1080` (your screen size), then in PowerPoint right-click the picture on the demo slides → Change Picture.
+## 4. Rules for what we say
+- Try-On is a **simulated preview**, not generated imagery.
+- Ask Closet uses the **keyword parser** (31 whitelisted functions); the language-model adapter is optional and off in the demo.
+- Weather is the **seasonal estimate** in the demo.
+- Deployment: “Render blueprint configured; the local demo is the verified presentation path.”
 
 ## 5. If something goes wrong on stage
-
 - Server stopped or 429 “Too many requests”: restart the server (step 1), sign in again.
-- Anything else: go back to PowerPoint, previous slide → **Backup recording**. The video (4:36, the same 12 steps) is embedded in the presentation and plays without any other file. `07_Demo/Closet_Demo_FINAL.mp4` is the same video; `Closet_Demo.html` is a second fallback that runs in the browser without a server.
+- Anything else: switch to `Closet_Demo.html` (same flow, same values) or play `Closet_Demo_FINAL.mp4`.
