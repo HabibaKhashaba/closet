@@ -1,0 +1,349 @@
+AT-01 US-01 Register and log in — password ≥ 8 chars; wrong password shows an error; no other user’s data is returned
+AT-02 US-02 Style quiz — ≤ 4 steps, skippable; answers saved
+AT-03 US-03 Dress code and modest preference — one of the 5 levels; modest stored
+AT-04 US-04 Set my city — saved to the profile (forecast shown from Sprint 2)
+AT-05 US-08 Add a piece by photo — JPG/PNG/HEIC ≤ 10 MB stored and shown as the piece’s image
+AT-06 US-09 Enter details — values from 3.1; category, colour and ≥ 1 dress-code level required
+AT-07 US-11 Review before saving — the piece exists only after Save
+AT-08 US-12 Browse and filter — filters combine; counts update
+AT-09 US-71 Edit a piece later — changes appear in filters
+AT-10 US-56 Status per piece — exactly one status, shown as a badge
+AT-11 US-15 Laundry basket — one tap each way; basket lists all Laundry pieces
+AT-12 US-16 Wash done — all Laundry pieces become Available
+AT-13 US-46 Add events by hand — title, date, time and one occasion; month view
+AT-14 US-64 Closet gaps — a gap is ≤ 1 piece at a level the user dresses for
+AT-15 US-06 Delete my account — double confirmation; all data and photos deleted
+API-A01 valid email and password → 201, token, profile created
+API-A02 password stored as bcrypt hash, never in plain text
+API-A03 duplicate email (any letter case) → 409
+API-A04 7-character password → 400 with field details
+API-A05 missing fields → 400 listing both
+API-A06 correct credentials → 200 and a working token
+API-A07 wrong password and unknown email give the same 401 message
+API-A08 4 failures still allow login (boundary below lockout)
+API-A09 5th failure locks the account; even the right password gets 423
+API-A10 after the 15-minute lock expires, the right password works again
+API-A11 suspended account cannot sign in (403)
+API-A12 no token → 401 on every protected route
+API-A13 tampered, wrong-secret and expired tokens → 401
+API-A14 logout ends the session: the old token stops working
+API-A15 a token for a deleted user is refused
+API-A16 first Google sign-in creates the account and profile
+API-A17 Google sign-in links to an existing email account
+API-A18 invalid Google credential → 401
+API-S01 valid path Available → Borrowed → Laundry → Available
+API-S02 invalid transition Laundry → Borrowed → 409 and status unchanged
+API-S03 invalid transition Unavailable → Packed → 409
+API-S04 setting the same status is a no-op (exactly one status, no duplicate history)
+API-S05 unknown status value → 400
+API-S06 the status badge value comes back with the piece
+API-L01 one tap in, basket lists it; one tap out
+API-L02 Wash done returns every Laundry piece to Available, and only those
+API-L03 Wash done with an empty basket returns 0
+API-L04 Wash done never touches another user's laundry
+API-CF03 the three looks each have their own editorial name
+API-CF04 the replace tray: up to 3 Available alternatives, each with its re-scored look and only that slot changed
+API-FP01 a piece not worn for 50 days is "forgotten"; Style this piece gives 3 looks that all contain it — even a warm layer at 30 °C
+API-FP02 a forgotten piece that is in the laundry cannot be styled: no looks, a plain note
+API-MM01 a strong look scores high; a weak piece drops the score; the best single swap (Suggest a fix) raises it again
+API-EX01 each recommended outfit explains why, using the profile and the weather
+API-EX02 rejections feed the explanation ("Your feedback")
+API-H01 score with parts, penalties and actions; parts add up to the score
+API-H02 a new user with no pieces gets an empty score, not an error
+API-LR01 confirm a pattern → profile changes; undo → restored exactly
+API-LR02 "Not accurate" dismisses without changing the profile; unknown pattern → 404
+API-K01 a planned piece moved to Laundry (not back in time) creates a conflict with a replacement
+API-K02 fix swaps only that piece; a piece back before the event is not a conflict
+API-K03 a Packed planned piece is a conflict, and it shows in the Notification Center
+API-K04 the same piece planned for two events < 4 h apart on one day is flagged
+API-OH01 wear with occasion and weather; filter by occasion and rating
+API-PK01 plan proposes outfits per day, counts, and never a Laundry piece
+API-PK02 save → mark as packed: pieces become Packed with a return date and leave recommendations
+API-PK03 validation: end before start, too long, unknown trip, another user’s trip
+API-N01 event tomorrow without an outfit → a notice; mark read
+API-N02 Wash done creates a notice and activity entries
+API-N03 the activity log records sign-in, profile update and a deleted piece by name, only for its owner
+API-AD05 admin sees service health and config; a normal user gets 403
+API-OT01 templates are part of the shared vocabulary
+API-DU01 two similar white tops → "You already own 2 similar white tops" with match details
+API-DU02 a dissimilar piece does not trigger the warning
+API-R01 three explained outfits with title, compatibility and breakdown
+API-R02 occasion is required
+API-R03 a bag counts as the fourth piece
+API-R04 change one piece keeps the others
+API-R05 Mix & Match check: graded breakdown and an explanation
+API-R06 another user’s piece cannot be styled (404)
+API-C01 settings: laundry basket time, recycle time, laundry day, name
+API-C02 laundry basket time: a piece comes back on its own after N days
+API-C03 auto-return off: the piece stays in the basket
+API-C04 recycle time: clothes worn yesterday wait; shoes may repeat
+API-C05 borrowed with a return date and a note
+API-C06 planning ahead: a piece in the laundry counts if it is back by the date
+API-DL01 reason is required and must be one of the list
+API-DL02 the piece and its photo are gone, the reason is kept
+API-DL03 another user cannot delete my piece
+API-O01 save, favourite, list and delete
+API-O02 wear → counts, last worn, analytics; unavailable piece refused
+API-O03 reject with a reason; hide a piece for 7 days
+API-O04 forgotten pieces: worn before, not for 40+ days
+API-AC01 “What should I wear to university tomorrow?” → outfits
+API-AC02 “Do I own something similar to a black blazer?” → my blazer
+API-AC03 “I want to buy black trousers. Do I need them?” → Skip when owned twice
+API-AC04 put in the laundry, then undo
+API-AC06 change one piece of the last outfit, keeping the rest
+API-AC07 wash done, weather, help
+API-AC08 hide a piece and undo; ambiguous piece asks which one
+API-AC09 plan my outfit for the next event
+API-AC10 bad context and bad undo id are refused
+API-AC05 “What is missing from my wardrobe?” → shopping suggestions
+API-PL01 calendar markers: laundry day and a borrowed piece due back
+API-PL02 reminders: plan an outfit, a planned piece in the laundry, a borrowed piece due
+API-PL03 .ics import: future events only, occasion guessed, no duplicates
+API-SH01 suggestions name a reason and what they pair with
+API-SH02 a torn piece goes onto the shopping list as a replacement (not a duplicate suggestion)
+API-SH03 dismiss hides a suggestion; bad key 404
+API-SH04 “Do I need it?”: good buy vs. skip
+API-AD01 a normal user gets 403
+API-AD02 admin sees accounts with counts only, never pieces
+API-AD03 suspend ends the user’s session at once; restore lets them sign in again
+API-AD04 an admin cannot suspend themselves
+API-P01 new profile starts empty with quiz not done
+API-P02 quiz answers are saved and the quiz is marked done
+API-P03 the quiz can be skipped (empty answers) and is not shown again
+API-P04 settings change dress code, modest option and city later
+API-P05 dress code 6 and unknown style → 400
+API-E01 add an event: title, date, time, one occasion; dress code defaults from occasion
+API-E02 month view returns only that month, in date order
+API-E03 impossible date and time → 400
+API-E04 bad month parameter → 400
+API-E05 edit and delete my event; another user's event is not found
+API-G01 gaps follow the levels the user dresses for
+API-D01 without the confirmation phrase → 400, nothing deleted
+API-D02 wrong password → 401, nothing deleted
+API-D03 confirmed → every row and every photo of the user is gone; token stops working
+API-X01 security headers are set and the server is not advertised
+API-X02 CORS allows only the Closet web app
+API-X03 broken JSON → 400 with a safe message
+API-X04 unknown endpoint → 404 JSON
+API-X05 an internal error returns a generic 500 without details
+API-CF01 three complete outfits, then change one piece: only that slot changes and the look still passes the rules
+API-CF02 save as favourite, wear with a rating, reject another look with a reason — each is stored as feedback
+API-DR01 Torn / damaged → the replacement is on the shopping list at once, and the reply says so
+API-DR02 Became too small → a replacement in the next size
+API-DR03 No longer my style → nothing on the list, never suggested, and a buy check says think twice
+API-DR04 two streetwear pieces let go → “Closet has learned”; confirm avoids streetwear in outfits; Undo restores the profile exactly
+API-DR05 the reason is required and must be one of the four (old reasons are refused); Other changes nothing
+API-SL01 “Put beige trousers on my shopping list” → on the list, “Added by Ask Closet”, with a similar-piece warning
+API-SL02 after “Do I need …?”, “add this to my shopping list” adds that item; asking twice does not duplicate it
+API-SL03 “Add a replacement for my torn loafers” → tagged Replacement and Added by Ask Closet, no duplicate warning
+API-SL04 Undo removes what Ask Closet added; mark bought, remove; another user cannot touch my list
+API-SL05 a suggestion added to the bag leaves the suggestions; removing it from the bag brings it back
+API-W01 photo + details → 201, saved once, status Available
+API-W02 the photo is stored and shown through its signed URL
+API-W03 location (EXIF) data is removed before the photo is stored
+API-W04 PNG is accepted
+API-W05 no photo → 400 and nothing saved
+API-W06 a PDF renamed to .jpg → 415
+API-W07 photo of exactly 10 MB is accepted (boundary)
+API-W08 photo of 10 MB + 1 byte → 413 (boundary)
+API-W09 missing category and no dress-code level → 400, photo not kept
+API-W10 details that are not JSON → 400
+API-W11 all pieces with counts
+API-W12 filters combine: Top AND Available
+API-W13 invalid filter value → 400
+API-W14 edit changes the details and appears in filters
+API-W15 invalid edit → 400 and nothing changes
+API-W16 another user cannot read, edit or change the status of my piece (404)
+API-W17 photo URL with a changed signature or no signature → 404
+API-W18 a malformed piece id → 404, not a server error
+AI-01 “What should I wear to dinner tomorrow?” → recommend
+AI-02 “Change the shoes” → change_piece
+AI-03 “Put my blue jeans in the laundry” → set_status
+AI-04 “I lent my red jacket to Salma” → set_status
+AI-05 “Laundry is done” → wash_done
+AI-06 “What haven’t I worn lately?” → forgotten
+AI-07 “What does my closet need?” → closet_needs
+AI-08 “Weather tomorrow?” → weather
+AI-09 “Style my green dress” → style_piece
+AI-10 “Hide my pink jeans for a week” → hide_piece
+AI-11 “Plan my outfit for the wedding” → plan_event
+AI-12 “Tell me a joke” → help
+AI-13 occasion, style and slot are extracted
+AI-14 piece descriptions: synonyms and fabric
+AI-15 dates: today, tomorrow, next weekday
+AI-16 matching pieces by colour, category and fabric
+AI-17 no API key → keyword parser
+AI-18 with a key: the model’s tool call is used (only whitelisted functions)
+AI-19 model down → falls back to the keyword parser (NFR-06)
+WA-01 today uses the current temperature; source Open-Meteo
+WA-02 a later day uses its maximum
+WA-03 cached for 30 minutes: the second call does not hit the service
+WA-04 service down → seasonal estimate, labelled (NFR-06)
+WA-05 no city, or more than 16 days ahead → estimate
+WA-06 demo mode (WEATHER_MODE=estimate): never calls the service; the same estimate every run, labelled
+AI-20 “Do I own something similar to this black blazer?” → similar_owned
+AI-21 “I want to buy beige trousers. Do I need them?” → buy_check
+AI-22 “What is missing from my wardrobe?” → closet_needs
+AI-23 “What have I not worn recently?” → forgotten
+AI-24 “What should I wear to university tomorrow?” → recommend
+AI-25 “Style my blue skirt.” → style_piece
+AI-26 bags and jewellery are recognised
+AI-27 calendar titles → occasion
+CAL-01 .ics: UTC time converted to Cairo, all-day events, escapes, folded lines
+UT-G01 levels = usual dress code + each occasion default
+UT-G02 0 pieces at a level is a gap
+UT-G03 exactly 1 piece is still a gap (boundary)
+UT-G04 2 pieces is not a gap (just above boundary)
+UT-G05 levels the user never dresses for are not reported
+UT-G06 a piece counts at every level it suits; message reads like the story example
+UT-G07 Extra pieces are not part of any gap group
+RE-01 unavailable pieces are never used (US-17)
+RE-02 every main piece suits the occasion level (US-21)
+RE-03 modest on → no non-modest piece appears (US-21)
+RE-04 hidden pieces are skipped for 7 days (US-61)
+RE-05 25 °C: warm pieces allowed
+RE-06 26 °C: no warm piece at all
+RE-07 18 °C: every outfit has a warm layer
+RE-08 19 °C: no layer required
+RE-09 three outfits, each complete, no two share more than 2 pieces (US-19)
+RE-10 rule score = 100 − 17 per failed criterion (§3.1)
+RE-11 colour harmony: red + pink clash; 3 accents fail; neutrals pass
+RE-12 every outfit has 3–5 reasons and a rule score (US-57)
+RE-13 “Style this piece”: all 3 outfits contain it (US-59)
+RE-14 a forgotten piece is ranked up and named in the reasons (US-54)
+RE-15 not enough pieces → no outfit and a clear note
+RE-16 a look rejected as “Not in the mood today” is not suggested again this week
+RE-17 swap changes only that slot, with an Available alternative (US-24)
+RE-18 swap with no alternative returns null
+RE-19 builder: pass/fail per criterion and one sentence naming the failure (US-43, US-66)
+RE-20 builder: incomplete outfit fails “Complete outfit”
+RE-21 recycle time: a top worn 1 day ago waits when repeatDays = 3
+RE-22 recycle time BVA: worn exactly N days ago is allowed again
+RE-23 recycle time never blocks shoes, bags or accessories
+RE-24 a bag fills the fourth slot and must suit the level
+RE-25 breakdown: all-pass look scores high; a clash drops colour to 40
+RE-26 breakdown: one level off gives half credit for formality
+RE-27 breakdown weather: warm piece at 30 °C, no layer at 12 °C
+RE-28 outfit title uses the level and the key piece name
+RE-29 Mix & Match explanation names what to improve
+RE-30 three looks that share pieces still get three different names
+RE-31 Style this piece: a warm layer at 30 °C is still in every look
+RE-32 Style this piece refuses a piece that is not Available
+RE-34 same closet, new database ids → same looks and same tray order (a reseeded demo repeats itself)
+RE-33 replace tray: with fewer than 3 exact-level pieces, pieces one level away are offered after them
+TO-01 body order: top above bottom above shoes; shoes at the feet
+TO-02 layering: outerwear is drawn over the top, the top over the bottom
+TO-03 accessories go where they are worn: sunglasses at the head, a bag at the side
+EX-01 every outfit has "why" factors and a "Recommended because" sentence
+EX-02 the explanation names the real context: occasion, dress code, weather and city
+EX-03 availability, favourites and rejection patterns appear when they shaped the look
+EX-04 a piece in Laundry or Packed is never recommended (conflict rule)
+EX-05 "Too formal" feedback makes relaxed pieces rank higher, never changing the rule score
+EX-06 explanationSentence picks at most three factors and ends with a full stop
+WH-01 empty wardrobe: score 0, flagged empty, one action
+WH-02 perfect closet reaches exactly 100 (every part at its maximum, no penalties)
+WH-03 the score is the sum of the parts minus the penalties (formula is transparent)
+WH-04 penalties are capped at −10 each and the score never goes below 0
+WH-05 potential duplicates: same category and colour with a shared style
+LR-01 two "Too formal" rejections → lower usual dress code, with evidence and confidence
+LR-02 one rejection is not enough evidence
+LR-03 favourite looks reveal a style the profile lacks
+LR-04 neutral wear history adds the most-worn missing neutral
+LR-05 rarely worn colour; previousOf keeps the exact values for Undo
+DU-01 a near-identical piece scores ≥ 70 and lists what matched
+DU-02 a different category never counts; a different colour falls below the threshold
+DU-03 “Do I need another white top?” → buy_check, not the general shopping list
+PK-01 one outfit per day, pieces re-used, counts add up
+PK-02 never packs an unavailable piece; rain with no coat → waterproof warning
+PK-03 a day with no possible outfit is reported as missing
+OT-01 nine occasion templates, each mapped to a real occasion, level and style
+UT-S01 a fresh token is accepted and carries id, role, version
+UT-S02 a token signed with another secret is refused
+UT-S03 an expired token is refused
+UT-S04 the "none" algorithm is refused
+UT-S05 garbage is refused
+UT-S06 hash is not the password and verifies only the right password
+UT-S07 an account without a password (Google only) never matches
+UT-P01 JPEG
+UT-P02 PNG
+UT-P03 WebP
+UT-P04 HEIC
+UT-P05 PDF is refused
+UT-P06 EXE is refused
+UT-P07 EXIF (GPS) block is removed, the image data is kept
+UT-P08 signed URL: valid, expired, tampered, foreign key
+UT-S08 admin route: admin passes, user gets 403, no user gets 401
+UT-S09 HTTP is redirected to HTTPS in production only
+UT-E01 every subscriber receives the event, in order; unknown topics are ignored
+DR-01 exactly four reasons, each with a defined effect; only Torn / damaged and Became too small ask for a replacement
+DR-02 replacementFor: torn → same piece; too small → next size; no longer my style and other → nothing
+DR-03 US-34: a suggestion is avoided only when category AND colour match a “No longer my style” deletion
+DR-04 a style is "let go" only after two or more “No longer my style” deletions share it (boundary 1 / 2)
+DR-05 two let-go streetwear pieces → a pattern with evidence; confirming avoids the style and removes it from the profile; Undo keeps the old values
+DR-06 the ranker lowers pieces in an avoided style (rank only — the rule score is not involved)
+SL-01 “Put beige trousers on my shopping list” → add_to_shopping with the piece and the user’s word
+SL-02 “add this to my shopping list” uses the last item; “Add a replacement for my torn loafers” is a replacement
+ST-01 a new piece starts as Available
+ST-02 Available → Available follows the state diagram
+ST-02 Available → Laundry follows the state diagram
+ST-02 Available → Borrowed follows the state diagram
+ST-02 Available → Packed follows the state diagram
+ST-02 Available → Unavailable follows the state diagram
+ST-02 Laundry → Available follows the state diagram
+ST-02 Laundry → Laundry follows the state diagram
+ST-02 Laundry → Borrowed follows the state diagram
+ST-02 Laundry → Packed follows the state diagram
+ST-02 Laundry → Unavailable follows the state diagram
+ST-02 Borrowed → Available follows the state diagram
+ST-02 Borrowed → Laundry follows the state diagram
+ST-02 Borrowed → Borrowed follows the state diagram
+ST-02 Borrowed → Packed follows the state diagram
+ST-02 Borrowed → Unavailable follows the state diagram
+ST-02 Packed → Available follows the state diagram
+ST-02 Packed → Laundry follows the state diagram
+ST-02 Packed → Borrowed follows the state diagram
+ST-02 Packed → Packed follows the state diagram
+ST-02 Packed → Unavailable follows the state diagram
+ST-02 Unavailable → Available follows the state diagram
+ST-02 Unavailable → Laundry follows the state diagram
+ST-02 Unavailable → Borrowed follows the state diagram
+ST-02 Unavailable → Packed follows the state diagram
+ST-02 Unavailable → Unavailable follows the state diagram
+ST-03 exactly 10 valid transitions
+ST-04 unknown status cannot move
+UT-V01 7 characters is rejected (just below minimum)
+UT-V02 8 characters is accepted (minimum)
+UT-V03 72 characters is accepted (maximum)
+UT-V04 73 characters is rejected (just above maximum)
+UT-V05 empty password is rejected
+UT-V06 valid email
+UT-V07 missing @
+UT-V08 missing domain ending
+UT-V09 contains a space
+UT-V10 email is lower-cased and trimmed
+UT-V11 valid details pass
+UT-V12 category outside the list is rejected
+UT-V13 missing colour is rejected
+UT-V14 zero dress-code levels is rejected (below 1)
+UT-V15 all five levels is accepted (maximum)
+UT-V16 level 6 is rejected (outside 1–5)
+UT-V17 size of 10 characters accepted, 11 rejected
+UT-V18 dress code 0 accepted = false
+UT-V18 dress code 1 accepted = true
+UT-V18 dress code 5 accepted = true
+UT-V18 dress code 6 accepted = false
+UT-V19 unknown style is rejected
+UT-V20 city of 1 character rejected, 2 accepted
+UT-V21 modest must be true or false
+UT-V22 valid event passes
+UT-V23 title of 80 characters accepted, 81 rejected
+UT-V24 date 2026-02-28 valid = true
+UT-V24 date 2026-02-29 valid = false
+UT-V24 date 2028-02-29 valid = true
+UT-V24 date 2026-13-01 valid = false
+UT-V24 date 12/11/2026 valid = false
+UT-V25 time 00:00 valid = true
+UT-V25 time 23:59 valid = true
+UT-V25 time 24:00 valid = false
+UT-V25 time 7:30 valid = false
+UT-V26 occasion outside the list is rejected

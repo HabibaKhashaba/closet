@@ -1,0 +1,12 @@
+Closet — FINAL test results (application build v1.4, final reliability pass), executed 26 Oct 2026
+Runner: node:test with the project's Jest-compatible shim, PostgreSQL 16 test database (closet_test).
+Command: node --test --test-concurrency=1 --require <jest shim> --experimental-test-coverage 'tests/**/*.test.js'  (same files as `npm test`)
+Sprint 1 (graded):             169 / 169 pass  = 89 unit + 65 API + 15 acceptance
+Sprint 2/3 previews (v1.2):    102 / 102 pass
+v1.3 Closet Intelligence:       44 / 44  pass
+v1.4 deletion reasons + list:   20 / 20  pass
+Final pass (looks, tray, forgotten piece, Mix & Match, photo try-on placement, repeatable demo): 14 / 14 pass = unit 9 (RE-30 – RE-34, TO-01 – TO-03, WA-06) + API 5 (API-CF03, API-CF04, API-FP01, API-FP02, API-MM01)
+TOTAL:                         349 / 349 pass  (0 failed, 0 skipped)
+Changed expectation (not removed): API-R01 now checks the editorial look name format instead of the old "Polished …" prefix.
+Coverage (V8, all of server/src except server.js, seed.js, migrate.js): lines 97.95 %, branches 84.57 %, functions 94.72 %.
+V8 does not report statements separately, so no statement figure is given.

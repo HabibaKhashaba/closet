@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="Inter, Helvetica, Arial, sans-serif">
+<defs><marker id="arr" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#2a2626"/></marker><marker id="open" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10" fill="none" stroke="#2a2626" stroke-width="1.5"/></marker><marker id="tri" markerWidth="16" markerHeight="14" refX="15" refY="7" orient="auto"><path d="M0,0 L15,7 L0,14 z" fill="#fff" stroke="#2a2626" stroke-width="1.4"/></marker><marker id="dia" markerWidth="18" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1,6 L9,1 L17,6 L9,11 z" fill="#2a2626"/></marker><marker id="arrR" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#9c5f5b"/></marker></defs>
+<rect width="1600" height="900" fill="#fffdfb"/>
+<text x="40" y="52" font-family="Lora, Georgia, serif" font-size="30" fill="#2a2626">UML component diagram · Closet v1.4</text>
+<text x="40" y="80" font-size="15" fill="#7d736f">Layered modular monolith. Every request passes the API-tier security pipeline before a module runs. Modules talk only through interfaces or the Event Bus. Solid arrow = request flow, dashed = «use» dependency.</text>
+<text x="30" y="116.4" text-anchor="start" font-size="12.5" font-weight="700" fill="#9c5f5b">CLIENT</text>
+<text x="230" y="116.4" text-anchor="start" font-size="12.5" font-weight="700" fill="#9c5f5b">API TIER · SECURITY PIPELINE</text>
+<text x="470" y="116.4" text-anchor="start" font-size="12.5" font-weight="700" fill="#9c5f5b">APPLICATION MODULES (ONE NODE.JS PROCESS)</text>
+<text x="1150" y="116.4" text-anchor="start" font-size="12.5" font-weight="700" fill="#9c5f5b">ADAPTERS</text>
+<text x="1370" y="116.4" text-anchor="start" font-size="12.5" font-weight="700" fill="#9c5f5b">EXTERNAL SERVICES</text>
+<rect x="30" y="140" width="170" height="120" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="174" y="149" width="16" height="20"/><rect x="169" y="153" width="10" height="4"/><rect x="169" y="161" width="10" height="4"/></g>
+<text x="107.0" y="197.4" text-anchor="middle" font-size="15.5" font-weight="600" fill="#2a2626">Web App</text>
+<text x="109.0" y="218.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">React 19 · MVC</text>
+<text x="115" y="294.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">views · controller · api.js</text>
+<rect x="230" y="140" width="210" height="78" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="414" y="149" width="16" height="20"/><rect x="409" y="153" width="10" height="4"/><rect x="409" y="161" width="10" height="4"/></g>
+<text x="327.0" y="176.2" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">API Gateway</text>
+<text x="329.0" y="197.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">HTTPS · CORS · CSP · rate limits</text>
+<rect x="230" y="244" width="210" height="78" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="414" y="253" width="16" height="20"/><rect x="409" y="257" width="10" height="4"/><rect x="409" y="265" width="10" height="4"/></g>
+<text x="327.0" y="280.2" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">Request Validation</text>
+<text x="329.0" y="301.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">schemas, 400 errors</text>
+<line x1="335.0" y1="218.0" x2="335.0" y2="242.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="230" y="348" width="210" height="78" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="414" y="357" width="16" height="20"/><rect x="409" y="361" width="10" height="4"/><rect x="409" y="369" width="10" height="4"/></g>
+<text x="327.0" y="384.2" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">Authentication</text>
+<text x="329.0" y="405.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">JWT 2 h · IAuthToken</text>
+<line x1="335.0" y1="322.0" x2="335.0" y2="346.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="230" y="452" width="210" height="78" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="414" y="461" width="16" height="20"/><rect x="409" y="465" width="10" height="4"/><rect x="409" y="473" width="10" height="4"/></g>
+<text x="327.0" y="488.2" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">Access Control</text>
+<text x="329.0" y="509.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">role + ownership</text>
+<line x1="335.0" y1="426.0" x2="335.0" y2="450.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="230" y="556" width="210" height="78" rx="10" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="414" y="565" width="16" height="20"/><rect x="409" y="569" width="10" height="4"/><rect x="409" y="577" width="10" height="4"/></g>
+<text x="327.0" y="592.2" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">Audit</text>
+<text x="329.0" y="613.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">activity log (v1.3)</text>
+<line x1="335.0" y1="530.0" x2="335.0" y2="554.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="200.0" y1="200.0" x2="228.0" y2="180.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<text x="115" y="316.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">REST / JSON over HTTPS</text>
+<rect x="470" y="140" width="158" height="82" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="602" y="149" width="16" height="20"/><rect x="597" y="153" width="10" height="4"/><rect x="597" y="161" width="10" height="4"/></g>
+<text x="541.0" y="186.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Identity &amp; Auth</text>
+<rect x="638" y="140" width="158" height="82" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="770" y="149" width="16" height="20"/><rect x="765" y="153" width="10" height="4"/><rect x="765" y="161" width="10" height="4"/></g>
+<text x="709.0" y="186.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Profile</text>
+<rect x="806" y="140" width="158" height="82" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="938" y="149" width="16" height="20"/><rect x="933" y="153" width="10" height="4"/><rect x="933" y="161" width="10" height="4"/></g>
+<text x="877.0" y="186.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Wardrobe</text>
+<rect x="974" y="140" width="158" height="82" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="1106" y="149" width="16" height="20"/><rect x="1101" y="153" width="10" height="4"/><rect x="1101" y="161" width="10" height="4"/></g>
+<text x="1045.0" y="186.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Availability</text>
+<rect x="470" y="244" width="158" height="82" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="602" y="253" width="16" height="20"/><rect x="597" y="257" width="10" height="4"/><rect x="597" y="265" width="10" height="4"/></g>
+<text x="541.0" y="290.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Planner</text>
+<rect x="638" y="244" width="158" height="82" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="770" y="253" width="16" height="20"/><rect x="765" y="257" width="10" height="4"/><rect x="765" y="265" width="10" height="4"/></g>
+<text x="709.0" y="290.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Privacy</text>
+<rect x="806" y="244" width="158" height="82" rx="10" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="938" y="253" width="16" height="20"/><rect x="933" y="257" width="10" height="4"/><rect x="933" y="265" width="10" height="4"/></g>
+<text x="877.0" y="281.2" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Recommendation</text>
+<text x="877.0" y="298.9" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Engine</text>
+<rect x="974" y="244" width="158" height="82" rx="10" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="1106" y="253" width="16" height="20"/><rect x="1101" y="257" width="10" height="4"/><rect x="1101" y="265" width="10" height="4"/></g>
+<text x="1045.0" y="290.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Outfits &amp; History</text>
+<rect x="470" y="348" width="158" height="82" rx="10" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="602" y="357" width="16" height="20"/><rect x="597" y="361" width="10" height="4"/><rect x="597" y="369" width="10" height="4"/></g>
+<text x="541.0" y="394.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Closet Intelligence</text>
+<rect x="638" y="348" width="158" height="82" rx="10" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="770" y="357" width="16" height="20"/><rect x="765" y="361" width="10" height="4"/><rect x="765" y="369" width="10" height="4"/></g>
+<text x="709.0" y="394.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Ask Closet</text>
+<rect x="806" y="348" width="158" height="82" rx="10" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="938" y="357" width="16" height="20"/><rect x="933" y="361" width="10" height="4"/><rect x="933" y="369" width="10" height="4"/></g>
+<text x="877.0" y="394.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Smart Shopping</text>
+<rect x="974" y="348" width="158" height="82" rx="10" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="1106" y="357" width="16" height="20"/><rect x="1101" y="361" width="10" height="4"/><rect x="1101" y="369" width="10" height="4"/></g>
+<text x="1045.0" y="394.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Admin</text>
+<rect x="470" y="452" width="158" height="82" rx="10" fill="#efebe7" stroke="#8f857c" stroke-width="1.8" stroke-dasharray="6 4" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="602" y="461" width="16" height="20"/><rect x="597" y="465" width="10" height="4"/><rect x="597" y="473" width="10" height="4"/></g>
+<text x="541.0" y="498.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Packing</text>
+<rect x="638" y="452" width="158" height="82" rx="10" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="770" y="461" width="16" height="20"/><rect x="765" y="465" width="10" height="4"/><rect x="765" y="473" width="10" height="4"/></g>
+<text x="709.0" y="498.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Activity Log</text>
+<rect x="806" y="452" width="158" height="82" rx="10" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="938" y="461" width="16" height="20"/><rect x="933" y="465" width="10" height="4"/><rect x="933" y="473" width="10" height="4"/></g>
+<text x="877.0" y="498.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Notification Center</text>
+<rect x="974" y="452" width="158" height="82" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="1106" y="461" width="16" height="20"/><rect x="1101" y="465" width="10" height="4"/><rect x="1101" y="473" width="10" height="4"/></g>
+<text x="1045.0" y="498.1" text-anchor="middle" font-size="14.5" font-weight="600" fill="#2a2626">Event Bus</text>
+<rect x="462" y="132" width="682" height="420" rx="16" fill="none" stroke="#b9a99d" stroke-width="1.2" stroke-dasharray="8 6" opacity="1"/>
+<line x1="440.0" y1="520.0" x2="462.0" y2="520.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="552" y="795" width="506" height="80" rx="12" fill="#fff" stroke="#b9a99d" stroke-width="1.2" opacity="1"/>
+<text x="805" y="819.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#2a2626">Provided interfaces: IClosetAPI · IAuthToken · IPreferences · IWardrobe</text>
+<text x="805" y="839.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#2a2626">IAvailability · IRecommend · IWeather · IIntentParser · IInsights · IAdminAPI</text>
+<text x="805" y="861.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">Events: UserRegistered · ItemCreated · ItemDeleted → Smart Shopping · OutfitWorn · AccountDeleted</text>
+<rect x="1160" y="140" width="190" height="70" rx="10" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="1324" y="149" width="16" height="20"/><rect x="1319" y="153" width="10" height="4"/><rect x="1319" y="161" width="10" height="4"/></g>
+<text x="1247.0" y="171.9" text-anchor="middle" font-size="14" font-weight="600" fill="#2a2626">Weather Adapter</text>
+<text x="1249.0" y="193.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">Open-Meteo · 30-min cache</text>
+<rect x="1160" y="228" width="190" height="70" rx="10" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="1324" y="237" width="16" height="20"/><rect x="1319" y="241" width="10" height="4"/><rect x="1319" y="249" width="10" height="4"/></g>
+<text x="1247.0" y="251.4" text-anchor="middle" font-size="14" font-weight="600" fill="#2a2626">Language Model</text>
+<text x="1247.0" y="268.4" text-anchor="middle" font-size="14" font-weight="600" fill="#2a2626">Adapter</text>
+<text x="1249.0" y="281.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">tool call · 8 s · fallback</text>
+<rect x="1160" y="316" width="190" height="70" rx="10" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="1324" y="325" width="16" height="20"/><rect x="1319" y="329" width="10" height="4"/><rect x="1319" y="337" width="10" height="4"/></g>
+<text x="1247.0" y="347.9" text-anchor="middle" font-size="14" font-weight="600" fill="#2a2626">Calendar Adapter</text>
+<text x="1249.0" y="369.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">.ics import</text>
+<rect x="1160" y="404" width="190" height="70" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.8" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="1324" y="413" width="16" height="20"/><rect x="1319" y="417" width="10" height="4"/><rect x="1319" y="425" width="10" height="4"/></g>
+<text x="1247.0" y="435.9" text-anchor="middle" font-size="14" font-weight="600" fill="#2a2626">Photo Storage</text>
+<text x="1249.0" y="457.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">signed URLs · EXIF removed</text>
+<rect x="1160" y="492" width="190" height="70" rx="10" fill="#efebe7" stroke="#8f857c" stroke-width="1.8" stroke-dasharray="6 4" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="1324" y="501" width="16" height="20"/><rect x="1319" y="505" width="10" height="4"/><rect x="1319" y="513" width="10" height="4"/></g>
+<text x="1247.0" y="523.9" text-anchor="middle" font-size="14" font-weight="600" fill="#2a2626">Try-On Adapter</text>
+<text x="1249.0" y="545.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">planned</text>
+<rect x="1160" y="580" width="190" height="70" rx="10" fill="#efebe7" stroke="#8f857c" stroke-width="1.8" stroke-dasharray="6 4" opacity="1"/>
+<g fill="#fff" stroke="#2a2626" stroke-width="1.1"><rect x="1324" y="589" width="16" height="20"/><rect x="1319" y="593" width="10" height="4"/><rect x="1319" y="601" width="10" height="4"/></g>
+<text x="1247.0" y="603.4" text-anchor="middle" font-size="14" font-weight="600" fill="#2a2626">Notification</text>
+<text x="1247.0" y="620.4" text-anchor="middle" font-size="14" font-weight="600" fill="#2a2626">Adapter</text>
+<text x="1249.0" y="633.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">planned · in-app now</text>
+<rect x="1385" y="149" width="190" height="52" rx="10" fill="#f4f1ee" stroke="#8f857c" stroke-width="1.2" opacity="1"/>
+<text x="1480" y="179.7" text-anchor="middle" font-size="13.5" font-weight="normal" fill="#2a2626">Open-Meteo API</text>
+<line x1="1350.0" y1="175.0" x2="1383.0" y2="175.0" stroke="#8f857c" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#open)"/>
+<rect x="1385" y="237" width="190" height="52" rx="10" fill="#f4f1ee" stroke="#8f857c" stroke-width="1.2" opacity="1"/>
+<text x="1480" y="267.7" text-anchor="middle" font-size="13.5" font-weight="normal" fill="#2a2626">Anthropic / OpenAI</text>
+<line x1="1350.0" y1="263.0" x2="1383.0" y2="263.0" stroke="#8f857c" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#open)"/>
+<rect x="1385" y="325" width="190" height="52" rx="10" fill="#f4f1ee" stroke="#8f857c" stroke-width="1.2" opacity="1"/>
+<text x="1480" y="347.5" text-anchor="middle" font-size="13.5" font-weight="normal" fill="#2a2626">Google / Outlook /</text>
+<text x="1480" y="364.0" text-anchor="middle" font-size="13.5" font-weight="normal" fill="#2a2626">Apple Calendar</text>
+<line x1="1350.0" y1="351.0" x2="1383.0" y2="351.0" stroke="#8f857c" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#open)"/>
+<rect x="1385" y="413" width="190" height="52" rx="10" fill="#f4f1ee" stroke="#8f857c" stroke-width="1.2" opacity="1"/>
+<text x="1480" y="443.7" text-anchor="middle" font-size="13.5" font-weight="normal" fill="#2a2626">Photo store (disk → bucket)</text>
+<line x1="1350.0" y1="439.0" x2="1383.0" y2="439.0" stroke="#8f857c" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#open)"/>
+<rect x="1385" y="501" width="190" height="52" rx="10" fill="#f4f1ee" stroke="#8f857c" stroke-width="1.2" opacity="1"/>
+<text x="1480" y="531.7" text-anchor="middle" font-size="13.5" font-weight="normal" fill="#2a2626">Virtual Try-On Service</text>
+<line x1="1350.0" y1="527.0" x2="1383.0" y2="527.0" stroke="#8f857c" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#open)"/>
+<rect x="1385" y="589" width="190" height="52" rx="10" fill="#f4f1ee" stroke="#8f857c" stroke-width="1.2" opacity="1"/>
+<text x="1480" y="619.7" text-anchor="middle" font-size="13.5" font-weight="normal" fill="#2a2626">Push / e-mail service</text>
+<line x1="1350.0" y1="615.0" x2="1383.0" y2="615.0" stroke="#8f857c" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#open)"/>
+<line x1="1144.0" y1="300.0" x2="1158.0" y2="300.0" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#open)"/>
+<g><ellipse cx="803" cy="655" rx="300" ry="16" fill="#e8f4ec" stroke="#2a2626" stroke-width="1.4"/><path d="M503 655 v100 a300 16 0 0 0 600 0 v-100" fill="#e8f4ec" stroke="#2a2626" stroke-width="1.4"/></g>
+<text x="803" y="696.6" text-anchor="middle" font-size="19" font-weight="700" fill="#2a2626">PostgreSQL  «persist»</text>
+<text x="803" y="720.5" text-anchor="middle" font-size="13" font-weight="normal" fill="#7d736f">one schema per module · every row carries user_id</text>
+<text x="803" y="742.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">accounts · profile · wardrobe · availability · planner · outfits</text>
+<text x="803" y="760.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">intelligence · activity · packing · shopping · assistant</text>
+<line x1="803.0" y1="552.0" x2="803.0" y2="636.0" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#open)"/>
+<rect x="40" y="650" width="30" height="18" rx="9" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.4" opacity="1"/>
+<text x="80" y="663.7" text-anchor="start" font-size="13.5" font-weight="normal" fill="#2a2626">Sprint 1 · implemented</text>
+<rect x="40" y="676" width="30" height="18" rx="9" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.4" opacity="1"/>
+<text x="80" y="689.7" text-anchor="start" font-size="13.5" font-weight="normal" fill="#2a2626">Sprint 2 · early preview</text>
+<rect x="40" y="702" width="30" height="18" rx="9" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.4" opacity="1"/>
+<text x="80" y="715.7" text-anchor="start" font-size="13.5" font-weight="normal" fill="#2a2626">Sprint 3 · product preview</text>
+<rect x="40" y="728" width="30" height="18" rx="9" fill="#efebe7" stroke="#8f857c" stroke-width="1.4" stroke-dasharray="5 3" opacity="1"/>
+<text x="80" y="741.7" text-anchor="start" font-size="13.5" font-weight="normal" fill="#2a2626">Stretch · concept preview</text>
+<rect x="30" y="775" width="512" height="100" rx="12" fill="#fff7f4" stroke="#c48a86" stroke-width="1.2" opacity="1"/>
+<text x="56" y="796.7" text-anchor="start" font-size="13.5" font-weight="700" fill="#9c5f5b">Authentication &amp; security (instructor feedback)</text>
+<text x="56" y="820.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">bcrypt passwords · lockout after 5 failures · JWT with token version</text>
+<text x="56" y="840.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">(logout and suspend end sessions) · admin routes require role</text>
+<text x="56" y="860.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">· another user’s row → 404 · secrets only in environment variables</text>
+<rect x="1072" y="790" width="510" height="85" rx="12" fill="#f5f0f8" stroke="#7a5a9c" stroke-width="1.2" opacity="1"/>
+<text x="1086" y="816.7" text-anchor="start" font-size="13.5" font-weight="700" fill="#6a4b87">Role of the LLM</text>
+<text x="1086" y="840.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">chooses ONE of 14 whitelisted functions, fills its arguments;</text>
+<text x="1086" y="862.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">never sees photos or the database · keyword parser if down</text>
+</svg>

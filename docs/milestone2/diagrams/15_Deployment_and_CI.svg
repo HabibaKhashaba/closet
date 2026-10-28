@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="Inter, Helvetica, Arial, sans-serif">
+<defs><marker id="arr" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#2a2626"/></marker><marker id="open" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10" fill="none" stroke="#2a2626" stroke-width="1.5"/></marker><marker id="tri" markerWidth="16" markerHeight="14" refX="15" refY="7" orient="auto"><path d="M0,0 L15,7 L0,14 z" fill="#fff" stroke="#2a2626" stroke-width="1.4"/></marker><marker id="dia" markerWidth="18" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1,6 L9,1 L17,6 L9,11 z" fill="#2a2626"/></marker><marker id="arrR" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#9c5f5b"/></marker></defs>
+<rect width="1600" height="900" fill="#fffdfb"/>
+<text x="40" y="52" font-family="Lora, Georgia, serif" font-size="30" fill="#2a2626">Deployment and testing architecture</text>
+<text x="40" y="80" font-size="15" fill="#7d736f">One deployable (Node.js serves the API and the built React app), one database, CI on every pull request.</text>
+<rect x="60" y="130" width="330" height="180" rx="14" fill="#fbeef0" stroke="#c48a86" stroke-width="1.6" opacity="1"/>
+<text x="225" y="165.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">«device» Phone / laptop browser</text>
+<text x="225" y="215.6" text-anchor="middle" font-size="16" font-weight="normal" fill="#2a2626">React 19 SPA</text>
+<text x="225" y="244.6" text-anchor="middle" font-size="13" font-weight="normal" fill="#7d736f">session token in sessionStorage</text>
+<rect x="520" y="110" width="520" height="330" rx="14" fill="#fff" stroke="#2a2626" stroke-width="1.6" opacity="1"/>
+<text x="780" y="145.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">«node» Render web service · Node 22</text>
+<rect x="550" y="170" width="460" height="70" rx="10" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.4" opacity="1"/>
+<text x="780" y="210.2" text-anchor="middle" font-size="15" font-weight="normal" fill="#2a2626">Express API · /api/v1 · security pipeline</text>
+<rect x="550" y="255" width="460" height="70" rx="10" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.4" opacity="1"/>
+<text x="780" y="295.2" text-anchor="middle" font-size="15" font-weight="normal" fill="#2a2626">Static web app (client/dist)</text>
+<rect x="550" y="340" width="460" height="70" rx="10" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.4" opacity="1"/>
+<text x="780" y="379.9" text-anchor="middle" font-size="14" font-weight="normal" fill="#2a2626">Env secrets: JWT, DB URL, LLM key, photo secret</text>
+<rect x="1160" y="130" width="380" height="150" rx="14" fill="#e8f4ec" stroke="#2a2626" stroke-width="1.6" opacity="1"/>
+<text x="1350" y="170.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">«database» PostgreSQL 16</text>
+<text x="1350" y="214.9" text-anchor="middle" font-size="14" font-weight="normal" fill="#2a2626">11 schemas · migrations 001–005</text>
+<text x="1350" y="244.6" text-anchor="middle" font-size="13" font-weight="normal" fill="#7d736f">seed: npm run seed (demo reset)</text>
+<rect x="1160" y="310" width="380" height="110" rx="14" fill="#f4f1ee" stroke="#8f857c" stroke-width="1.4" opacity="1"/>
+<text x="1350" y="349.9" text-anchor="middle" font-size="14" font-weight="normal" fill="#2a2626">External: Open-Meteo, LLM API</text>
+<text x="1350" y="379.6" text-anchor="middle" font-size="13" font-weight="normal" fill="#7d736f">calendar .ics · photo store</text>
+<line x1="392.0" y1="220.0" x2="518.0" y2="220.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="432.5" y="194.6" width="45.0" height="18.8" rx="4" fill="#fffdfb"/>
+<text x="455" y="208.4" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#7d736f">HTTPS</text>
+<line x1="1040.0" y1="205.0" x2="1158.0" y2="205.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="1067.0" y="180.6" width="66.0" height="18.8" rx="4" fill="#fffdfb"/>
+<text x="1100" y="194.4" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#7d736f">pg (TLS)</text>
+<line x1="1040.0" y1="365.0" x2="1158.0" y2="365.0" stroke="#8f857c" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#open)"/>
+<text x="60" y="524.9" text-anchor="start" font-size="14" font-weight="700" fill="#9c5f5b">CONTINUOUS INTEGRATION · GitHub Actions on every pull request</text>
+<rect x="60" y="560" width="168" height="84" rx="12" fill="#fff" stroke="#2a2626" stroke-width="1.4" opacity="1"/>
+<text x="144" y="607.2" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">git push / PR</text>
+<line x1="230.0" y1="602.0" x2="246.0" y2="602.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="248" y="560" width="168" height="84" rx="12" fill="#fff" stroke="#2a2626" stroke-width="1.4" opacity="1"/>
+<text x="332" y="598.1" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">install +</text>
+<text x="332" y="616.4" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">migrate</text>
+<line x1="418.0" y1="602.0" x2="434.0" y2="602.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="436" y="560" width="168" height="84" rx="12" fill="#e4f0e8" stroke="#2a2626" stroke-width="1.4" opacity="1"/>
+<text x="520" y="607.2" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">unit tests</text>
+<line x1="606.0" y1="602.0" x2="622.0" y2="602.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="624" y="560" width="168" height="84" rx="12" fill="#e4f0e8" stroke="#2a2626" stroke-width="1.4" opacity="1"/>
+<text x="708" y="598.1" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">API tests</text>
+<text x="708" y="616.4" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">(Supertest)</text>
+<line x1="794.0" y1="602.0" x2="810.0" y2="602.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="812" y="560" width="168" height="84" rx="12" fill="#e4f0e8" stroke="#2a2626" stroke-width="1.4" opacity="1"/>
+<text x="896" y="598.1" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">acceptance</text>
+<text x="896" y="616.4" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">tests</text>
+<line x1="982.0" y1="602.0" x2="998.0" y2="602.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="1000" y="560" width="168" height="84" rx="12" fill="#eee7f2" stroke="#2a2626" stroke-width="1.4" opacity="1"/>
+<text x="1084" y="598.1" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">coverage</text>
+<text x="1084" y="616.4" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">report</text>
+<line x1="1170.0" y1="602.0" x2="1186.0" y2="602.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="1188" y="560" width="168" height="84" rx="12" fill="#fff" stroke="#2a2626" stroke-width="1.4" opacity="1"/>
+<text x="1272" y="598.1" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">build web app</text>
+<text x="1272" y="616.4" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">+ seed demo</text>
+<line x1="1358.0" y1="602.0" x2="1374.0" y2="602.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="1376" y="560" width="168" height="84" rx="12" fill="#f8ecdc" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" opacity="1"/>
+<text x="1460" y="598.1" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">browser journey</text>
+<text x="1460" y="616.4" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">(Playwright)</text>
+<text x="60" y="705.2" text-anchor="start" font-size="15" font-weight="normal" fill="#2a2626">Jobs: server (unit, API, acceptance, coverage) · client (build) · e2e (the live-demo route in Chromium, screenshot per step, fails on any browser error).</text>
+<text x="60" y="734.9" text-anchor="start" font-size="14" font-weight="normal" fill="#7d736f">The e2e job (dashed) was added in the final pass; it has been run locally (evidence in the test report) and runs in CI from the next push.</text>
+</svg>

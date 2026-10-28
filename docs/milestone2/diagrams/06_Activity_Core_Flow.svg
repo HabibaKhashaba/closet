@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="Inter, Helvetica, Arial, sans-serif">
+<defs><marker id="arr" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#2a2626"/></marker><marker id="open" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10" fill="none" stroke="#2a2626" stroke-width="1.5"/></marker><marker id="tri" markerWidth="16" markerHeight="14" refX="15" refY="7" orient="auto"><path d="M0,0 L15,7 L0,14 z" fill="#fff" stroke="#2a2626" stroke-width="1.4"/></marker><marker id="dia" markerWidth="18" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1,6 L9,1 L17,6 L9,11 z" fill="#2a2626"/></marker><marker id="arrR" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#9c5f5b"/></marker></defs>
+<rect width="1600" height="900" fill="#fffdfb"/>
+<text x="40" y="52" font-family="Lora, Georgia, serif" font-size="30" fill="#2a2626">The heart of Closet · recommend → change → try on → feedback → learning</text>
+<text x="40" y="80" font-size="15" fill="#7d736f">UML activity view of UC-09 / UC-12 / UC-22. Colour = the sprint that delivers each step (all built early as labelled previews).</text>
+<rect x="80.0" y="184.0" width="250" height="112" rx="16" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.9" opacity="1"/>
+<text x="205" y="233.9" text-anchor="middle" font-size="17" font-weight="700" fill="#2a2626">Choose the occasion</text>
+<text x="205" y="260.4" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">one-tap template · day · style</text>
+<rect x="370.0" y="184.0" width="250" height="112" rx="16" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.9" opacity="1"/>
+<text x="495" y="233.9" text-anchor="middle" font-size="17" font-weight="700" fill="#2a2626">Engine: filter → combine</text>
+<text x="495" y="252.8" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">Available only · weather · dress code</text>
+<text x="495" y="268.0" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">modest · recycle time</text>
+<rect x="660.0" y="184.0" width="250" height="112" rx="16" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.9" opacity="1"/>
+<text x="785" y="233.9" text-anchor="middle" font-size="17" font-weight="700" fill="#2a2626">Three looks</text>
+<text x="785" y="252.8" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">pieces · name · occasion · style</text>
+<text x="785" y="268.0" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">weather · “Recommended because …”</text>
+<rect x="950.0" y="184.0" width="250" height="112" rx="16" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.9" opacity="1"/>
+<text x="1075" y="233.9" text-anchor="middle" font-size="17" font-weight="700" fill="#2a2626">Change a piece</text>
+<text x="1075" y="252.8" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">one slot swapped · the rest stays</text>
+<text x="1075" y="268.0" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">rule check runs again</text>
+<rect x="1245.0" y="184.0" width="290" height="112" rx="16" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.9" opacity="1"/>
+<text x="1390" y="233.9" text-anchor="middle" font-size="17" font-weight="700" fill="#2a2626">Virtual try-on</text>
+<text x="1390" y="252.8" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">dressing room · avatar (simulated)</text>
+<text x="1390" y="268.0" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">flip between the three looks</text>
+<circle cx="40" cy="240" r="13" fill="#2a2626"/>
+<line x1="53.0" y1="240.0" x2="78.0" y2="240.0" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<line x1="332.0" y1="240.0" x2="366.0" y2="240.0" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<line x1="622.0" y1="240.0" x2="656.0" y2="240.0" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<line x1="912.0" y1="240.0" x2="946.0" y2="240.0" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<line x1="1202.0" y1="240.0" x2="1241.0" y2="240.0" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<path d="M1075 184.0 C1075 120 785 120 785 180.0" fill="none" stroke="#9c5f5b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#arrR)"/>
+<rect x="888.6" y="126.2" width="82.8" height="19.5" rx="4" fill="#fffdfb"/>
+<text x="930.0" y="140.6" text-anchor="middle" font-size="13" font-weight="normal" fill="#9c5f5b">swap again</text>
+<path d="M1330 184.0 C1330 120 1135 120 1135 180.0" fill="none" stroke="#9c5f5b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#arrR)"/>
+<rect x="1171.1" y="126.2" width="162.9" height="19.5" rx="4" fill="#fffdfb"/>
+<text x="1252.5" y="140.6" text-anchor="middle" font-size="13" font-weight="normal" fill="#9c5f5b">back · change a piece</text>
+<path d="M1390 374 L1460 420 L1390 466 L1320 420 Z" fill="#fff" stroke="#2a2626" stroke-width="1.8"/>
+<text x="1390" y="425.2" text-anchor="middle" font-size="15" font-weight="600" fill="#2a2626">decide</text>
+<line x1="1390.0" y1="298.0" x2="1390.0" y2="372.0" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<rect x="1245.0" y="548.0" width="290" height="104" rx="16" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.9" opacity="1"/>
+<text x="1390" y="594.0" text-anchor="middle" font-size="17" font-weight="700" fill="#2a2626">Wear this</text>
+<text x="1390" y="612.8" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">wear count +1 · last worn</text>
+<text x="1390" y="628.0" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">occasion + weather kept</text>
+<rect x="945.0" y="548.0" width="260" height="104" rx="16" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.9" opacity="1"/>
+<text x="1075" y="594.0" text-anchor="middle" font-size="17" font-weight="700" fill="#2a2626">Rate 1 – 5</text>
+<text x="1075" y="612.8" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">after wearing</text>
+<text x="1075" y="628.0" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">“wouldn’t repeat” = never again</text>
+<rect x="655.0" y="548.0" width="260" height="104" rx="16" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.9" opacity="1"/>
+<text x="785" y="594.0" text-anchor="middle" font-size="17" font-weight="700" fill="#2a2626">Save · Favourite</text>
+<text x="785" y="612.8" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">lookbook · favourites</text>
+<text x="785" y="628.0" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">raise similar pieces</text>
+<rect x="365.0" y="548.0" width="260" height="104" rx="16" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.9" opacity="1"/>
+<text x="495" y="594.0" text-anchor="middle" font-size="17" font-weight="700" fill="#2a2626">Reject + reason</text>
+<text x="495" y="612.8" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">7 reasons · “not in the mood”</text>
+<text x="495" y="628.0" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">hides for a week</text>
+<line x1="1390.0" y1="468.0" x2="1390.0" y2="546.0" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<path d="M1320 420 H1075 V546" fill="none" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<path d="M1320 420 H785 V546" fill="none" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<path d="M1320 420 H495 V546" fill="none" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<line x1="1245.0" y1="600.0" x2="1207.0" y2="600.0" stroke="#8f857c" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#open)"/>
+<rect x="330" y="700" width="1200" height="54" rx="27" fill="#2a2626" stroke="#2a2626" stroke-width="0" opacity="1"/>
+<text x="930" y="732.6" text-anchor="middle" font-size="16" font-weight="600" fill="#fff">FEEDBACK STORED · wears · ratings · favourites · swaps · rejections with a reason (US-37)</text>
+<line x1="495.0" y1="652.0" x2="495.0" y2="698.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="785.0" y1="652.0" x2="785.0" y2="698.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="1075.0" y1="652.0" x2="1075.0" y2="698.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="1390.0" y1="652.0" x2="1390.0" y2="698.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="25.0" y="675.0" width="250" height="104" rx="16" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.9" opacity="1"/>
+<text x="150" y="721.0" text-anchor="middle" font-size="17" font-weight="700" fill="#2a2626">Closet has learned</text>
+<text x="150" y="739.8" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">pattern + evidence + confidence</text>
+<text x="150" y="755.0" text-anchor="middle" font-size="12.5" font-weight="normal" fill="#4a4342">confirm · not accurate · undo</text>
+<line x1="330.0" y1="727.0" x2="277.0" y2="727.0" stroke="#2a2626" stroke-width="1.8" marker-end="url(#arr)"/>
+<path d="M150 675 V440 H495 V298" fill="none" stroke="#9c5f5b" stroke-width="2" stroke-dasharray="8 5" marker-end="url(#arrR)"/>
+<rect x="216.7" y="413.9" width="206.6" height="20.2" rx="4" fill="#fffdfb"/>
+<text x="320" y="428.7" text-anchor="middle" font-size="13.5" font-weight="normal" fill="#9c5f5b">ranks the next three looks</text>
+<rect x="330" y="790" width="1200" height="70" rx="12" fill="#fff7f4" stroke="#c48a86" stroke-width="1.2" opacity="1"/>
+<text x="350" y="819.7" text-anchor="start" font-size="13.5" font-weight="normal" fill="#2a2626">Requirements: FR-27 – FR-35, FR-42 – FR-50, FR-75, FR-76 · Use cases: UC-09, UC-12, UC-22 · Stories: US-19, US-24, US-27, US-26, US-23, US-62, US-60, US-40</text>
+<text x="350" y="844.7" text-anchor="start" font-size="13.5" font-weight="normal" fill="#7d736f">Tests: API-R01 – R06, API-CF01 – CF02, API-O01 – O03, EX-01 – EX-06, LR-01 – LR-05, browser journey steps 39 – 42b</text>
+<rect x="40" y="810" width="30" height="18" rx="9" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.4" opacity="1"/>
+<text x="80" y="823.5" text-anchor="start" font-size="13" font-weight="normal" fill="#2a2626">Sprint 2 · early preview</text>
+<rect x="40" y="836" width="30" height="18" rx="9" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.4" opacity="1"/>
+<text x="80" y="849.5" text-anchor="start" font-size="13" font-weight="normal" fill="#2a2626">Sprint 3 · product preview</text>
+</svg>

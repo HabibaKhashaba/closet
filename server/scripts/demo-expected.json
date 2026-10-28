@@ -1,0 +1,47 @@
+{
+  "looks": [
+    {
+      "name": "Campus Stripes",
+      "pieces": [
+        "Breton striped top",
+        "Beige wide-leg trousers",
+        "White sneakers",
+        "Tortoise sunglasses"
+      ],
+      "match": 98
+    },
+    {
+      "name": "Classic Midi",
+      "pieces": [
+        "Breton striped top",
+        "Black midi skirt",
+        "White sneakers"
+      ],
+      "match": 98
+    },
+    {
+      "name": "Classic Oxford",
+      "pieces": [
+        "Blue Oxford shirt",
+        "Beige wide-leg trousers",
+        "White sneakers"
+      ],
+      "match": 99
+    }
+  ],
+  "fixed": [
+    "Campus Denim",
+    "Classic Oxford",
+    "Classic Denim"
+  ],
+  "mix": [
+    98,
+    82,
+    98
+  ],
+  "tray": [
+    "Blue Oxford shirt",
+    "Sage linen shirt",
+    "Red cropped tee"
+  ]
+}

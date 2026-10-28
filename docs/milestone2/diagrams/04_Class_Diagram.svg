@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="Inter, Helvetica, Arial, sans-serif">
+<defs><marker id="arr" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#2a2626"/></marker><marker id="open" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10" fill="none" stroke="#2a2626" stroke-width="1.5"/></marker><marker id="tri" markerWidth="16" markerHeight="14" refX="15" refY="7" orient="auto"><path d="M0,0 L15,7 L0,14 z" fill="#fff" stroke="#2a2626" stroke-width="1.4"/></marker><marker id="dia" markerWidth="18" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1,6 L9,1 L17,6 L9,11 z" fill="#2a2626"/></marker><marker id="arrR" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#9c5f5b"/></marker></defs>
+<rect width="1600" height="900" fill="#fffdfb"/>
+<text x="40" y="52" font-family="Lora, Georgia, serif" font-size="30" fill="#2a2626">Class diagram · key classes (lower-level design)</text>
+<text x="40" y="80" font-size="15" fill="#7d736f">Each module = Router → Service → Repository (Repository pattern). The engine is Pipe &amp; Filter with a Strategy scorer; adapters hide external services.</text>
+<rect x="40" y="110" width="300" height="180" rx="6" fill="#fff" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<rect x="40" y="110" width="300" height="46" rx="6" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<text x="190.0" y="126.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«facade»</text>
+<text x="190.0" y="147.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">ApiGateway</text>
+<text x="50" y="176.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- pipeline: Middleware[]</text>
+<line x1="40.0" y1="183.0" x2="340.0" y2="183.0" stroke="#4f8a66" stroke-width="1"/>
+<text x="50" y="203.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ securityPipeline(app)</text>
+<text x="50" y="222.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ validate(schema)</text>
+<text x="50" y="241.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ authenticate(IAuthToken)</text>
+<text x="50" y="260.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ requireRole(role)</text>
+<text x="50" y="279.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ audit(ActivityService)</text>
+<rect x="40" y="380" width="300" height="180" rx="6" fill="#fff" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<rect x="40" y="380" width="300" height="46" rx="6" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<text x="190.0" y="396.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«service»</text>
+<text x="190.0" y="417.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">IdentityService</text>
+<text x="50" y="446.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- repo: IdentityRepository</text>
+<text x="50" y="465.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- bus: EventBus</text>
+<line x1="40.0" y1="472.0" x2="340.0" y2="472.0" stroke="#4f8a66" stroke-width="1"/>
+<text x="50" y="492.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ register(email, pw): Session</text>
+<text x="50" y="511.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ login(email, pw): Session</text>
+<text x="50" y="530.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ verifySession(token): User</text>
+<text x="50" y="549.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ logout(userId)</text>
+<rect x="400" y="110" width="320" height="199" rx="6" fill="#fff" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<rect x="400" y="110" width="320" height="46" rx="6" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<text x="560.0" y="126.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«service»</text>
+<text x="560.0" y="147.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">WardrobeService</text>
+<text x="410" y="176.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- repo: WardrobeRepository</text>
+<text x="410" y="195.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- storage: PhotoStorage</text>
+<line x1="400.0" y1="202.0" x2="720.0" y2="202.0" stroke="#4f8a66" stroke-width="1"/>
+<text x="410" y="222.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ add(userId, photo, details): Piece</text>
+<text x="410" y="241.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ list(userId, filters): Piece[]</text>
+<text x="410" y="260.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ edit(userId, id, changes)</text>
+<text x="410" y="279.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ remove(userId, id, reason)</text>
+<text x="410" y="298.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ gaps(userId): Gaps</text>
+<rect x="400" y="420" width="320" height="180" rx="6" fill="#fff" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<rect x="400" y="420" width="320" height="46" rx="6" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<text x="560.0" y="436.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«service»</text>
+<text x="560.0" y="457.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">AvailabilityService</text>
+<text x="410" y="486.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- repo: StatusRepository</text>
+<text x="410" y="505.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- machine: StatusMachine</text>
+<line x1="400.0" y1="512.0" x2="720.0" y2="512.0" stroke="#4f8a66" stroke-width="1"/>
+<text x="410" y="532.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ setStatus(userId, id, to, until, note)</text>
+<text x="410" y="551.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ washDone(userId): Result</text>
+<text x="410" y="570.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ sweep(userId)  // auto-return</text>
+<text x="410" y="589.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ infoMap(userId)</text>
+<rect x="400" y="690" width="320" height="88" rx="6" fill="#fff" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<rect x="400" y="690" width="320" height="30" rx="6" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<text x="560.0" y="711.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">StatusMachine</text>
+<text x="410" y="740.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">+ ALLOWED: Map&lt;Status, Status[]&gt;</text>
+<line x1="400.0" y1="747.0" x2="720.0" y2="747.0" stroke="#4f8a66" stroke-width="1"/>
+<text x="410" y="767.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ canMove(from, to): bool</text>
+<rect x="780" y="110" width="330" height="199" rx="6" fill="#fff" stroke="#b77a33" stroke-width="1.6" opacity="1"/>
+<rect x="780" y="110" width="330" height="46" rx="6" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.6" opacity="1"/>
+<text x="945.0" y="126.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«pipe &amp; filter»</text>
+<text x="945.0" y="147.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">RecommendationEngine</text>
+<text x="790" y="176.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- scorer: Scorer  «Strategy»</text>
+<line x1="780.0" y1="183.0" x2="1110.0" y2="183.0" stroke="#b77a33" stroke-width="1"/>
+<text x="790" y="203.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ filterPieces(pieces, ctx)</text>
+<text x="790" y="222.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ combine(pool, ctx)</text>
+<text x="790" y="241.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ criteria(outfit) / ruleScore()</text>
+<text x="790" y="260.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ breakdown(outfit): Parts</text>
+<text x="790" y="279.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ why(outfit, ctx): Factor[]</text>
+<text x="790" y="298.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ recommend(pieces, opts): Outfit[3]</text>
+<rect x="780" y="470" width="330" height="199" rx="6" fill="#fff" stroke="#7a5a9c" stroke-width="1.6" opacity="1"/>
+<rect x="780" y="470" width="330" height="46" rx="6" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.6" opacity="1"/>
+<text x="945.0" y="486.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«service»</text>
+<text x="945.0" y="507.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">IntelligenceService</text>
+<text x="790" y="536.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- wardrobe, outfits, profile, planner</text>
+<line x1="780.0" y1="543.0" x2="1110.0" y2="543.0" stroke="#7a5a9c" stroke-width="1"/>
+<text x="790" y="563.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ health(userId): WardrobeHealth</text>
+<text x="790" y="582.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ learned(userId): Pattern[]</text>
+<text x="790" y="601.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ decide(userId, key, decision)</text>
+<text x="790" y="620.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ undo(userId, key)</text>
+<text x="790" y="639.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ conflicts(userId): Conflict[]</text>
+<text x="790" y="658.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ notifications(userId)</text>
+<rect x="1170" y="110" width="380" height="142" rx="6" fill="#fff" stroke="#7a5a9c" stroke-width="1.6" opacity="1"/>
+<rect x="1170" y="110" width="380" height="46" rx="6" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.6" opacity="1"/>
+<text x="1360.0" y="126.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«adapter»</text>
+<text x="1360.0" y="147.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">LanguageModelAdapter</text>
+<text x="1180" y="176.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- provider: anthropic | openai | none</text>
+<text x="1180" y="195.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- timeoutMs = 8000</text>
+<line x1="1170.0" y1="202.0" x2="1550.0" y2="202.0" stroke="#7a5a9c" stroke-width="1"/>
+<text x="1180" y="222.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ parse(message): {fn, args}</text>
+<text x="1180" y="241.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">  // falls back to KeywordParser</text>
+<rect x="1170" y="330" width="380" height="123" rx="6" fill="#fff" stroke="#b77a33" stroke-width="1.6" opacity="1"/>
+<rect x="1170" y="330" width="380" height="46" rx="6" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.6" opacity="1"/>
+<text x="1360.0" y="346.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«adapter»</text>
+<text x="1360.0" y="367.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">WeatherAdapter</text>
+<text x="1180" y="396.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- cache: Map (30 min)</text>
+<line x1="1170.0" y1="403.0" x2="1550.0" y2="403.0" stroke="#b77a33" stroke-width="1"/>
+<text x="1180" y="423.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ forDate(city, date): Weather</text>
+<text x="1180" y="442.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">  // seasonal estimate on failure</text>
+<rect x="1170" y="520" width="380" height="123" rx="6" fill="#fff" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<rect x="1170" y="520" width="380" height="46" rx="6" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<text x="1360.0" y="536.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«observer»</text>
+<text x="1360.0" y="557.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">EventBus</text>
+<text x="1180" y="586.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- handlers: Map&lt;topic, fn[]&gt;</text>
+<line x1="1170.0" y1="593.0" x2="1550.0" y2="593.0" stroke="#4f8a66" stroke-width="1"/>
+<text x="1180" y="613.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ subscribe(topic, handler)</text>
+<text x="1180" y="632.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ publish(topic, payload)</text>
+<rect x="40" y="680" width="300" height="104" rx="6" fill="#fff" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<rect x="40" y="680" width="300" height="46" rx="6" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.6" opacity="1"/>
+<text x="190.0" y="696.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«repository»</text>
+<text x="190.0" y="717.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">Repository (per module)</text>
+<text x="50" y="746.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- db: Pool</text>
+<line x1="40.0" y1="753.0" x2="340.0" y2="753.0" stroke="#4f8a66" stroke-width="1"/>
+<text x="50" y="773.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ queries always filter user_id</text>
+<rect x="780" y="700" width="330" height="161" rx="6" fill="#fff" stroke="#7a5a9c" stroke-width="1.6" opacity="1"/>
+<rect x="780" y="700" width="330" height="46" rx="6" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.6" opacity="1"/>
+<text x="945.0" y="716.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«service»</text>
+<text x="945.0" y="737.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">ShoppingService</text>
+<text x="790" y="766.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">- wardrobe, profile (interfaces)</text>
+<line x1="780.0" y1="773.0" x2="1110.0" y2="773.0" stroke="#7a5a9c" stroke-width="1"/>
+<text x="790" y="793.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ list(userId) / addToList(item)</text>
+<text x="790" y="812.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ onDeleted(userId, deletion)</text>
+<text x="790" y="831.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ suggestions(userId)  // gaps, basics</text>
+<text x="790" y="850.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ check(userId, piece)  // do I need it?</text>
+<rect x="1170" y="665" width="380" height="142" rx="6" fill="#fff" stroke="#7a5a9c" stroke-width="1.6" opacity="1"/>
+<rect x="1170" y="665" width="380" height="46" rx="6" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.6" opacity="1"/>
+<text x="1360.0" y="681.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">«rules»</text>
+<text x="1360.0" y="702.2" text-anchor="middle" font-size="15" font-weight="700" fill="#2a2626">DeletionPolicy</text>
+<text x="1180" y="731.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#3d3634">+ EFFECTS: reason → effect (4)</text>
+<line x1="1170.0" y1="738.0" x2="1550.0" y2="738.0" stroke="#7a5a9c" stroke-width="1"/>
+<text x="1180" y="758.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ replacementFor(deletion): Item | null</text>
+<text x="1180" y="777.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ isAvoided(deletions, piece): bool</text>
+<text x="1180" y="796.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">+ letGoStyles(deletions): Style[]</text>
+<line x1="190.0" y1="290.0" x2="190.0" y2="378.0" stroke="#2a2626" stroke-width="1.4" marker-end="url(#open)"/>
+<rect x="211.6" y="326.0" width="36.9" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="230" y="339.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">uses</text>
+<line x1="340.0" y1="220.0" x2="398.0" y2="220.0" stroke="#2a2626" stroke-width="1.4" marker-end="url(#open)"/>
+<rect x="344.7" y="197.4" width="48.6" height="17.2" rx="4" fill="#fffdfb"/>
+<text x="369" y="210.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">routes</text>
+<line x1="560.0" y1="309.0" x2="560.0" y2="418.0" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#open)"/>
+<rect x="576.3" y="355.5" width="97.4" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="625" y="368.7" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">IAvailability</text>
+<line x1="560.0" y1="600.0" x2="560.0" y2="688.0" stroke="#2a2626" stroke-width="1.4" marker-end="url(#open)"/>
+<line x1="720.0" y1="220.0" x2="778.0" y2="220.0" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#open)"/>
+<rect x="715.0" y="197.4" width="68.0" height="17.2" rx="4" fill="#fffdfb"/>
+<text x="749" y="210.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">IWardrobe</text>
+<line x1="945.0" y1="309.0" x2="945.0" y2="468.0" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#open)"/>
+<rect x="961.4" y="380.5" width="77.2" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="1000" y="393.7" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">IRecommend</text>
+<line x1="1110.0" y1="279.0" x2="1168.0" y2="370.0" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#open)"/>
+<rect x="1109.2" y="312.9" width="61.5" height="17.2" rx="4" fill="#fffdfb"/>
+<text x="1140" y="325.5" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">IWeather</text>
+<line x1="1110.0" y1="610.0" x2="1168.0" y2="570.0" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#open)"/>
+<rect x="1115.7" y="578.4" width="48.6" height="17.2" rx="4" fill="#fffdfb"/>
+<text x="1140" y="591.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">events</text>
+<line x1="1110.0" y1="170.0" x2="1168.0" y2="170.0" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#open)"/>
+<rect x="1093.1" y="147.4" width="93.7" height="17.2" rx="4" fill="#fffdfb"/>
+<text x="1140" y="160.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">IIntentParser</text>
+<line x1="190.0" y1="560.0" x2="190.0" y2="678.0" stroke="#2a2626" stroke-width="1.4" marker-end="url(#open)"/>
+<line x1="1170.0" y1="620.0" x2="1112.0" y2="730.0" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#open)"/>
+<rect x="1087.6" y="661.4" width="80.8" height="17.2" rx="4" fill="#fffdfb"/>
+<text x="1128" y="674.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">ItemDeleted</text>
+<line x1="1110.0" y1="800.0" x2="1168.0" y2="725.0" stroke="#2a2626" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#open)"/>
+<rect x="1122.1" y="755.4" width="35.8" height="17.2" rx="4" fill="#fffdfb"/>
+<text x="1140" y="768.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">uses</text>
+<rect x="400" y="815" width="30" height="18" rx="9" fill="#e4f0e8" stroke="#4f8a66" stroke-width="1.4" opacity="1"/>
+<text x="440" y="828.7" text-anchor="start" font-size="13.5" font-weight="normal" fill="#2a2626">Sprint 1 · implemented</text>
+<rect x="400" y="841" width="30" height="18" rx="9" fill="#f8ecdc" stroke="#b77a33" stroke-width="1.4" opacity="1"/>
+<text x="440" y="854.7" text-anchor="start" font-size="13.5" font-weight="normal" fill="#2a2626">Sprint 2 · early preview</text>
+<rect x="400" y="867" width="30" height="18" rx="9" fill="#eee7f2" stroke="#7a5a9c" stroke-width="1.4" opacity="1"/>
+<text x="440" y="880.7" text-anchor="start" font-size="13.5" font-weight="normal" fill="#2a2626">Sprint 3 · product preview</text>
+</svg>

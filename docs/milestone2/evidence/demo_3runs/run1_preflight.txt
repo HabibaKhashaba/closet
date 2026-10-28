@@ -1,0 +1,34 @@
+Closet demo preflight → http://localhost:4000/api/v1
+  ✓ server is up
+  ✓ demo user demo@closet.app signs in
+  ✓ the seeded closet has 30 pieces — 30
+  ✓ piece “Navy blazer” exists
+  ✓ piece “Silk scarf” exists
+  ✓ piece “Denim jacket” exists
+  ✓ piece “Red cropped tee” exists
+  ✓ piece “Beige wide-leg trousers” exists
+  ✓ piece “Breton striped top” exists
+  ✓ piece “Ivory silk blouse” exists
+  ✓ Navy blazer is Available (Act 2 moves it to the laundry) — Available
+  ✓ Silk scarf is Available (Act 6 deletes it)
+  ✓ three pieces wait in the laundry basket — Light-wash jeans, Black ribbed top, White fitted tee
+  ✓ Denim jacket is a forgotten piece (Act 4) — Brown ankle boots, Cream knit sweater, Camel cardigan, Silk scarf, Cream pleated skirt, Blush satin cami, Denim jacket
+  ✓ no learned preference is confirmed yet (Act 8 confirms and undoes one)
+  ✓ Style me → University gives exactly three looks
+  ✓ the three looks have three different names — Campus Stripes · Classic Midi · Classic Oxford
+  ✓ weather is the seasonal estimate (start the server with WEATHER_MODE=estimate for a repeatable demo) — 30 °C · estimate
+  ✓ clicking the top of LOOK 01 offers three alternatives — Blue Oxford shirt 99%, Sage linen shirt 99%, Red cropped tee 90%
+  ✓ Another chance → three looks, every one with the denim jacket
+  ✓ Mix & Match: the red cropped tee lowers the Work look — 98% → 82%
+  ✓ Suggest a fix replaces the tee and raises the score — 82% → 98%
+  ✓ the shopping bag already holds replacements from earlier deletions — Black ballet flats, Black straight jeans · next size
+  ✓ no silk-scarf replacement yet (Act 6 adds it)
+  ✓ Ask Closet answers “Do I need beige trousers?” — buy_check · Probably not. You already own 4 similar beige bottoms. Style what you …
+  ✓ Closet has learned shows patterns with evidence — let-go-streetwear, less-formal, style-elegant, neutral-brown
+  ✓ a throwaway account for the deletion check
+  ✓ “No longer my style” creates no replacement
+  ✓ “Torn / damaged” puts a replacement in the bag
+  ✓ the throwaway account is deleted again
+  ✓ the demo gives the same looks, tray and scores as the saved run
+
+Ready: every demo check passed.

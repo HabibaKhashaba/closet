@@ -1,0 +1,76 @@
+Closet browser journey — e2e/demo_journey.py (Playwright, Chromium 1440×900)
+Run: 2026-10-26 · app build v1.4 (final reliability pass) · 3 runs, each after a server restart + npm run seed · local server http://localhost:4000 after npm run seed
+Try-on photo: e2e/fixtures/tryon_test_figure.jpg (neutral test figure, not a person)
+
+Run 1: 58 steps, 0 browser errors · exit code 0
+Run 2: 58 steps, 0 browser errors · exit code 0
+Run 3: 58 steps, 0 browser errors · exit code 0
+The journey writes results.json (three look names and pieces, replace-tray order, forgotten-piece looks,
+Mix & Match scores 98 → 82 → 98 and the fix text, Ask Closet replies). All three runs are identical
+(see demo_3runs/). npm run demo:check passed before each run.
+
+State checks (read from the API, not only the screen): Navy blazer is in Laundry and back to Available
+after Wash done; changing a piece leaves the other pieces unchanged; Save and Favourite store the look;
+Wear this today records exactly the worn pieces; Suggest a fix changes exactly one piece; the Silk scarf
+is gone from the closet and a Replacement with reason "Torn / damaged" is in the bag; Beige trousers are
+stored with source Ask Closet; Confirm changes the profile and Undo restores it; the closet ends at 29 pieces.
+
+Screenshots:
+01_login.png
+02_login_error.png
+03_register_validation.png
+04_quiz.png
+06_closet_empty.png
+07_add_photo.png
+08_add_required.png
+09_add_details.png
+10_add_review.png
+11_closet_one.png
+12_closet_full.png
+13_closet_filtered.png
+14_piece_detail.png
+15_piece_to_laundry.png
+16_piece_edit.png
+17_laundry.png
+18_laundry_washing.png
+19_laundry_clean.png
+20_planner.png
+21_event_form.png
+22_planner_added.png
+23_gaps.png
+24_settings.png
+25_delete_confirm.png
+26_phone_home.png
+30_home.png
+31_notifications.png
+32_home_conflict.png
+33_planner_conflict.png
+34_planner_fixed.png
+39_style_studio.png
+39b_generating.png
+40_recommendations.png
+40b_why.png
+41_change_piece.png
+41a_replace_tray.png
+42_tryon.png
+42a_tryon_choose_photo.png
+42b_tryon_next.png
+43_forgotten_three_looks.png
+43a_forgotten.png
+44_saved.png
+44a_mix_board.png
+44b_mix_weak.png
+44c_mix_fixed.png
+45_packing.png
+46_packed.png
+47_delete_reason.png
+48_bag_replacement.png
+50_ask.png
+51_analytics.png
+51a_learned_cards.png
+51b_learned.png
+51c_learned_confirmed.png
+52_shopping.png
+52b_duplicate.png
+53_admin.png
+54_end_home.png

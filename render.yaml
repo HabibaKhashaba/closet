@@ -1,0 +1,28 @@
+# One-click deployment on Render (render.com → New → Blueprint → this repo).
+# One web service serves the API and the built React app; one managed PostgreSQL database.
+services:
+  - type: web
+    name: closet
+    runtime: node
+    plan: free
+    buildCommand: cd client && npm install && npm run build && cd ../server && npm install --omit=dev
+    startCommand: cd server && npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase: { name: closet-db, property: connectionString }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PHOTO_URL_SECRET
+        generateValue: true
+      - key: CLIENT_ORIGIN
+        value: https://closet.onrender.com
+      # Free plan: photos are kept until the next deploy. For permanent photos add a
+      # Render disk (paid) mounted at /var/data and set PHOTO_DIR=/var/data/uploads.
+      - key: PHOTO_DIR
+        value: ./uploads
+databases:
+  - name: closet-db
+    plan: free

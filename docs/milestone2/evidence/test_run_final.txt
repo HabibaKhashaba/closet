@@ -1,0 +1,2676 @@
+TAP version 13
+# Subtest: Sprint 1 acceptance: "A working closet"
+    # Subtest: AT-01 US-01 Register and log in — password ≥ 8 chars; wrong password shows an error; no other user’s data is returned
+    ok 1 - AT-01 US-01 Register and log in — password ≥ 8 chars; wrong password shows an error; no other user’s data is returned
+      ---
+      duration_ms: 1814.946779
+      type: 'test'
+      ...
+    # Subtest: AT-02 US-02 Style quiz — ≤ 4 steps, skippable; answers saved
+    ok 2 - AT-02 US-02 Style quiz — ≤ 4 steps, skippable; answers saved
+      ---
+      duration_ms: 12.189504
+      type: 'test'
+      ...
+    # Subtest: AT-03 US-03 Dress code and modest preference — one of the 5 levels; modest stored
+    ok 3 - AT-03 US-03 Dress code and modest preference — one of the 5 levels; modest stored
+      ---
+      duration_ms: 20.357409
+      type: 'test'
+      ...
+    # Subtest: AT-04 US-04 Set my city — saved to the profile (forecast shown from Sprint 2)
+    ok 4 - AT-04 US-04 Set my city — saved to the profile (forecast shown from Sprint 2)
+      ---
+      duration_ms: 11.476333
+      type: 'test'
+      ...
+    # Subtest: AT-05 US-08 Add a piece by photo — JPG/PNG/HEIC ≤ 10 MB stored and shown as the piece’s image
+    ok 5 - AT-05 US-08 Add a piece by photo — JPG/PNG/HEIC ≤ 10 MB stored and shown as the piece’s image
+      ---
+      duration_ms: 32.487767
+      type: 'test'
+      ...
+    # Subtest: AT-06 US-09 Enter details — values from 3.1; category, colour and ≥ 1 dress-code level required
+    ok 6 - AT-06 US-09 Enter details — values from 3.1; category, colour and ≥ 1 dress-code level required
+      ---
+      duration_ms: 28.736138
+      type: 'test'
+      ...
+    # Subtest: AT-07 US-11 Review before saving — the piece exists only after Save
+    ok 7 - AT-07 US-11 Review before saving — the piece exists only after Save
+      ---
+      duration_ms: 14.37702
+      type: 'test'
+      ...
+    # Subtest: AT-08 US-12 Browse and filter — filters combine; counts update
+    ok 8 - AT-08 US-12 Browse and filter — filters combine; counts update
+      ---
+      duration_ms: 72.868455
+      type: 'test'
+      ...
+    # Subtest: AT-09 US-71 Edit a piece later — changes appear in filters
+    ok 9 - AT-09 US-71 Edit a piece later — changes appear in filters
+      ---
+      duration_ms: 34.761132
+      type: 'test'
+      ...
+    # Subtest: AT-10 US-56 Status per piece — exactly one status, shown as a badge
+    ok 10 - AT-10 US-56 Status per piece — exactly one status, shown as a badge
+      ---
+      duration_ms: 41.645414
+      type: 'test'
+      ...
+    # Subtest: AT-11 US-15 Laundry basket — one tap each way; basket lists all Laundry pieces
+    ok 11 - AT-11 US-15 Laundry basket — one tap each way; basket lists all Laundry pieces
+      ---
+      duration_ms: 91.598545
+      type: 'test'
+      ...
+    # Subtest: AT-12 US-16 Wash done — all Laundry pieces become Available
+    ok 12 - AT-12 US-16 Wash done — all Laundry pieces become Available
+      ---
+      duration_ms: 37.391759
+      type: 'test'
+      ...
+    # Subtest: AT-13 US-46 Add events by hand — title, date, time and one occasion; month view
+    ok 13 - AT-13 US-46 Add events by hand — title, date, time and one occasion; month view
+      ---
+      duration_ms: 34.048369
+      type: 'test'
+      ...
+    # Subtest: AT-14 US-64 Closet gaps — a gap is ≤ 1 piece at a level the user dresses for
+    ok 14 - AT-14 US-64 Closet gaps — a gap is ≤ 1 piece at a level the user dresses for
+      ---
+      duration_ms: 15.665747
+      type: 'test'
+      ...
+    # Subtest: AT-15 US-06 Delete my account — double confirmation; all data and photos deleted
+    ok 15 - AT-15 US-06 Delete my account — double confirmation; all data and photos deleted
+      ---
+      duration_ms: 310.577744
+      type: 'test'
+      ...
+    1..15
+ok 1 - Sprint 1 acceptance: "A working closet"
+  ---
+  duration_ms: 3001.248521
+  type: 'suite'
+  ...
+# Subtest: Registration
+    # Subtest: API-A01 valid email and password → 201, token, profile created
+    ok 1 - API-A01 valid email and password → 201, token, profile created
+      ---
+      duration_ms: 561.653813
+      type: 'test'
+      ...
+    # Subtest: API-A02 password stored as bcrypt hash, never in plain text
+    ok 2 - API-A02 password stored as bcrypt hash, never in plain text
+      ---
+      duration_ms: 388.791004
+      type: 'test'
+      ...
+    # Subtest: API-A03 duplicate email (any letter case) → 409
+    ok 3 - API-A03 duplicate email (any letter case) → 409
+      ---
+      duration_ms: 326.376167
+      type: 'test'
+      ...
+    # Subtest: API-A04 7-character password → 400 with field details
+    ok 4 - API-A04 7-character password → 400 with field details
+      ---
+      duration_ms: 86.012543
+      type: 'test'
+      ...
+    # Subtest: API-A05 missing fields → 400 listing both
+    ok 5 - API-A05 missing fields → 400 listing both
+      ---
+      duration_ms: 95.808252
+      type: 'test'
+      ...
+    1..5
+ok 2 - Registration
+  ---
+  duration_ms: 1461.635391
+  type: 'suite'
+  ...
+# Subtest: Login
+    # Subtest: API-A06 correct credentials → 200 and a working token
+    ok 1 - API-A06 correct credentials → 200 and a working token
+      ---
+      duration_ms: 440.017439
+      type: 'test'
+      ...
+    # Subtest: API-A07 wrong password and unknown email give the same 401 message
+    ok 2 - API-A07 wrong password and unknown email give the same 401 message
+      ---
+      duration_ms: 465.564332
+      type: 'test'
+      ...
+    # Subtest: API-A08 4 failures still allow login (boundary below lockout)
+    ok 3 - API-A08 4 failures still allow login (boundary below lockout)
+      ---
+      duration_ms: 1265.110619
+      type: 'test'
+      ...
+    # Subtest: API-A09 5th failure locks the account; even the right password gets 423
+    ok 4 - API-A09 5th failure locks the account; even the right password gets 423
+      ---
+      duration_ms: 1165.693911
+      type: 'test'
+      ...
+    # Subtest: API-A10 after the 15-minute lock expires, the right password works again
+    ok 5 - API-A10 after the 15-minute lock expires, the right password works again
+      ---
+      duration_ms: 1473.813965
+      type: 'test'
+      ...
+    # Subtest: API-A11 suspended account cannot sign in (403)
+    ok 6 - API-A11 suspended account cannot sign in (403)
+      ---
+      duration_ms: 255.768362
+      type: 'test'
+      ...
+    1..6
+ok 3 - Login
+  ---
+  duration_ms: 5067.238877
+  type: 'suite'
+  ...
+# Subtest: Sessions and protected routes
+    # Subtest: API-A12 no token → 401 on every protected route
+    ok 1 - API-A12 no token → 401 on every protected route
+      ---
+      duration_ms: 112.205907
+      type: 'test'
+      ...
+    # Subtest: API-A13 tampered, wrong-secret and expired tokens → 401
+    ok 2 - API-A13 tampered, wrong-secret and expired tokens → 401
+      ---
+      duration_ms: 365.228652
+      type: 'test'
+      ...
+    # Subtest: API-A14 logout ends the session: the old token stops working
+    ok 3 - API-A14 logout ends the session: the old token stops working
+      ---
+      duration_ms: 318.021922
+      type: 'test'
+      ...
+    # Subtest: API-A15 a token for a deleted user is refused
+    ok 4 - API-A15 a token for a deleted user is refused
+      ---
+      duration_ms: 324.799539
+      type: 'test'
+      ...
+    1..4
+ok 4 - Sessions and protected routes
+  ---
+  duration_ms: 1120.98156
+  type: 'suite'
+  ...
+# Subtest: Google sign-in (US-01 "or Google")
+    # Subtest: API-A16 first Google sign-in creates the account and profile
+    ok 1 - API-A16 first Google sign-in creates the account and profile
+      ---
+      duration_ms: 133.167945
+      type: 'test'
+      ...
+    # Subtest: API-A17 Google sign-in links to an existing email account
+    ok 2 - API-A17 Google sign-in links to an existing email account
+      ---
+      duration_ms: 382.031575
+      type: 'test'
+      ...
+    # Subtest: API-A18 invalid Google credential → 401
+    ok 3 - API-A18 invalid Google credential → 401
+      ---
+      duration_ms: 126.419091
+      type: 'test'
+      ...
+    1..3
+ok 5 - Google sign-in (US-01 "or Google")
+  ---
+  duration_ms: 642.422667
+  type: 'suite'
+  ...
+# Subtest: Status per piece (US-56)
+    # Subtest: API-S01 valid path Available → Borrowed → Laundry → Available
+    ok 1 - API-S01 valid path Available → Borrowed → Laundry → Available
+      ---
+      duration_ms: 594.829187
+      type: 'test'
+      ...
+    # Subtest: API-S02 invalid transition Laundry → Borrowed → 409 and status unchanged
+    ok 2 - API-S02 invalid transition Laundry → Borrowed → 409 and status unchanged
+      ---
+      duration_ms: 459.020441
+      type: 'test'
+      ...
+    # Subtest: API-S03 invalid transition Unavailable → Packed → 409
+    ok 3 - API-S03 invalid transition Unavailable → Packed → 409
+      ---
+      duration_ms: 413.415103
+      type: 'test'
+      ...
+    # Subtest: API-S04 setting the same status is a no-op (exactly one status, no duplicate history)
+    ok 4 - API-S04 setting the same status is a no-op (exactly one status, no duplicate history)
+      ---
+      duration_ms: 369.105645
+      type: 'test'
+      ...
+    # Subtest: API-S05 unknown status value → 400
+    ok 5 - API-S05 unknown status value → 400
+      ---
+      duration_ms: 341.458287
+      type: 'test'
+      ...
+    # Subtest: API-S06 the status badge value comes back with the piece
+    ok 6 - API-S06 the status badge value comes back with the piece
+      ---
+      duration_ms: 348.870998
+      type: 'test'
+      ...
+    1..6
+ok 6 - Status per piece (US-56)
+  ---
+  duration_ms: 2529.733188
+  type: 'suite'
+  ...
+# Subtest: Laundry basket and Wash done (US-15, US-16)
+    # Subtest: API-L01 one tap in, basket lists it; one tap out
+    ok 1 - API-L01 one tap in, basket lists it; one tap out
+      ---
+      duration_ms: 318.109547
+      type: 'test'
+      ...
+    # Subtest: API-L02 Wash done returns every Laundry piece to Available, and only those
+    ok 2 - API-L02 Wash done returns every Laundry piece to Available, and only those
+      ---
+      duration_ms: 351.916014
+      type: 'test'
+      ...
+    # Subtest: API-L03 Wash done with an empty basket returns 0
+    ok 3 - API-L03 Wash done with an empty basket returns 0
+      ---
+      duration_ms: 402.800354
+      type: 'test'
+      ...
+    # Subtest: API-L04 Wash done never touches another user's laundry
+    ok 4 - API-L04 Wash done never touches another user's laundry
+      ---
+      duration_ms: 548.449053
+      type: 'test'
+      ...
+    1..4
+ok 7 - Laundry basket and Wash done (US-15, US-16)
+  ---
+  duration_ms: 1622.585352
+  type: 'suite'
+  ...
+# Subtest: Three looks, change one piece (US-19, US-24)
+    # Subtest: API-CF03 the three looks each have their own editorial name
+    ok 1 - API-CF03 the three looks each have their own editorial name
+      ---
+      duration_ms: 942.736698
+      type: 'test'
+      ...
+    # Subtest: API-CF04 the replace tray: up to 3 Available alternatives, each with its re-scored look and only that slot changed
+    ok 2 - API-CF04 the replace tray: up to 3 Available alternatives, each with its re-scored look and only that slot changed
+      ---
+      duration_ms: 528.515757
+      type: 'test'
+      ...
+    1..2
+ok 8 - Three looks, change one piece (US-19, US-24)
+  ---
+  duration_ms: 1473.473104
+  type: 'suite'
+  ...
+# Subtest: Style a forgotten piece (US-54, US-59)
+    # Subtest: API-FP01 a piece not worn for 50 days is "forgotten"; Style this piece gives 3 looks that all contain it — even a warm layer at 30 °C
+    ok 1 - API-FP01 a piece not worn for 50 days is "forgotten"; Style this piece gives 3 looks that all contain it — even a warm layer at 30 °C
+      ---
+      duration_ms: 482.400028
+      type: 'test'
+      ...
+    # Subtest: API-FP02 a forgotten piece that is in the laundry cannot be styled: no looks, a plain note
+    ok 2 - API-FP02 a forgotten piece that is in the laundry cannot be styled: no looks, a plain note
+      ---
+      duration_ms: 527.758411
+      type: 'test'
+      ...
+    1..2
+ok 9 - Style a forgotten piece (US-54, US-59)
+  ---
+  duration_ms: 1010.705209
+  type: 'suite'
+  ...
+# Subtest: Mix & Match and Suggest a fix (US-42, US-43, US-66)
+    # Subtest: API-MM01 a strong look scores high; a weak piece drops the score; the best single swap (Suggest a fix) raises it again
+    ok 1 - API-MM01 a strong look scores high; a weak piece drops the score; the best single swap (Suggest a fix) raises it again
+      ---
+      duration_ms: 589.377382
+      type: 'test'
+      ...
+    1..1
+ok 10 - Mix & Match and Suggest a fix (US-42, US-43, US-66)
+  ---
+  duration_ms: 589.837152
+  type: 'suite'
+  ...
+# Subtest: Explainable recommendations (US-57)
+    # Subtest: API-EX01 each recommended outfit explains why, using the profile and the weather
+    ok 1 - API-EX01 each recommended outfit explains why, using the profile and the weather
+      ---
+      duration_ms: 692.957963
+      type: 'test'
+      ...
+    # Subtest: API-EX02 rejections feed the explanation ("Your feedback")
+    ok 2 - API-EX02 rejections feed the explanation ("Your feedback")
+      ---
+      duration_ms: 484.414881
+      type: 'test'
+      ...
+    1..2
+ok 11 - Explainable recommendations (US-57)
+  ---
+  duration_ms: 1179.153255
+  type: 'suite'
+  ...
+# Subtest: Wardrobe Health (US-89)
+    # Subtest: API-H01 score with parts, penalties and actions; parts add up to the score
+    ok 1 - API-H01 score with parts, penalties and actions; parts add up to the score
+      ---
+      duration_ms: 465.599046
+      type: 'test'
+      ...
+    # Subtest: API-H02 a new user with no pieces gets an empty score, not an error
+    ok 2 - API-H02 a new user with no pieces gets an empty score, not an error
+      ---
+      duration_ms: 710.959702
+      type: 'test'
+      ...
+    1..2
+ok 12 - Wardrobe Health (US-89)
+  ---
+  duration_ms: 1177.154181
+  type: 'suite'
+  ...
+# Subtest: Closet has learned (US-40)
+    # Subtest: API-LR01 confirm a pattern → profile changes; undo → restored exactly
+    ok 1 - API-LR01 confirm a pattern → profile changes; undo → restored exactly
+      ---
+      duration_ms: 696.579323
+      type: 'test'
+      ...
+    # Subtest: API-LR02 "Not accurate" dismisses without changing the profile; unknown pattern → 404
+    ok 2 - API-LR02 "Not accurate" dismisses without changing the profile; unknown pattern → 404
+      ---
+      duration_ms: 556.972662
+      type: 'test'
+      ...
+    1..2
+ok 13 - Closet has learned (US-40)
+  ---
+  duration_ms: 1254.13225
+  type: 'suite'
+  ...
+# Subtest: Conflict detection (US-79)
+    # Subtest: API-K01 a planned piece moved to Laundry (not back in time) creates a conflict with a replacement
+    ok 1 - API-K01 a planned piece moved to Laundry (not back in time) creates a conflict with a replacement
+      ---
+      duration_ms: 662.053007
+      type: 'test'
+      ...
+    # Subtest: API-K02 fix swaps only that piece; a piece back before the event is not a conflict
+    ok 2 - API-K02 fix swaps only that piece; a piece back before the event is not a conflict
+      ---
+      duration_ms: 625.825527
+      type: 'test'
+      ...
+    # Subtest: API-K03 a Packed planned piece is a conflict, and it shows in the Notification Center
+    ok 3 - API-K03 a Packed planned piece is a conflict, and it shows in the Notification Center
+      ---
+      duration_ms: 493.54603
+      type: 'test'
+      ...
+    1..3
+ok 14 - Conflict detection (US-79)
+  ---
+  duration_ms: 1782.105577
+  type: 'suite'
+  ...
+# Subtest: Conflict detection: double booking (US-79)
+    # Subtest: API-K04 the same piece planned for two events < 4 h apart on one day is flagged
+    ok 1 - API-K04 the same piece planned for two events < 4 h apart on one day is flagged
+      ---
+      duration_ms: 528.781473
+      type: 'test'
+      ...
+    1..1
+ok 15 - Conflict detection: double booking (US-79)
+  ---
+  duration_ms: 529.047072
+  type: 'suite'
+  ...
+# Subtest: Outfit history (US-91)
+    # Subtest: API-OH01 wear with occasion and weather; filter by occasion and rating
+    ok 1 - API-OH01 wear with occasion and weather; filter by occasion and rating
+      ---
+      duration_ms: 476.042051
+      type: 'test'
+      ...
+    1..1
+ok 16 - Outfit history (US-91)
+  ---
+  duration_ms: 476.343474
+  type: 'suite'
+  ...
+# Subtest: Packing mode (US-68)
+    # Subtest: API-PK01 plan proposes outfits per day, counts, and never a Laundry piece
+    ok 1 - API-PK01 plan proposes outfits per day, counts, and never a Laundry piece
+      ---
+      duration_ms: 564.309705
+      type: 'test'
+      ...
+    # Subtest: API-PK02 save → mark as packed: pieces become Packed with a return date and leave recommendations
+    ok 2 - API-PK02 save → mark as packed: pieces become Packed with a return date and leave recommendations
+      ---
+      duration_ms: 509.513092
+      type: 'test'
+      ...
+    # Subtest: API-PK03 validation: end before start, too long, unknown trip, another user’s trip
+    ok 3 - API-PK03 validation: end before start, too long, unknown trip, another user’s trip
+      ---
+      duration_ms: 796.331131
+      type: 'test'
+      ...
+    1..3
+ok 17 - Packing mode (US-68)
+  ---
+  duration_ms: 1870.755407
+  type: 'suite'
+  ...
+# Subtest: Notification Center (US-92) and activity log (US-93)
+    # Subtest: API-N01 event tomorrow without an outfit → a notice; mark read
+    ok 1 - API-N01 event tomorrow without an outfit → a notice; mark read
+      ---
+      duration_ms: 461.576829
+      type: 'test'
+      ...
+    # Subtest: API-N02 Wash done creates a notice and activity entries
+    ok 2 - API-N02 Wash done creates a notice and activity entries
+      ---
+      duration_ms: 528.71224
+      type: 'test'
+      ...
+    # Subtest: API-N03 the activity log records sign-in, profile update and a deleted piece by name, only for its owner
+    ok 3 - API-N03 the activity log records sign-in, profile update and a deleted piece by name, only for its owner
+      ---
+      duration_ms: 1026.060609
+      type: 'test'
+      ...
+    1..3
+ok 18 - Notification Center (US-92) and activity log (US-93)
+  ---
+  duration_ms: 2016.976087
+  type: 'suite'
+  ...
+# Subtest: Admin system health (US-81) and templates (US-90)
+    # Subtest: API-AD05 admin sees service health and config; a normal user gets 403
+    ok 1 - API-AD05 admin sees service health and config; a normal user gets 403
+      ---
+      duration_ms: 534.334801
+      type: 'test'
+      ...
+    # Subtest: API-OT01 templates are part of the shared vocabulary
+    ok 2 - API-OT01 templates are part of the shared vocabulary
+      ---
+      duration_ms: 362.710518
+      type: 'test'
+      ...
+    1..2
+ok 19 - Admin system health (US-81) and templates (US-90)
+  ---
+  duration_ms: 897.486765
+  type: 'suite'
+  ...
+# Subtest: Duplicate purchase warning (US-65)
+    # Subtest: API-DU01 two similar white tops → "You already own 2 similar white tops" with match details
+    ok 1 - API-DU01 two similar white tops → "You already own 2 similar white tops" with match details
+      ---
+      duration_ms: 632.11585
+      type: 'test'
+      ...
+    # Subtest: API-DU02 a dissimilar piece does not trigger the warning
+    ok 2 - API-DU02 a dissimilar piece does not trigger the warning
+      ---
+      duration_ms: 423.088281
+      type: 'test'
+      ...
+    1..2
+ok 20 - Duplicate purchase warning (US-65)
+  ---
+  duration_ms: 1055.59348
+  type: 'suite'
+  ...
+# Subtest: Recommendations (Sprint 2 early start)
+    # Subtest: API-R01 three explained outfits with title, compatibility and breakdown
+    ok 1 - API-R01 three explained outfits with title, compatibility and breakdown
+      ---
+      duration_ms: 709.455518
+      type: 'test'
+      ...
+    # Subtest: API-R02 occasion is required
+    ok 2 - API-R02 occasion is required
+      ---
+      duration_ms: 432.169035
+      type: 'test'
+      ...
+    # Subtest: API-R03 a bag counts as the fourth piece
+    ok 3 - API-R03 a bag counts as the fourth piece
+      ---
+      duration_ms: 558.476019
+      type: 'test'
+      ...
+    # Subtest: API-R04 change one piece keeps the others
+    ok 4 - API-R04 change one piece keeps the others
+      ---
+      duration_ms: 562.815078
+      type: 'test'
+      ...
+    # Subtest: API-R05 Mix & Match check: graded breakdown and an explanation
+    ok 5 - API-R05 Mix & Match check: graded breakdown and an explanation
+      ---
+      duration_ms: 494.318559
+      type: 'test'
+      ...
+    # Subtest: API-R06 another user’s piece cannot be styled (404)
+    ok 6 - API-R06 another user’s piece cannot be styled (404)
+      ---
+      duration_ms: 643.133923
+      type: 'test'
+      ...
+    1..6
+ok 21 - Recommendations (Sprint 2 early start)
+  ---
+  duration_ms: 3403.157451
+  type: 'suite'
+  ...
+# Subtest: Version 1.2 customization (review comments)
+    # Subtest: API-C01 settings: laundry basket time, recycle time, laundry day, name
+    ok 1 - API-C01 settings: laundry basket time, recycle time, laundry day, name
+      ---
+      duration_ms: 457.005089
+      type: 'test'
+      ...
+    # Subtest: API-C02 laundry basket time: a piece comes back on its own after N days
+    ok 2 - API-C02 laundry basket time: a piece comes back on its own after N days
+      ---
+      duration_ms: 444.191895
+      type: 'test'
+      ...
+    # Subtest: API-C03 auto-return off: the piece stays in the basket
+    ok 3 - API-C03 auto-return off: the piece stays in the basket
+      ---
+      duration_ms: 376.191227
+      type: 'test'
+      ...
+    # Subtest: API-C04 recycle time: clothes worn yesterday wait; shoes may repeat
+    ok 4 - API-C04 recycle time: clothes worn yesterday wait; shoes may repeat
+      ---
+      duration_ms: 410.736907
+      type: 'test'
+      ...
+    # Subtest: API-C05 borrowed with a return date and a note
+    ok 5 - API-C05 borrowed with a return date and a note
+      ---
+      duration_ms: 388.187124
+      type: 'test'
+      ...
+    # Subtest: API-C06 planning ahead: a piece in the laundry counts if it is back by the date
+    ok 6 - API-C06 planning ahead: a piece in the laundry counts if it is back by the date
+      ---
+      duration_ms: 533.098426
+      type: 'test'
+      ...
+    1..6
+ok 22 - Version 1.2 customization (review comments)
+  ---
+  duration_ms: 2610.343966
+  type: 'suite'
+  ...
+# Subtest: Delete with a reason (US-13)
+    # Subtest: API-DL01 reason is required and must be one of the list
+    ok 1 - API-DL01 reason is required and must be one of the list
+      ---
+      duration_ms: 428.010654
+      type: 'test'
+      ...
+    # Subtest: API-DL02 the piece and its photo are gone, the reason is kept
+    ok 2 - API-DL02 the piece and its photo are gone, the reason is kept
+      ---
+      duration_ms: 510.784033
+      type: 'test'
+      ...
+    # Subtest: API-DL03 another user cannot delete my piece
+    ok 3 - API-DL03 another user cannot delete my piece
+      ---
+      duration_ms: 630.355018
+      type: 'test'
+      ...
+    1..3
+ok 23 - Delete with a reason (US-13)
+  ---
+  duration_ms: 1569.672385
+  type: 'suite'
+  ...
+# Subtest: Outfits, wear history and insights
+    # Subtest: API-O01 save, favourite, list and delete
+    ok 1 - API-O01 save, favourite, list and delete
+      ---
+      duration_ms: 416.287031
+      type: 'test'
+      ...
+    # Subtest: API-O02 wear → counts, last worn, analytics; unavailable piece refused
+    ok 2 - API-O02 wear → counts, last worn, analytics; unavailable piece refused
+      ---
+      duration_ms: 423.352512
+      type: 'test'
+      ...
+    # Subtest: API-O03 reject with a reason; hide a piece for 7 days
+    ok 3 - API-O03 reject with a reason; hide a piece for 7 days
+      ---
+      duration_ms: 409.89489
+      type: 'test'
+      ...
+    # Subtest: API-O04 forgotten pieces: worn before, not for 40+ days
+    ok 4 - API-O04 forgotten pieces: worn before, not for 40+ days
+      ---
+      duration_ms: 342.418758
+      type: 'test'
+      ...
+    1..4
+ok 24 - Outfits, wear history and insights
+  ---
+  duration_ms: 1592.625871
+  type: 'suite'
+  ...
+# Subtest: Ask Closet (Sprint 3 early start)
+    # Subtest: API-AC01 “What should I wear to university tomorrow?” → outfits
+    ok 1 - API-AC01 “What should I wear to university tomorrow?” → outfits
+      ---
+      duration_ms: 433.52944
+      type: 'test'
+      ...
+    # Subtest: API-AC02 “Do I own something similar to a black blazer?” → my blazer
+    ok 2 - API-AC02 “Do I own something similar to a black blazer?” → my blazer
+      ---
+      duration_ms: 434.545041
+      type: 'test'
+      ...
+    # Subtest: API-AC03 “I want to buy black trousers. Do I need them?” → Skip when owned twice
+    ok 3 - API-AC03 “I want to buy black trousers. Do I need them?” → Skip when owned twice
+      ---
+      duration_ms: 505.957756
+      type: 'test'
+      ...
+    # Subtest: API-AC04 put in the laundry, then undo
+    ok 4 - API-AC04 put in the laundry, then undo
+      ---
+      duration_ms: 497.5372
+      type: 'test'
+      ...
+    # Subtest: API-AC06 change one piece of the last outfit, keeping the rest
+    ok 5 - API-AC06 change one piece of the last outfit, keeping the rest
+      ---
+      duration_ms: 513.847623
+      type: 'test'
+      ...
+    # Subtest: API-AC07 wash done, weather, help
+    ok 6 - API-AC07 wash done, weather, help
+      ---
+      duration_ms: 474.048825
+      type: 'test'
+      ...
+    # Subtest: API-AC08 hide a piece and undo; ambiguous piece asks which one
+    ok 7 - API-AC08 hide a piece and undo; ambiguous piece asks which one
+      ---
+      duration_ms: 500.752241
+      type: 'test'
+      ...
+    # Subtest: API-AC09 plan my outfit for the next event
+    ok 8 - API-AC09 plan my outfit for the next event
+      ---
+      duration_ms: 400.49813
+      type: 'test'
+      ...
+    # Subtest: API-AC10 bad context and bad undo id are refused
+    ok 9 - API-AC10 bad context and bad undo id are refused
+      ---
+      duration_ms: 374.385377
+      type: 'test'
+      ...
+    # Subtest: API-AC05 “What is missing from my wardrobe?” → shopping suggestions
+    ok 10 - API-AC05 “What is missing from my wardrobe?” → shopping suggestions
+      ---
+      duration_ms: 427.927146
+      type: 'test'
+      ...
+    1..10
+ok 25 - Ask Closet (Sprint 3 early start)
+  ---
+  duration_ms: 4564.824502
+  type: 'suite'
+  ...
+# Subtest: Planner: calendar, reminders, import
+    # Subtest: API-PL01 calendar markers: laundry day and a borrowed piece due back
+    ok 1 - API-PL01 calendar markers: laundry day and a borrowed piece due back
+      ---
+      duration_ms: 513.499038
+      type: 'test'
+      ...
+    # Subtest: API-PL02 reminders: plan an outfit, a planned piece in the laundry, a borrowed piece due
+    ok 2 - API-PL02 reminders: plan an outfit, a planned piece in the laundry, a borrowed piece due
+      ---
+      duration_ms: 369.610692
+      type: 'test'
+      ...
+    # Subtest: API-PL03 .ics import: future events only, occasion guessed, no duplicates
+    ok 3 - API-PL03 .ics import: future events only, occasion guessed, no duplicates
+      ---
+      duration_ms: 459.859207
+      type: 'test'
+      ...
+    1..3
+ok 26 - Planner: calendar, reminders, import
+  ---
+  duration_ms: 1343.384643
+  type: 'suite'
+  ...
+# Subtest: Smart Shopping (Sprint 3 early start)
+    # Subtest: API-SH01 suggestions name a reason and what they pair with
+    ok 1 - API-SH01 suggestions name a reason and what they pair with
+      ---
+      duration_ms: 428.376057
+      type: 'test'
+      ...
+    # Subtest: API-SH02 a torn piece goes onto the shopping list as a replacement (not a duplicate suggestion)
+    ok 2 - API-SH02 a torn piece goes onto the shopping list as a replacement (not a duplicate suggestion)
+      ---
+      duration_ms: 594.3015
+      type: 'test'
+      ...
+    # Subtest: API-SH03 dismiss hides a suggestion; bad key 404
+    ok 3 - API-SH03 dismiss hides a suggestion; bad key 404
+      ---
+      duration_ms: 568.758627
+      type: 'test'
+      ...
+    # Subtest: API-SH04 “Do I need it?”: good buy vs. skip
+    ok 4 - API-SH04 “Do I need it?”: good buy vs. skip
+      ---
+      duration_ms: 458.049662
+      type: 'test'
+      ...
+    1..4
+ok 27 - Smart Shopping (Sprint 3 early start)
+  ---
+  duration_ms: 2050.287002
+  type: 'suite'
+  ...
+# Subtest: Admin (Sprint 3 early start, US-80)
+    # Subtest: API-AD01 a normal user gets 403
+    ok 1 - API-AD01 a normal user gets 403
+      ---
+      duration_ms: 434.058459
+      type: 'test'
+      ...
+    # Subtest: API-AD02 admin sees accounts with counts only, never pieces
+    ok 2 - API-AD02 admin sees accounts with counts only, never pieces
+      ---
+      duration_ms: 746.045137
+      type: 'test'
+      ...
+    # Subtest: API-AD03 suspend ends the user’s session at once; restore lets them sign in again
+    ok 3 - API-AD03 suspend ends the user’s session at once; restore lets them sign in again
+      ---
+      duration_ms: 1069.488655
+      type: 'test'
+      ...
+    # Subtest: API-AD04 an admin cannot suspend themselves
+    ok 4 - API-AD04 an admin cannot suspend themselves
+      ---
+      duration_ms: 516.932233
+      type: 'test'
+      ...
+    1..4
+ok 28 - Admin (Sprint 3 early start, US-80)
+  ---
+  duration_ms: 2767.15371
+  type: 'suite'
+  ...
+# Subtest: Style quiz and profile (US-02, US-03, US-04)
+    # Subtest: API-P01 new profile starts empty with quiz not done
+    ok 1 - API-P01 new profile starts empty with quiz not done
+      ---
+      duration_ms: 369.440714
+      type: 'test'
+      ...
+    # Subtest: API-P02 quiz answers are saved and the quiz is marked done
+    ok 2 - API-P02 quiz answers are saved and the quiz is marked done
+      ---
+      duration_ms: 234.567143
+      type: 'test'
+      ...
+    # Subtest: API-P03 the quiz can be skipped (empty answers) and is not shown again
+    ok 3 - API-P03 the quiz can be skipped (empty answers) and is not shown again
+      ---
+      duration_ms: 269.183318
+      type: 'test'
+      ...
+    # Subtest: API-P04 settings change dress code, modest option and city later
+    ok 4 - API-P04 settings change dress code, modest option and city later
+      ---
+      duration_ms: 327.649909
+      type: 'test'
+      ...
+    # Subtest: API-P05 dress code 6 and unknown style → 400
+    ok 5 - API-P05 dress code 6 and unknown style → 400
+      ---
+      duration_ms: 234.537848
+      type: 'test'
+      ...
+    1..5
+ok 29 - Style quiz and profile (US-02, US-03, US-04)
+  ---
+  duration_ms: 1437.666767
+  type: 'suite'
+  ...
+# Subtest: Planner (US-46)
+    # Subtest: API-E01 add an event: title, date, time, one occasion; dress code defaults from occasion
+    ok 1 - API-E01 add an event: title, date, time, one occasion; dress code defaults from occasion
+      ---
+      duration_ms: 216.764365
+      type: 'test'
+      ...
+    # Subtest: API-E02 month view returns only that month, in date order
+    ok 2 - API-E02 month view returns only that month, in date order
+      ---
+      duration_ms: 401.865954
+      type: 'test'
+      ...
+    # Subtest: API-E03 impossible date and time → 400
+    ok 3 - API-E03 impossible date and time → 400
+      ---
+      duration_ms: 322.902492
+      type: 'test'
+      ...
+    # Subtest: API-E04 bad month parameter → 400
+    ok 4 - API-E04 bad month parameter → 400
+      ---
+      duration_ms: 223.561673
+      type: 'test'
+      ...
+    # Subtest: API-E05 edit and delete my event; another user's event is not found
+    ok 5 - API-E05 edit and delete my event; another user's event is not found
+      ---
+      duration_ms: 509.975084
+      type: 'test'
+      ...
+    1..5
+ok 30 - Planner (US-46)
+  ---
+  duration_ms: 1675.935113
+  type: 'suite'
+  ...
+# Subtest: Closet gaps (US-64)
+    # Subtest: API-G01 gaps follow the levels the user dresses for
+    ok 1 - API-G01 gaps follow the levels the user dresses for
+      ---
+      duration_ms: 286.02111
+      type: 'test'
+      ...
+    1..1
+ok 31 - Closet gaps (US-64)
+  ---
+  duration_ms: 286.410996
+  type: 'suite'
+  ...
+# Subtest: Delete my account (US-06)
+    # Subtest: API-D01 without the confirmation phrase → 400, nothing deleted
+    ok 1 - API-D01 without the confirmation phrase → 400, nothing deleted
+      ---
+      duration_ms: 220.359325
+      type: 'test'
+      ...
+    # Subtest: API-D02 wrong password → 401, nothing deleted
+    ok 2 - API-D02 wrong password → 401, nothing deleted
+      ---
+      duration_ms: 528.055
+      type: 'test'
+      ...
+    # Subtest: API-D03 confirmed → every row and every photo of the user is gone; token stops working
+    ok 3 - API-D03 confirmed → every row and every photo of the user is gone; token stops working
+      ---
+      duration_ms: 723.221012
+      type: 'test'
+      ...
+    1..3
+ok 32 - Delete my account (US-06)
+  ---
+  duration_ms: 1472.252891
+  type: 'suite'
+  ...
+# Subtest: Security pipeline
+    # Subtest: API-X01 security headers are set and the server is not advertised
+    ok 1 - API-X01 security headers are set and the server is not advertised
+      ---
+      duration_ms: 246.42024
+      type: 'test'
+      ...
+    # Subtest: API-X02 CORS allows only the Closet web app
+    ok 2 - API-X02 CORS allows only the Closet web app
+      ---
+      duration_ms: 264.445593
+      type: 'test'
+      ...
+    # Subtest: API-X03 broken JSON → 400 with a safe message
+    ok 3 - API-X03 broken JSON → 400 with a safe message
+      ---
+      duration_ms: 216.599967
+      type: 'test'
+      ...
+    # Subtest: API-X04 unknown endpoint → 404 JSON
+    ok 4 - API-X04 unknown endpoint → 404 JSON
+      ---
+      duration_ms: 321.323279
+      type: 'test'
+      ...
+    # Subtest: API-X05 an internal error returns a generic 500 without details
+    ok 5 - API-X05 an internal error returns a generic 500 without details
+      ---
+      duration_ms: 253.828314
+      type: 'test'
+      ...
+    1..5
+ok 33 - Security pipeline
+  ---
+  duration_ms: 1303.386581
+  type: 'suite'
+  ...
+# Subtest: Core outfit flow: 3 outfits → change a piece → save → wear → feedback (UC-09, UC-12)
+    # Subtest: API-CF01 three complete outfits, then change one piece: only that slot changes and the look still passes the rules
+    ok 1 - API-CF01 three complete outfits, then change one piece: only that slot changes and the look still passes the rules
+      ---
+      duration_ms: 743.740585
+      type: 'test'
+      ...
+    # Subtest: API-CF02 save as favourite, wear with a rating, reject another look with a reason — each is stored as feedback
+    ok 2 - API-CF02 save as favourite, wear with a rating, reject another look with a reason — each is stored as feedback
+      ---
+      duration_ms: 537.473442
+      type: 'test'
+      ...
+    1..2
+ok 34 - Core outfit flow: 3 outfits → change a piece → save → wear → feedback (UC-09, UC-12)
+  ---
+  duration_ms: 1282.904256
+  type: 'suite'
+  ...
+# Subtest: Deletion reasons drive shopping and learning (US-13, US-33, US-34)
+    # Subtest: API-DR01 Torn / damaged → the replacement is on the shopping list at once, and the reply says so
+    ok 1 - API-DR01 Torn / damaged → the replacement is on the shopping list at once, and the reply says so
+      ---
+      duration_ms: 420.39088
+      type: 'test'
+      ...
+    # Subtest: API-DR02 Became too small → a replacement in the next size
+    ok 2 - API-DR02 Became too small → a replacement in the next size
+      ---
+      duration_ms: 537.435259
+      type: 'test'
+      ...
+    # Subtest: API-DR03 No longer my style → nothing on the list, never suggested, and a buy check says think twice
+    ok 3 - API-DR03 No longer my style → nothing on the list, never suggested, and a buy check says think twice
+      ---
+      duration_ms: 468.595792
+      type: 'test'
+      ...
+    # Subtest: API-DR04 two streetwear pieces let go → “Closet has learned”; confirm avoids streetwear in outfits; Undo restores the profile exactly
+    ok 4 - API-DR04 two streetwear pieces let go → “Closet has learned”; confirm avoids streetwear in outfits; Undo restores the profile exactly
+      ---
+      duration_ms: 561.330374
+      type: 'test'
+      ...
+    # Subtest: API-DR05 the reason is required and must be one of the four (old reasons are refused); Other changes nothing
+    ok 5 - API-DR05 the reason is required and must be one of the four (old reasons are refused); Other changes nothing
+      ---
+      duration_ms: 479.985668
+      type: 'test'
+      ...
+    1..5
+ok 35 - Deletion reasons drive shopping and learning (US-13, US-33, US-34)
+  ---
+  duration_ms: 2468.738821
+  type: 'suite'
+  ...
+# Subtest: Shopping list and Ask Closet (US-36, US-65, US-88)
+    # Subtest: API-SL01 “Put beige trousers on my shopping list” → on the list, “Added by Ask Closet”, with a similar-piece warning
+    ok 1 - API-SL01 “Put beige trousers on my shopping list” → on the list, “Added by Ask Closet”, with a similar-piece warning
+      ---
+      duration_ms: 422.749164
+      type: 'test'
+      ...
+    # Subtest: API-SL02 after “Do I need …?”, “add this to my shopping list” adds that item; asking twice does not duplicate it
+    ok 2 - API-SL02 after “Do I need …?”, “add this to my shopping list” adds that item; asking twice does not duplicate it
+      ---
+      duration_ms: 469.987244
+      type: 'test'
+      ...
+    # Subtest: API-SL03 “Add a replacement for my torn loafers” → tagged Replacement and Added by Ask Closet, no duplicate warning
+    ok 3 - API-SL03 “Add a replacement for my torn loafers” → tagged Replacement and Added by Ask Closet, no duplicate warning
+      ---
+      duration_ms: 427.586215
+      type: 'test'
+      ...
+    # Subtest: API-SL04 Undo removes what Ask Closet added; mark bought, remove; another user cannot touch my list
+    ok 4 - API-SL04 Undo removes what Ask Closet added; mark bought, remove; another user cannot touch my list
+      ---
+      duration_ms: 698.297112
+      type: 'test'
+      ...
+    # Subtest: API-SL05 a suggestion added to the bag leaves the suggestions; removing it from the bag brings it back
+    ok 5 - API-SL05 a suggestion added to the bag leaves the suggestions; removing it from the bag brings it back
+      ---
+      duration_ms: 486.858197
+      type: 'test'
+      ...
+    1..5
+ok 36 - Shopping list and Ask Closet (US-36, US-65, US-88)
+  ---
+  duration_ms: 2506.35768
+  type: 'suite'
+  ...
+# Subtest: Add a piece (US-08, US-09, US-11)
+    # Subtest: API-W01 photo + details → 201, saved once, status Available
+    ok 1 - API-W01 photo + details → 201, saved once, status Available
+      ---
+      duration_ms: 523.392568
+      type: 'test'
+      ...
+    # Subtest: API-W02 the photo is stored and shown through its signed URL
+    ok 2 - API-W02 the photo is stored and shown through its signed URL
+      ---
+      duration_ms: 442.200869
+      type: 'test'
+      ...
+    # Subtest: API-W03 location (EXIF) data is removed before the photo is stored
+    ok 3 - API-W03 location (EXIF) data is removed before the photo is stored
+      ---
+      duration_ms: 275.952622
+      type: 'test'
+      ...
+    # Subtest: API-W04 PNG is accepted
+    ok 4 - API-W04 PNG is accepted
+      ---
+      duration_ms: 289.975602
+      type: 'test'
+      ...
+    # Subtest: API-W05 no photo → 400 and nothing saved
+    ok 5 - API-W05 no photo → 400 and nothing saved
+      ---
+      duration_ms: 378.483976
+      type: 'test'
+      ...
+    # Subtest: API-W06 a PDF renamed to .jpg → 415
+    ok 6 - API-W06 a PDF renamed to .jpg → 415
+      ---
+      duration_ms: 266.711921
+      type: 'test'
+      ...
+    # Subtest: API-W07 photo of exactly 10 MB is accepted (boundary)
+    ok 7 - API-W07 photo of exactly 10 MB is accepted (boundary)
+      ---
+      duration_ms: 538.366159
+      type: 'test'
+      ...
+    # Subtest: API-W08 photo of 10 MB + 1 byte → 413 (boundary)
+    ok 8 - API-W08 photo of 10 MB + 1 byte → 413 (boundary)
+      ---
+      duration_ms: 460.927145
+      type: 'test'
+      ...
+    # Subtest: API-W09 missing category and no dress-code level → 400, photo not kept
+    ok 9 - API-W09 missing category and no dress-code level → 400, photo not kept
+      ---
+      duration_ms: 269.022079
+      type: 'test'
+      ...
+    # Subtest: API-W10 details that are not JSON → 400
+    ok 10 - API-W10 details that are not JSON → 400
+      ---
+      duration_ms: 236.654844
+      type: 'test'
+      ...
+    1..10
+ok 37 - Add a piece (US-08, US-09, US-11)
+  ---
+  duration_ms: 3684.80736
+  type: 'suite'
+  ...
+# Subtest: Browse and filter (US-12)
+    # Subtest: API-W11 all pieces with counts
+    ok 1 - API-W11 all pieces with counts
+      ---
+      duration_ms: 483.845186
+      type: 'test'
+      ...
+    # Subtest: API-W12 filters combine: Top AND Available
+    ok 2 - API-W12 filters combine: Top AND Available
+      ---
+      duration_ms: 492.499639
+      type: 'test'
+      ...
+    # Subtest: API-W13 invalid filter value → 400
+    ok 3 - API-W13 invalid filter value → 400
+      ---
+      duration_ms: 425.625334
+      type: 'test'
+      ...
+    1..3
+ok 38 - Browse and filter (US-12)
+  ---
+  duration_ms: 1402.632713
+  type: 'suite'
+  ...
+# Subtest: Edit later (US-71)
+    # Subtest: API-W14 edit changes the details and appears in filters
+    ok 1 - API-W14 edit changes the details and appears in filters
+      ---
+      duration_ms: 313.681328
+      type: 'test'
+      ...
+    # Subtest: API-W15 invalid edit → 400 and nothing changes
+    ok 2 - API-W15 invalid edit → 400 and nothing changes
+      ---
+      duration_ms: 387.749781
+      type: 'test'
+      ...
+    1..2
+ok 39 - Edit later (US-71)
+  ---
+  duration_ms: 701.78189
+  type: 'suite'
+  ...
+# Subtest: Ownership and photo privacy (NFR-04, NFR-05)
+    # Subtest: API-W16 another user cannot read, edit or change the status of my piece (404)
+    ok 1 - API-W16 another user cannot read, edit or change the status of my piece (404)
+      ---
+      duration_ms: 449.673822
+      type: 'test'
+      ...
+    # Subtest: API-W17 photo URL with a changed signature or no signature → 404
+    ok 2 - API-W17 photo URL with a changed signature or no signature → 404
+      ---
+      duration_ms: 332.042354
+      type: 'test'
+      ...
+    # Subtest: API-W18 a malformed piece id → 404, not a server error
+    ok 3 - API-W18 a malformed piece id → 404, not a server error
+      ---
+      duration_ms: 277.532764
+      type: 'test'
+      ...
+    1..3
+ok 40 - Ownership and photo privacy (NFR-04, NFR-05)
+  ---
+  duration_ms: 1059.925691
+  type: 'suite'
+  ...
+# Subtest: Keyword parser: message → one whitelisted function (EP)
+    # Subtest: AI-01 “What should I wear to dinner tomorrow?” → recommend
+    ok 1 - AI-01 “What should I wear to dinner tomorrow?” → recommend
+      ---
+      duration_ms: 8.506295
+      type: 'test'
+      ...
+    # Subtest: AI-02 “Change the shoes” → change_piece
+    ok 2 - AI-02 “Change the shoes” → change_piece
+      ---
+      duration_ms: 3.07192
+      type: 'test'
+      ...
+    # Subtest: AI-03 “Put my blue jeans in the laundry” → set_status
+    ok 3 - AI-03 “Put my blue jeans in the laundry” → set_status
+      ---
+      duration_ms: 1.446786
+      type: 'test'
+      ...
+    # Subtest: AI-04 “I lent my red jacket to Salma” → set_status
+    ok 4 - AI-04 “I lent my red jacket to Salma” → set_status
+      ---
+      duration_ms: 0.716877
+      type: 'test'
+      ...
+    # Subtest: AI-05 “Laundry is done” → wash_done
+    ok 5 - AI-05 “Laundry is done” → wash_done
+      ---
+      duration_ms: 0.533041
+      type: 'test'
+      ...
+    # Subtest: AI-06 “What haven’t I worn lately?” → forgotten
+    ok 6 - AI-06 “What haven’t I worn lately?” → forgotten
+      ---
+      duration_ms: 3.118266
+      type: 'test'
+      ...
+    # Subtest: AI-07 “What does my closet need?” → closet_needs
+    ok 7 - AI-07 “What does my closet need?” → closet_needs
+      ---
+      duration_ms: 0.781991
+      type: 'test'
+      ...
+    # Subtest: AI-08 “Weather tomorrow?” → weather
+    ok 8 - AI-08 “Weather tomorrow?” → weather
+      ---
+      duration_ms: 0.479975
+      type: 'test'
+      ...
+    # Subtest: AI-09 “Style my green dress” → style_piece
+    ok 9 - AI-09 “Style my green dress” → style_piece
+      ---
+      duration_ms: 0.506103
+      type: 'test'
+      ...
+    # Subtest: AI-10 “Hide my pink jeans for a week” → hide_piece
+    ok 10 - AI-10 “Hide my pink jeans for a week” → hide_piece
+      ---
+      duration_ms: 0.2919
+      type: 'test'
+      ...
+    # Subtest: AI-11 “Plan my outfit for the wedding” → plan_event
+    ok 11 - AI-11 “Plan my outfit for the wedding” → plan_event
+      ---
+      duration_ms: 0.350798
+      type: 'test'
+      ...
+    # Subtest: AI-12 “Tell me a joke” → help
+    ok 12 - AI-12 “Tell me a joke” → help
+      ---
+      duration_ms: 0.41913
+      type: 'test'
+      ...
+    # Subtest: AI-13 occasion, style and slot are extracted
+    ok 13 - AI-13 occasion, style and slot are extracted
+      ---
+      duration_ms: 1.372014
+      type: 'test'
+      ...
+    # Subtest: AI-14 piece descriptions: synonyms and fabric
+    ok 14 - AI-14 piece descriptions: synonyms and fabric
+      ---
+      duration_ms: 0.532564
+      type: 'test'
+      ...
+    # Subtest: AI-15 dates: today, tomorrow, next weekday
+    ok 15 - AI-15 dates: today, tomorrow, next weekday
+      ---
+      duration_ms: 0.483743
+      type: 'test'
+      ...
+    # Subtest: AI-16 matching pieces by colour, category and fabric
+    ok 16 - AI-16 matching pieces by colour, category and fabric
+      ---
+      duration_ms: 0.498987
+      type: 'test'
+      ...
+    1..16
+ok 41 - Keyword parser: message → one whitelisted function (EP)
+  ---
+  duration_ms: 26.331877
+  type: 'suite'
+  ...
+# Subtest: Language Model Adapter (IIntentParser)
+    # Subtest: AI-17 no API key → keyword parser
+    ok 1 - AI-17 no API key → keyword parser
+      ---
+      duration_ms: 0.807509
+      type: 'test'
+      ...
+    # Subtest: AI-18 with a key: the model’s tool call is used (only whitelisted functions)
+    ok 2 - AI-18 with a key: the model’s tool call is used (only whitelisted functions)
+      ---
+      duration_ms: 1.470564
+      type: 'test'
+      ...
+    # Subtest: AI-19 model down → falls back to the keyword parser (NFR-06)
+    ok 3 - AI-19 model down → falls back to the keyword parser (NFR-06)
+      ---
+      duration_ms: 0.875953
+      type: 'test'
+      ...
+    1..3
+ok 42 - Language Model Adapter (IIntentParser)
+  ---
+  duration_ms: 3.534825
+  type: 'suite'
+  ...
+# Subtest: Weather Adapter (IWeather)
+    # Subtest: WA-01 today uses the current temperature; source Open-Meteo
+    ok 1 - WA-01 today uses the current temperature; source Open-Meteo
+      ---
+      duration_ms: 1.617521
+      type: 'test'
+      ...
+    # Subtest: WA-02 a later day uses its maximum
+    ok 2 - WA-02 a later day uses its maximum
+      ---
+      duration_ms: 0.421374
+      type: 'test'
+      ...
+    # Subtest: WA-03 cached for 30 minutes: the second call does not hit the service
+    ok 3 - WA-03 cached for 30 minutes: the second call does not hit the service
+      ---
+      duration_ms: 1.016845
+      type: 'test'
+      ...
+    # Subtest: WA-04 service down → seasonal estimate, labelled (NFR-06)
+    ok 4 - WA-04 service down → seasonal estimate, labelled (NFR-06)
+      ---
+      duration_ms: 0.563704
+      type: 'test'
+      ...
+    # Subtest: WA-05 no city, or more than 16 days ahead → estimate
+    ok 5 - WA-05 no city, or more than 16 days ahead → estimate
+      ---
+      duration_ms: 0.492245
+      type: 'test'
+      ...
+    # Subtest: WA-06 demo mode (WEATHER_MODE=estimate): never calls the service; the same estimate every run, labelled
+    ok 6 - WA-06 demo mode (WEATHER_MODE=estimate): never calls the service; the same estimate every run, labelled
+      ---
+      duration_ms: 0.393986
+      type: 'test'
+      ...
+    1..6
+ok 43 - Weather Adapter (IWeather)
+  ---
+  duration_ms: 5.121825
+  type: 'suite'
+  ...
+# Subtest: Version 1.2 intents and calendar import
+    # Subtest: AI-20 “Do I own something similar to this black blazer?” → similar_owned
+    ok 1 - AI-20 “Do I own something similar to this black blazer?” → similar_owned
+      ---
+      duration_ms: 3.391414
+      type: 'test'
+      ...
+    # Subtest: AI-21 “I want to buy beige trousers. Do I need them?” → buy_check
+    ok 2 - AI-21 “I want to buy beige trousers. Do I need them?” → buy_check
+      ---
+      duration_ms: 0.696451
+      type: 'test'
+      ...
+    # Subtest: AI-22 “What is missing from my wardrobe?” → closet_needs
+    ok 3 - AI-22 “What is missing from my wardrobe?” → closet_needs
+      ---
+      duration_ms: 0.356092
+      type: 'test'
+      ...
+    # Subtest: AI-23 “What have I not worn recently?” → forgotten
+    ok 4 - AI-23 “What have I not worn recently?” → forgotten
+      ---
+      duration_ms: 0.298929
+      type: 'test'
+      ...
+    # Subtest: AI-24 “What should I wear to university tomorrow?” → recommend
+    ok 5 - AI-24 “What should I wear to university tomorrow?” → recommend
+      ---
+      duration_ms: 0.396711
+      type: 'test'
+      ...
+    # Subtest: AI-25 “Style my blue skirt.” → style_piece
+    ok 6 - AI-25 “Style my blue skirt.” → style_piece
+      ---
+      duration_ms: 0.27441
+      type: 'test'
+      ...
+    # Subtest: AI-26 bags and jewellery are recognised
+    ok 7 - AI-26 bags and jewellery are recognised
+      ---
+      duration_ms: 0.526437
+      type: 'test'
+      ...
+    # Subtest: AI-27 calendar titles → occasion
+    ok 8 - AI-27 calendar titles → occasion
+      ---
+      duration_ms: 0.389097
+      type: 'test'
+      ...
+    # Subtest: CAL-01 .ics: UTC time converted to Cairo, all-day events, escapes, folded lines
+    ok 9 - CAL-01 .ics: UTC time converted to Cairo, all-day events, escapes, folded lines
+      ---
+      duration_ms: 34.545256
+      type: 'test'
+      ...
+    1..9
+ok 44 - Version 1.2 intents and calendar import
+  ---
+  duration_ms: 41.5625
+  type: 'suite'
+  ...
+# Subtest: Closet gaps
+    # Subtest: UT-G01 levels = usual dress code + each occasion default
+    ok 1 - UT-G01 levels = usual dress code + each occasion default
+      ---
+      duration_ms: 3.868264
+      type: 'test'
+      ...
+    # Subtest: UT-G02 0 pieces at a level is a gap
+    ok 2 - UT-G02 0 pieces at a level is a gap
+      ---
+      duration_ms: 0.812464
+      type: 'test'
+      ...
+    # Subtest: UT-G03 exactly 1 piece is still a gap (boundary)
+    ok 3 - UT-G03 exactly 1 piece is still a gap (boundary)
+      ---
+      duration_ms: 0.435934
+      type: 'test'
+      ...
+    # Subtest: UT-G04 2 pieces is not a gap (just above boundary)
+    ok 4 - UT-G04 2 pieces is not a gap (just above boundary)
+      ---
+      duration_ms: 0.276194
+      type: 'test'
+      ...
+    # Subtest: UT-G05 levels the user never dresses for are not reported
+    ok 5 - UT-G05 levels the user never dresses for are not reported
+      ---
+      duration_ms: 0.226256
+      type: 'test'
+      ...
+    # Subtest: UT-G06 a piece counts at every level it suits; message reads like the story example
+    ok 6 - UT-G06 a piece counts at every level it suits; message reads like the story example
+      ---
+      duration_ms: 0.340233
+      type: 'test'
+      ...
+    # Subtest: UT-G07 Extra pieces are not part of any gap group
+    ok 7 - UT-G07 Extra pieces are not part of any gap group
+      ---
+      duration_ms: 0.234827
+      type: 'test'
+      ...
+    1..7
+ok 45 - Closet gaps
+  ---
+  duration_ms: 7.984459
+  type: 'suite'
+  ...
+# Subtest: Filter step
+    # Subtest: RE-01 unavailable pieces are never used (US-17)
+    ok 1 - RE-01 unavailable pieces are never used (US-17)
+      ---
+      duration_ms: 30.887283
+      type: 'test'
+      ...
+    # Subtest: RE-02 every main piece suits the occasion level (US-21)
+    ok 2 - RE-02 every main piece suits the occasion level (US-21)
+      ---
+      duration_ms: 1.772427
+      type: 'test'
+      ...
+    # Subtest: RE-03 modest on → no non-modest piece appears (US-21)
+    ok 3 - RE-03 modest on → no non-modest piece appears (US-21)
+      ---
+      duration_ms: 2.380717
+      type: 'test'
+      ...
+    # Subtest: RE-04 hidden pieces are skipped for 7 days (US-61)
+    ok 4 - RE-04 hidden pieces are skipped for 7 days (US-61)
+      ---
+      duration_ms: 1.842166
+      type: 'test'
+      ...
+    1..4
+ok 46 - Filter step
+  ---
+  duration_ms: 39.551864
+  type: 'suite'
+  ...
+# Subtest: Weather rules (BVA at 19 and 26 °C, US-20)
+    # Subtest: RE-05 25 °C: warm pieces allowed
+    ok 1 - RE-05 25 °C: warm pieces allowed
+      ---
+      duration_ms: 1.824335
+      type: 'test'
+      ...
+    # Subtest: RE-06 26 °C: no warm piece at all
+    ok 2 - RE-06 26 °C: no warm piece at all
+      ---
+      duration_ms: 1.952698
+      type: 'test'
+      ...
+    # Subtest: RE-07 18 °C: every outfit has a warm layer
+    ok 3 - RE-07 18 °C: every outfit has a warm layer
+      ---
+      duration_ms: 2.354689
+      type: 'test'
+      ...
+    # Subtest: RE-08 19 °C: no layer required
+    ok 4 - RE-08 19 °C: no layer required
+      ---
+      duration_ms: 0.492628
+      type: 'test'
+      ...
+    1..4
+ok 47 - Weather rules (BVA at 19 and 26 °C, US-20)
+  ---
+  duration_ms: 7.076464
+  type: 'suite'
+  ...
+# Subtest: Combine and score
+    # Subtest: RE-09 three outfits, each complete, no two share more than 2 pieces (US-19)
+    ok 1 - RE-09 three outfits, each complete, no two share more than 2 pieces (US-19)
+      ---
+      duration_ms: 3.02644
+      type: 'test'
+      ...
+    # Subtest: RE-10 rule score = 100 − 17 per failed criterion (§3.1)
+    ok 2 - RE-10 rule score = 100 − 17 per failed criterion (§3.1)
+      ---
+      duration_ms: 0.509815
+      type: 'test'
+      ...
+    # Subtest: RE-11 colour harmony: red + pink clash; 3 accents fail; neutrals pass
+    ok 3 - RE-11 colour harmony: red + pink clash; 3 accents fail; neutrals pass
+      ---
+      duration_ms: 0.458116
+      type: 'test'
+      ...
+    # Subtest: RE-12 every outfit has 3–5 reasons and a rule score (US-57)
+    ok 4 - RE-12 every outfit has 3–5 reasons and a rule score (US-57)
+      ---
+      duration_ms: 2.324322
+      type: 'test'
+      ...
+    # Subtest: RE-13 “Style this piece”: all 3 outfits contain it (US-59)
+    ok 5 - RE-13 “Style this piece”: all 3 outfits contain it (US-59)
+      ---
+      duration_ms: 1.690234
+      type: 'test'
+      ...
+    # Subtest: RE-14 a forgotten piece is ranked up and named in the reasons (US-54)
+    ok 6 - RE-14 a forgotten piece is ranked up and named in the reasons (US-54)
+      ---
+      duration_ms: 3.304645
+      type: 'test'
+      ...
+    # Subtest: RE-15 not enough pieces → no outfit and a clear note
+    ok 7 - RE-15 not enough pieces → no outfit and a clear note
+      ---
+      duration_ms: 0.399161
+      type: 'test'
+      ...
+    # Subtest: RE-16 a look rejected as “Not in the mood today” is not suggested again this week
+    ok 8 - RE-16 a look rejected as “Not in the mood today” is not suggested again this week
+      ---
+      duration_ms: 4.001807
+      type: 'test'
+      ...
+    1..8
+ok 48 - Combine and score
+  ---
+  duration_ms: 16.500879
+  type: 'suite'
+  ...
+# Subtest: Change one piece and the outfit builder
+    # Subtest: RE-17 swap changes only that slot, with an Available alternative (US-24)
+    ok 1 - RE-17 swap changes only that slot, with an Available alternative (US-24)
+      ---
+      duration_ms: 2.426087
+      type: 'test'
+      ...
+    # Subtest: RE-18 swap with no alternative returns null
+    ok 2 - RE-18 swap with no alternative returns null
+      ---
+      duration_ms: 0.574613
+      type: 'test'
+      ...
+    # Subtest: RE-19 builder: pass/fail per criterion and one sentence naming the failure (US-43, US-66)
+    ok 3 - RE-19 builder: pass/fail per criterion and one sentence naming the failure (US-43, US-66)
+      ---
+      duration_ms: 1.252202
+      type: 'test'
+      ...
+    # Subtest: RE-20 builder: incomplete outfit fails “Complete outfit”
+    ok 4 - RE-20 builder: incomplete outfit fails “Complete outfit”
+      ---
+      duration_ms: 0.559405
+      type: 'test'
+      ...
+    1..4
+ok 49 - Change one piece and the outfit builder
+  ---
+  duration_ms: 5.268845
+  type: 'suite'
+  ...
+# Subtest: Version 1.2: recycle time, bags, Mix & Match breakdown, titles
+    # Subtest: RE-21 recycle time: a top worn 1 day ago waits when repeatDays = 3
+    ok 1 - RE-21 recycle time: a top worn 1 day ago waits when repeatDays = 3
+      ---
+      duration_ms: 0.751012
+      type: 'test'
+      ...
+    # Subtest: RE-22 recycle time BVA: worn exactly N days ago is allowed again
+    ok 2 - RE-22 recycle time BVA: worn exactly N days ago is allowed again
+      ---
+      duration_ms: 0.729981
+      type: 'test'
+      ...
+    # Subtest: RE-23 recycle time never blocks shoes, bags or accessories
+    ok 3 - RE-23 recycle time never blocks shoes, bags or accessories
+      ---
+      duration_ms: 0.37439
+      type: 'test'
+      ...
+    # Subtest: RE-24 a bag fills the fourth slot and must suit the level
+    ok 4 - RE-24 a bag fills the fourth slot and must suit the level
+      ---
+      duration_ms: 2.491041
+      type: 'test'
+      ...
+    # Subtest: RE-25 breakdown: all-pass look scores high; a clash drops colour to 40
+    ok 5 - RE-25 breakdown: all-pass look scores high; a clash drops colour to 40
+      ---
+      duration_ms: 0.562182
+      type: 'test'
+      ...
+    # Subtest: RE-26 breakdown: one level off gives half credit for formality
+    ok 6 - RE-26 breakdown: one level off gives half credit for formality
+      ---
+      duration_ms: 0.348666
+      type: 'test'
+      ...
+    # Subtest: RE-27 breakdown weather: warm piece at 30 °C, no layer at 12 °C
+    ok 7 - RE-27 breakdown weather: warm piece at 30 °C, no layer at 12 °C
+      ---
+      duration_ms: 0.360529
+      type: 'test'
+      ...
+    # Subtest: RE-28 outfit title uses the level and the key piece name
+    ok 8 - RE-28 outfit title uses the level and the key piece name
+      ---
+      duration_ms: 0.363854
+      type: 'test'
+      ...
+    # Subtest: RE-29 Mix & Match explanation names what to improve
+    ok 9 - RE-29 Mix & Match explanation names what to improve
+      ---
+      duration_ms: 1.511939
+      type: 'test'
+      ...
+    1..9
+ok 50 - Version 1.2: recycle time, bags, Mix & Match breakdown, titles
+  ---
+  duration_ms: 8.371015
+  type: 'suite'
+  ...
+# Subtest: Final pass — recommendation details
+    # Subtest: RE-30 three looks that share pieces still get three different names
+    ok 1 - RE-30 three looks that share pieces still get three different names
+      ---
+      duration_ms: 2.974928
+      type: 'test'
+      ...
+    # Subtest: RE-31 Style this piece: a warm layer at 30 °C is still in every look
+    ok 2 - RE-31 Style this piece: a warm layer at 30 °C is still in every look
+      ---
+      duration_ms: 14.729653
+      type: 'test'
+      ...
+    # Subtest: RE-32 Style this piece refuses a piece that is not Available
+    ok 3 - RE-32 Style this piece refuses a piece that is not Available
+      ---
+      duration_ms: 0.390391
+      type: 'test'
+      ...
+    # Subtest: RE-34 same closet, new database ids → same looks and same tray order (a reseeded demo repeats itself)
+    ok 4 - RE-34 same closet, new database ids → same looks and same tray order (a reseeded demo repeats itself)
+      ---
+      duration_ms: 5.205825
+      type: 'test'
+      ...
+    # Subtest: RE-33 replace tray: with fewer than 3 exact-level pieces, pieces one level away are offered after them
+    ok 5 - RE-33 replace tray: with fewer than 3 exact-level pieces, pieces one level away are offered after them
+      ---
+      duration_ms: 0.678217
+      type: 'test'
+      ...
+    1..5
+ok 51 - Final pass — recommendation details
+  ---
+  duration_ms: 25.963913
+  type: 'suite'
+  ...
+# Subtest: Final pass — photo try-on preview placement (client/src/photoTryOn.js)
+    # Subtest: TO-01 body order: top above bottom above shoes; shoes at the feet
+    ok 1 - TO-01 body order: top above bottom above shoes; shoes at the feet
+      ---
+      duration_ms: 0.536425
+      type: 'test'
+      ...
+    # Subtest: TO-02 layering: outerwear is drawn over the top, the top over the bottom
+    ok 2 - TO-02 layering: outerwear is drawn over the top, the top over the bottom
+      ---
+      duration_ms: 0.261967
+      type: 'test'
+      ...
+    # Subtest: TO-03 accessories go where they are worn: sunglasses at the head, a bag at the side
+    ok 3 - TO-03 accessories go where they are worn: sunglasses at the head, a bag at the side
+      ---
+      duration_ms: 0.19148
+      type: 'test'
+      ...
+    1..3
+ok 52 - Final pass — photo try-on preview placement (client/src/photoTryOn.js)
+  ---
+  duration_ms: 6.89384
+  type: 'suite'
+  ...
+# Subtest: Explainable recommendations (US-57, v1.3)
+    # Subtest: EX-01 every outfit has "why" factors and a "Recommended because" sentence
+    ok 1 - EX-01 every outfit has "why" factors and a "Recommended because" sentence
+      ---
+      duration_ms: 6.118514
+      type: 'test'
+      ...
+    # Subtest: EX-02 the explanation names the real context: occasion, dress code, weather and city
+    ok 2 - EX-02 the explanation names the real context: occasion, dress code, weather and city
+      ---
+      duration_ms: 0.679871
+      type: 'test'
+      ...
+    # Subtest: EX-03 availability, favourites and rejection patterns appear when they shaped the look
+    ok 3 - EX-03 availability, favourites and rejection patterns appear when they shaped the look
+      ---
+      duration_ms: 1.163319
+      type: 'test'
+      ...
+    # Subtest: EX-04 a piece in Laundry or Packed is never recommended (conflict rule)
+    ok 4 - EX-04 a piece in Laundry or Packed is never recommended (conflict rule)
+      ---
+      duration_ms: 12.734204
+      type: 'test'
+      ...
+    # Subtest: EX-05 "Too formal" feedback makes relaxed pieces rank higher, never changing the rule score
+    ok 5 - EX-05 "Too formal" feedback makes relaxed pieces rank higher, never changing the rule score
+      ---
+      duration_ms: 0.439575
+      type: 'test'
+      ...
+    # Subtest: EX-06 explanationSentence picks at most three factors and ends with a full stop
+    ok 6 - EX-06 explanationSentence picks at most three factors and ends with a full stop
+      ---
+      duration_ms: 0.237359
+      type: 'test'
+      ...
+    1..6
+ok 53 - Explainable recommendations (US-57, v1.3)
+  ---
+  duration_ms: 23.122967
+  type: 'suite'
+  ...
+# Subtest: Wardrobe Health (US-89)
+    # Subtest: WH-01 empty wardrobe: score 0, flagged empty, one action
+    ok 1 - WH-01 empty wardrobe: score 0, flagged empty, one action
+      ---
+      duration_ms: 0.762543
+      type: 'test'
+      ...
+    # Subtest: WH-02 perfect closet reaches exactly 100 (every part at its maximum, no penalties)
+    ok 2 - WH-02 perfect closet reaches exactly 100 (every part at its maximum, no penalties)
+      ---
+      duration_ms: 0.719717
+      type: 'test'
+      ...
+    # Subtest: WH-03 the score is the sum of the parts minus the penalties (formula is transparent)
+    ok 3 - WH-03 the score is the sum of the parts minus the penalties (formula is transparent)
+      ---
+      duration_ms: 1.085411
+      type: 'test'
+      ...
+    # Subtest: WH-04 penalties are capped at −10 each and the score never goes below 0
+    ok 4 - WH-04 penalties are capped at −10 each and the score never goes below 0
+      ---
+      duration_ms: 2.379007
+      type: 'test'
+      ...
+    # Subtest: WH-05 potential duplicates: same category and colour with a shared style
+    ok 5 - WH-05 potential duplicates: same category and colour with a shared style
+      ---
+      duration_ms: 0.33644
+      type: 'test'
+      ...
+    1..5
+ok 54 - Wardrobe Health (US-89)
+  ---
+  duration_ms: 5.663079
+  type: 'suite'
+  ...
+# Subtest: Closet has learned (US-40)
+    # Subtest: LR-01 two "Too formal" rejections → lower usual dress code, with evidence and confidence
+    ok 1 - LR-01 two "Too formal" rejections → lower usual dress code, with evidence and confidence
+      ---
+      duration_ms: 1.092481
+      type: 'test'
+      ...
+    # Subtest: LR-02 one rejection is not enough evidence
+    ok 2 - LR-02 one rejection is not enough evidence
+      ---
+      duration_ms: 0.23545
+      type: 'test'
+      ...
+    # Subtest: LR-03 favourite looks reveal a style the profile lacks
+    ok 3 - LR-03 favourite looks reveal a style the profile lacks
+      ---
+      duration_ms: 0.37777
+      type: 'test'
+      ...
+    # Subtest: LR-04 neutral wear history adds the most-worn missing neutral
+    ok 4 - LR-04 neutral wear history adds the most-worn missing neutral
+      ---
+      duration_ms: 0.414871
+      type: 'test'
+      ...
+    # Subtest: LR-05 rarely worn colour; previousOf keeps the exact values for Undo
+    ok 5 - LR-05 rarely worn colour; previousOf keeps the exact values for Undo
+      ---
+      duration_ms: 0.470624
+      type: 'test'
+      ...
+    1..5
+ok 55 - Closet has learned (US-40)
+  ---
+  duration_ms: 2.91932
+  type: 'suite'
+  ...
+# Subtest: Duplicate purchase warning (US-65)
+    # Subtest: DU-01 a near-identical piece scores ≥ 70 and lists what matched
+    ok 1 - DU-01 a near-identical piece scores ≥ 70 and lists what matched
+      ---
+      duration_ms: 0.491568
+      type: 'test'
+      ...
+    # Subtest: DU-02 a different category never counts; a different colour falls below the threshold
+    ok 2 - DU-02 a different category never counts; a different colour falls below the threshold
+      ---
+      duration_ms: 0.300491
+      type: 'test'
+      ...
+    1..2
+ok 56 - Duplicate purchase warning (US-65)
+  ---
+  duration_ms: 1.005978
+  type: 'suite'
+  ...
+# Subtest: Ask Closet routes the duplicate question (US-65)
+    # Subtest: DU-03 “Do I need another white top?” → buy_check, not the general shopping list
+    ok 1 - DU-03 “Do I need another white top?” → buy_check, not the general shopping list
+      ---
+      duration_ms: 5.642211
+      type: 'test'
+      ...
+    1..1
+ok 57 - Ask Closet routes the duplicate question (US-65)
+  ---
+  duration_ms: 5.795504
+  type: 'suite'
+  ...
+# Subtest: Packing planner and occasion templates
+    # Subtest: PK-01 one outfit per day, pieces re-used, counts add up
+    ok 1 - PK-01 one outfit per day, pieces re-used, counts add up
+      ---
+      duration_ms: 2.60905
+      type: 'test'
+      ...
+    # Subtest: PK-02 never packs an unavailable piece; rain with no coat → waterproof warning
+    ok 2 - PK-02 never packs an unavailable piece; rain with no coat → waterproof warning
+      ---
+      duration_ms: 0.944739
+      type: 'test'
+      ...
+    # Subtest: PK-03 a day with no possible outfit is reported as missing
+    ok 3 - PK-03 a day with no possible outfit is reported as missing
+      ---
+      duration_ms: 0.328017
+      type: 'test'
+      ...
+    # Subtest: OT-01 nine occasion templates, each mapped to a real occasion, level and style
+    ok 4 - OT-01 nine occasion templates, each mapped to a real occasion, level and style
+      ---
+      duration_ms: 0.302882
+      type: 'test'
+      ...
+    1..4
+ok 58 - Packing planner and occasion templates
+  ---
+  duration_ms: 4.574392
+  type: 'suite'
+  ...
+# Subtest: Login tokens (JWT)
+    # Subtest: UT-S01 a fresh token is accepted and carries id, role, version
+    ok 1 - UT-S01 a fresh token is accepted and carries id, role, version
+      ---
+      duration_ms: 10.540357
+      type: 'test'
+      ...
+    # Subtest: UT-S02 a token signed with another secret is refused
+    ok 2 - UT-S02 a token signed with another secret is refused
+      ---
+      duration_ms: 1.154498
+      type: 'test'
+      ...
+    # Subtest: UT-S03 an expired token is refused
+    ok 3 - UT-S03 an expired token is refused
+      ---
+      duration_ms: 0.893319
+      type: 'test'
+      ...
+    # Subtest: UT-S04 the "none" algorithm is refused
+    ok 4 - UT-S04 the "none" algorithm is refused
+      ---
+      duration_ms: 0.330353
+      type: 'test'
+      ...
+    # Subtest: UT-S05 garbage is refused
+    ok 5 - UT-S05 garbage is refused
+      ---
+      duration_ms: 0.293537
+      type: 'test'
+      ...
+    1..5
+ok 59 - Login tokens (JWT)
+  ---
+  duration_ms: 14.936854
+  type: 'suite'
+  ...
+# Subtest: Passwords (bcrypt)
+    # Subtest: UT-S06 hash is not the password and verifies only the right password
+    ok 1 - UT-S06 hash is not the password and verifies only the right password
+      ---
+      duration_ms: 413.969564
+      type: 'test'
+      ...
+    # Subtest: UT-S07 an account without a password (Google only) never matches
+    ok 2 - UT-S07 an account without a password (Google only) never matches
+      ---
+      duration_ms: 0.463478
+      type: 'test'
+      ...
+    1..2
+ok 60 - Passwords (bcrypt)
+  ---
+  duration_ms: 414.716032
+  type: 'suite'
+  ...
+# Subtest: Photos
+    # Subtest: UT-P01 JPEG
+    ok 1 - UT-P01 JPEG
+      ---
+      duration_ms: 0.430356
+      type: 'test'
+      ...
+    # Subtest: UT-P02 PNG
+    ok 2 - UT-P02 PNG
+      ---
+      duration_ms: 0.155836
+      type: 'test'
+      ...
+    # Subtest: UT-P03 WebP
+    ok 3 - UT-P03 WebP
+      ---
+      duration_ms: 0.271973
+      type: 'test'
+      ...
+    # Subtest: UT-P04 HEIC
+    ok 4 - UT-P04 HEIC
+      ---
+      duration_ms: 0.442099
+      type: 'test'
+      ...
+    # Subtest: UT-P05 PDF is refused
+    ok 5 - UT-P05 PDF is refused
+      ---
+      duration_ms: 0.265952
+      type: 'test'
+      ...
+    # Subtest: UT-P06 EXE is refused
+    ok 6 - UT-P06 EXE is refused
+      ---
+      duration_ms: 0.150284
+      type: 'test'
+      ...
+    # Subtest: UT-P07 EXIF (GPS) block is removed, the image data is kept
+    ok 7 - UT-P07 EXIF (GPS) block is removed, the image data is kept
+      ---
+      duration_ms: 0.412188
+      type: 'test'
+      ...
+    # Subtest: UT-P08 signed URL: valid, expired, tampered, foreign key
+    ok 8 - UT-P08 signed URL: valid, expired, tampered, foreign key
+      ---
+      duration_ms: 0.806208
+      type: 'test'
+      ...
+    1..8
+ok 61 - Photos
+  ---
+  duration_ms: 3.351527
+  type: 'suite'
+  ...
+# Subtest: Access control and pipeline
+    # Subtest: UT-S08 admin route: admin passes, user gets 403, no user gets 401
+    ok 1 - UT-S08 admin route: admin passes, user gets 403, no user gets 401
+      ---
+      duration_ms: 0.54869
+      type: 'test'
+      ...
+    # Subtest: UT-S09 HTTP is redirected to HTTPS in production only
+    ok 2 - UT-S09 HTTP is redirected to HTTPS in production only
+      ---
+      duration_ms: 0.299306
+      type: 'test'
+      ...
+    1..2
+ok 62 - Access control and pipeline
+  ---
+  duration_ms: 1.002545
+  type: 'suite'
+  ...
+# Subtest: Event bus (Observer)
+    # Subtest: UT-E01 every subscriber receives the event, in order; unknown topics are ignored
+    ok 1 - UT-E01 every subscriber receives the event, in order; unknown topics are ignored
+      ---
+      duration_ms: 0.454076
+      type: 'test'
+      ...
+    1..1
+ok 63 - Event bus (Observer)
+  ---
+  duration_ms: 0.561225
+  type: 'suite'
+  ...
+# Subtest: Deletion reasons (US-13)
+    # Subtest: DR-01 exactly four reasons, each with a defined effect; only Torn / damaged and Became too small ask for a replacement
+    ok 1 - DR-01 exactly four reasons, each with a defined effect; only Torn / damaged and Became too small ask for a replacement
+      ---
+      duration_ms: 2.482813
+      type: 'test'
+      ...
+    # Subtest: DR-02 replacementFor: torn → same piece; too small → next size; no longer my style and other → nothing
+    ok 2 - DR-02 replacementFor: torn → same piece; too small → next size; no longer my style and other → nothing
+      ---
+      duration_ms: 0.899497
+      type: 'test'
+      ...
+    # Subtest: DR-03 US-34: a suggestion is avoided only when category AND colour match a “No longer my style” deletion
+    ok 3 - DR-03 US-34: a suggestion is avoided only when category AND colour match a “No longer my style” deletion
+      ---
+      duration_ms: 0.489736
+      type: 'test'
+      ...
+    # Subtest: DR-04 a style is "let go" only after two or more “No longer my style” deletions share it (boundary 1 / 2)
+    ok 4 - DR-04 a style is "let go" only after two or more “No longer my style” deletions share it (boundary 1 / 2)
+      ---
+      duration_ms: 0.862854
+      type: 'test'
+      ...
+    1..4
+ok 64 - Deletion reasons (US-13)
+  ---
+  duration_ms: 6.909579
+  type: 'suite'
+  ...
+# Subtest: Learning from deletions (US-34 → UC-22)
+    # Subtest: DR-05 two let-go streetwear pieces → a pattern with evidence; confirming avoids the style and removes it from the profile; Undo keeps the old values
+    ok 1 - DR-05 two let-go streetwear pieces → a pattern with evidence; confirming avoids the style and removes it from the profile; Undo keeps the old values
+      ---
+      duration_ms: 1.438198
+      type: 'test'
+      ...
+    # Subtest: DR-06 the ranker lowers pieces in an avoided style (rank only — the rule score is not involved)
+    ok 2 - DR-06 the ranker lowers pieces in an avoided style (rank only — the rule score is not involved)
+      ---
+      duration_ms: 0.71697
+      type: 'test'
+      ...
+    1..2
+ok 65 - Learning from deletions (US-34 → UC-22)
+  ---
+  duration_ms: 4.229528
+  type: 'suite'
+  ...
+# Subtest: Ask Closet → shopping list (US-36)
+    # Subtest: SL-01 “Put beige trousers on my shopping list” → add_to_shopping with the piece and the user’s word
+    ok 1 - SL-01 “Put beige trousers on my shopping list” → add_to_shopping with the piece and the user’s word
+      ---
+      duration_ms: 3.920142
+      type: 'test'
+      ...
+    # Subtest: SL-02 “add this to my shopping list” uses the last item; “Add a replacement for my torn loafers” is a replacement
+    ok 2 - SL-02 “add this to my shopping list” uses the last item; “Add a replacement for my torn loafers” is a replacement
+      ---
+      duration_ms: 2.84022
+      type: 'test'
+      ...
+    1..2
+ok 66 - Ask Closet → shopping list (US-36)
+  ---
+  duration_ms: 6.982671
+  type: 'suite'
+  ...
+# Subtest: Item status state machine
+    # Subtest: ST-01 a new piece starts as Available
+    ok 1 - ST-01 a new piece starts as Available
+      ---
+      duration_ms: 2.182627
+      type: 'test'
+      ...
+    # Subtest: ST-02 Available → Available follows the state diagram
+    ok 2 - ST-02 Available → Available follows the state diagram
+      ---
+      duration_ms: 0.345431
+      type: 'test'
+      ...
+    # Subtest: ST-02 Available → Laundry follows the state diagram
+    ok 3 - ST-02 Available → Laundry follows the state diagram
+      ---
+      duration_ms: 0.341407
+      type: 'test'
+      ...
+    # Subtest: ST-02 Available → Borrowed follows the state diagram
+    ok 4 - ST-02 Available → Borrowed follows the state diagram
+      ---
+      duration_ms: 0.124011
+      type: 'test'
+      ...
+    # Subtest: ST-02 Available → Packed follows the state diagram
+    ok 5 - ST-02 Available → Packed follows the state diagram
+      ---
+      duration_ms: 0.128291
+      type: 'test'
+      ...
+    # Subtest: ST-02 Available → Unavailable follows the state diagram
+    ok 6 - ST-02 Available → Unavailable follows the state diagram
+      ---
+      duration_ms: 0.112386
+      type: 'test'
+      ...
+    # Subtest: ST-02 Laundry → Available follows the state diagram
+    ok 7 - ST-02 Laundry → Available follows the state diagram
+      ---
+      duration_ms: 0.136765
+      type: 'test'
+      ...
+    # Subtest: ST-02 Laundry → Laundry follows the state diagram
+    ok 8 - ST-02 Laundry → Laundry follows the state diagram
+      ---
+      duration_ms: 0.167908
+      type: 'test'
+      ...
+    # Subtest: ST-02 Laundry → Borrowed follows the state diagram
+    ok 9 - ST-02 Laundry → Borrowed follows the state diagram
+      ---
+      duration_ms: 0.186826
+      type: 'test'
+      ...
+    # Subtest: ST-02 Laundry → Packed follows the state diagram
+    ok 10 - ST-02 Laundry → Packed follows the state diagram
+      ---
+      duration_ms: 0.122604
+      type: 'test'
+      ...
+    # Subtest: ST-02 Laundry → Unavailable follows the state diagram
+    ok 11 - ST-02 Laundry → Unavailable follows the state diagram
+      ---
+      duration_ms: 0.112573
+      type: 'test'
+      ...
+    # Subtest: ST-02 Borrowed → Available follows the state diagram
+    ok 12 - ST-02 Borrowed → Available follows the state diagram
+      ---
+      duration_ms: 1.524042
+      type: 'test'
+      ...
+    # Subtest: ST-02 Borrowed → Laundry follows the state diagram
+    ok 13 - ST-02 Borrowed → Laundry follows the state diagram
+      ---
+      duration_ms: 0.139999
+      type: 'test'
+      ...
+    # Subtest: ST-02 Borrowed → Borrowed follows the state diagram
+    ok 14 - ST-02 Borrowed → Borrowed follows the state diagram
+      ---
+      duration_ms: 0.09976
+      type: 'test'
+      ...
+    # Subtest: ST-02 Borrowed → Packed follows the state diagram
+    ok 15 - ST-02 Borrowed → Packed follows the state diagram
+      ---
+      duration_ms: 0.092713
+      type: 'test'
+      ...
+    # Subtest: ST-02 Borrowed → Unavailable follows the state diagram
+    ok 16 - ST-02 Borrowed → Unavailable follows the state diagram
+      ---
+      duration_ms: 0.08676
+      type: 'test'
+      ...
+    # Subtest: ST-02 Packed → Available follows the state diagram
+    ok 17 - ST-02 Packed → Available follows the state diagram
+      ---
+      duration_ms: 0.085422
+      type: 'test'
+      ...
+    # Subtest: ST-02 Packed → Laundry follows the state diagram
+    ok 18 - ST-02 Packed → Laundry follows the state diagram
+      ---
+      duration_ms: 0.086325
+      type: 'test'
+      ...
+    # Subtest: ST-02 Packed → Borrowed follows the state diagram
+    ok 19 - ST-02 Packed → Borrowed follows the state diagram
+      ---
+      duration_ms: 0.10291
+      type: 'test'
+      ...
+    # Subtest: ST-02 Packed → Packed follows the state diagram
+    ok 20 - ST-02 Packed → Packed follows the state diagram
+      ---
+      duration_ms: 0.13484
+      type: 'test'
+      ...
+    # Subtest: ST-02 Packed → Unavailable follows the state diagram
+    ok 21 - ST-02 Packed → Unavailable follows the state diagram
+      ---
+      duration_ms: 0.089694
+      type: 'test'
+      ...
+    # Subtest: ST-02 Unavailable → Available follows the state diagram
+    ok 22 - ST-02 Unavailable → Available follows the state diagram
+      ---
+      duration_ms: 0.091999
+      type: 'test'
+      ...
+    # Subtest: ST-02 Unavailable → Laundry follows the state diagram
+    ok 23 - ST-02 Unavailable → Laundry follows the state diagram
+      ---
+      duration_ms: 0.089167
+      type: 'test'
+      ...
+    # Subtest: ST-02 Unavailable → Borrowed follows the state diagram
+    ok 24 - ST-02 Unavailable → Borrowed follows the state diagram
+      ---
+      duration_ms: 0.085779
+      type: 'test'
+      ...
+    # Subtest: ST-02 Unavailable → Packed follows the state diagram
+    ok 25 - ST-02 Unavailable → Packed follows the state diagram
+      ---
+      duration_ms: 0.082889
+      type: 'test'
+      ...
+    # Subtest: ST-02 Unavailable → Unavailable follows the state diagram
+    ok 26 - ST-02 Unavailable → Unavailable follows the state diagram
+      ---
+      duration_ms: 0.083936
+      type: 'test'
+      ...
+    # Subtest: ST-03 exactly 10 valid transitions
+    ok 27 - ST-03 exactly 10 valid transitions
+      ---
+      duration_ms: 0.308924
+      type: 'test'
+      ...
+    # Subtest: ST-04 unknown status cannot move
+    ok 28 - ST-04 unknown status cannot move
+      ---
+      duration_ms: 0.147963
+      type: 'test'
+      ...
+    1..28
+ok 67 - Item status state machine
+  ---
+  duration_ms: 10.587788
+  type: 'suite'
+  ...
+# Subtest: Password length (BVA, US-01)
+    # Subtest: UT-V01 7 characters is rejected (just below minimum)
+    ok 1 - UT-V01 7 characters is rejected (just below minimum)
+      ---
+      duration_ms: 2.27822
+      type: 'test'
+      ...
+    # Subtest: UT-V02 8 characters is accepted (minimum)
+    ok 2 - UT-V02 8 characters is accepted (minimum)
+      ---
+      duration_ms: 0.40921
+      type: 'test'
+      ...
+    # Subtest: UT-V03 72 characters is accepted (maximum)
+    ok 3 - UT-V03 72 characters is accepted (maximum)
+      ---
+      duration_ms: 0.187441
+      type: 'test'
+      ...
+    # Subtest: UT-V04 73 characters is rejected (just above maximum)
+    ok 4 - UT-V04 73 characters is rejected (just above maximum)
+      ---
+      duration_ms: 0.345166
+      type: 'test'
+      ...
+    # Subtest: UT-V05 empty password is rejected
+    ok 5 - UT-V05 empty password is rejected
+      ---
+      duration_ms: 0.327534
+      type: 'test'
+      ...
+    1..5
+ok 68 - Password length (BVA, US-01)
+  ---
+  duration_ms: 5.172616
+  type: 'suite'
+  ...
+# Subtest: Email (EP, US-01)
+    # Subtest: UT-V06 valid email
+    ok 1 - UT-V06 valid email
+      ---
+      duration_ms: 0.286041
+      type: 'test'
+      ...
+    # Subtest: UT-V07 missing @
+    ok 2 - UT-V07 missing @
+      ---
+      duration_ms: 0.128521
+      type: 'test'
+      ...
+    # Subtest: UT-V08 missing domain ending
+    ok 3 - UT-V08 missing domain ending
+      ---
+      duration_ms: 0.179941
+      type: 'test'
+      ...
+    # Subtest: UT-V09 contains a space
+    ok 4 - UT-V09 contains a space
+      ---
+      duration_ms: 0.120547
+      type: 'test'
+      ...
+    # Subtest: UT-V10 email is lower-cased and trimmed
+    ok 5 - UT-V10 email is lower-cased and trimmed
+      ---
+      duration_ms: 0.173692
+      type: 'test'
+      ...
+    1..5
+ok 69 - Email (EP, US-01)
+  ---
+  duration_ms: 1.149776
+  type: 'suite'
+  ...
+# Subtest: Piece details (EP + BVA, US-09)
+    # Subtest: UT-V11 valid details pass
+    ok 1 - UT-V11 valid details pass
+      ---
+      duration_ms: 0.517433
+      type: 'test'
+      ...
+    # Subtest: UT-V12 category outside the list is rejected
+    ok 2 - UT-V12 category outside the list is rejected
+      ---
+      duration_ms: 0.265525
+      type: 'test'
+      ...
+    # Subtest: UT-V13 missing colour is rejected
+    ok 3 - UT-V13 missing colour is rejected
+      ---
+      duration_ms: 0.449192
+      type: 'test'
+      ...
+    # Subtest: UT-V14 zero dress-code levels is rejected (below 1)
+    ok 4 - UT-V14 zero dress-code levels is rejected (below 1)
+      ---
+      duration_ms: 0.273675
+      type: 'test'
+      ...
+    # Subtest: UT-V15 all five levels is accepted (maximum)
+    ok 5 - UT-V15 all five levels is accepted (maximum)
+      ---
+      duration_ms: 0.182731
+      type: 'test'
+      ...
+    # Subtest: UT-V16 level 6 is rejected (outside 1–5)
+    ok 6 - UT-V16 level 6 is rejected (outside 1–5)
+      ---
+      duration_ms: 0.165639
+      type: 'test'
+      ...
+    # Subtest: UT-V17 size of 10 characters accepted, 11 rejected
+    ok 7 - UT-V17 size of 10 characters accepted, 11 rejected
+      ---
+      duration_ms: 0.308
+      type: 'test'
+      ...
+    1..7
+ok 70 - Piece details (EP + BVA, US-09)
+  ---
+  duration_ms: 2.599013
+  type: 'suite'
+  ...
+# Subtest: Profile (EP + BVA, US-02 / US-03 / US-04)
+    # Subtest: UT-V18 dress code 0 accepted = false
+    ok 1 - UT-V18 dress code 0 accepted = false
+      ---
+      duration_ms: 0.379434
+      type: 'test'
+      ...
+    # Subtest: UT-V18 dress code 1 accepted = true
+    ok 2 - UT-V18 dress code 1 accepted = true
+      ---
+      duration_ms: 0.119657
+      type: 'test'
+      ...
+    # Subtest: UT-V18 dress code 5 accepted = true
+    ok 3 - UT-V18 dress code 5 accepted = true
+      ---
+      duration_ms: 0.098699
+      type: 'test'
+      ...
+    # Subtest: UT-V18 dress code 6 accepted = false
+    ok 4 - UT-V18 dress code 6 accepted = false
+      ---
+      duration_ms: 0.133174
+      type: 'test'
+      ...
+    # Subtest: UT-V19 unknown style is rejected
+    ok 5 - UT-V19 unknown style is rejected
+      ---
+      duration_ms: 0.18782
+      type: 'test'
+      ...
+    # Subtest: UT-V20 city of 1 character rejected, 2 accepted
+    ok 6 - UT-V20 city of 1 character rejected, 2 accepted
+      ---
+      duration_ms: 0.190201
+      type: 'test'
+      ...
+    # Subtest: UT-V21 modest must be true or false
+    ok 7 - UT-V21 modest must be true or false
+      ---
+      duration_ms: 0.14849
+      type: 'test'
+      ...
+    1..7
+ok 71 - Profile (EP + BVA, US-02 / US-03 / US-04)
+  ---
+  duration_ms: 1.639138
+  type: 'suite'
+  ...
+# Subtest: Events (EP + BVA, US-46)
+    # Subtest: UT-V22 valid event passes
+    ok 1 - UT-V22 valid event passes
+      ---
+      duration_ms: 0.860761
+      type: 'test'
+      ...
+    # Subtest: UT-V23 title of 80 characters accepted, 81 rejected
+    ok 2 - UT-V23 title of 80 characters accepted, 81 rejected
+      ---
+      duration_ms: 0.34905
+      type: 'test'
+      ...
+    # Subtest: UT-V24 date 2026-02-28 valid = true
+    ok 3 - UT-V24 date 2026-02-28 valid = true
+      ---
+      duration_ms: 0.165248
+      type: 'test'
+      ...
+    # Subtest: UT-V24 date 2026-02-29 valid = false
+    ok 4 - UT-V24 date 2026-02-29 valid = false
+      ---
+      duration_ms: 0.102468
+      type: 'test'
+      ...
+    # Subtest: UT-V24 date 2028-02-29 valid = true
+    ok 5 - UT-V24 date 2028-02-29 valid = true
+      ---
+      duration_ms: 0.093677
+      type: 'test'
+      ...
+    # Subtest: UT-V24 date 2026-13-01 valid = false
+    ok 6 - UT-V24 date 2026-13-01 valid = false
+      ---
+      duration_ms: 0.163423
+      type: 'test'
+      ...
+    # Subtest: UT-V24 date 12/11/2026 valid = false
+    ok 7 - UT-V24 date 12/11/2026 valid = false
+      ---
+      duration_ms: 0.112368
+      type: 'test'
+      ...
+    # Subtest: UT-V25 time 00:00 valid = true
+    ok 8 - UT-V25 time 00:00 valid = true
+      ---
+      duration_ms: 0.199753
+      type: 'test'
+      ...
+    # Subtest: UT-V25 time 23:59 valid = true
+    ok 9 - UT-V25 time 23:59 valid = true
+      ---
+      duration_ms: 0.120691
+      type: 'test'
+      ...
+    # Subtest: UT-V25 time 24:00 valid = false
+    ok 10 - UT-V25 time 24:00 valid = false
+      ---
+      duration_ms: 0.122431
+      type: 'test'
+      ...
+    # Subtest: UT-V25 time 7:30 valid = false
+    ok 11 - UT-V25 time 7:30 valid = false
+      ---
+      duration_ms: 0.846604
+      type: 'test'
+      ...
+    # Subtest: UT-V26 occasion outside the list is rejected
+    ok 12 - UT-V26 occasion outside the list is rejected
+      ---
+      duration_ms: 0.347404
+      type: 'test'
+      ...
+    1..12
+ok 72 - Events (EP + BVA, US-46)
+  ---
+  duration_ms: 4.177216
+  type: 'suite'
+  ...
+1..72
+# tests 349
+# suites 72
+# pass 349
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 75990.921333
+# start of coverage report
+# ---------------------------------------------------------------------------------------
+# file                       | line % | branch % | funcs % | uncovered lines
+# ---------------------------------------------------------------------------------------
+# src                        |        |          |         | 
+#  app.js                    |  95.37 |    81.82 |   96.30 | 98-102
+#  config.js                 | 100.00 |    62.50 |  100.00 | 
+#  db                        |        |          |         | 
+#   pool.js                  |  93.10 |    60.00 |  100.00 | 22-23
+#  events                    |        |          |         | 
+#   eventBus.js              | 100.00 |   100.00 |  100.00 | 
+#  gateway                   |        |          |         | 
+#   accessControl.js         | 100.00 |   100.00 |  100.00 | 
+#   audit.js                 | 100.00 |    87.50 |   95.00 | 
+#   authenticate.js          | 100.00 |   100.00 |  100.00 | 
+#   errorHandler.js          |  92.86 |    80.00 |  100.00 | 17-18
+#   security.js              |  83.33 |    66.67 |   75.00 | 38-46
+#  modules                   |        |          |         | 
+#   activity                 |        |          |         | 
+#    activityModule.js       | 100.00 |    82.35 |  100.00 | 
+#   admin                    |        |          |         | 
+#    adminModule.js          | 100.00 |    65.63 |  100.00 | 
+#   assistant                |        |          |         | 
+#    assistantModule.js      |  94.37 |    66.03 |   91.11 | 29-32 81-83 115 141-144
+#    keywordParser.js        | 100.00 |    97.59 |  100.00 | 
+#    llmAdapter.js           |  97.44 |    75.00 |   87.50 | 63 66
+#   availability             |        |          |         | 
+#    availabilityModule.js   |  96.09 |    89.33 |   94.44 | 101 112 121-123 129-130
+#    statusMachine.js        | 100.00 |   100.00 |  100.00 | 
+#   identity                 |        |          |         | 
+#    identityRepository.js   | 100.00 |   100.00 |  100.00 | 
+#    identityRoutes.js       | 100.00 |    93.33 |  100.00 | 
+#    identityService.js      |  90.38 |    92.86 |   90.91 | 93-102
+#    passwords.js            | 100.00 |   100.00 |  100.00 | 
+#    tokens.js               | 100.00 |   100.00 |  100.00 | 
+#   intelligence             |        |          |         | 
+#    health.js               | 100.00 |    88.14 |   94.74 | 
+#    intelligenceModule.js   |  99.02 |    77.39 |   97.56 | 154-155
+#    learning.js             |  93.07 |    78.26 |   94.74 | 38-44
+#   outfits                  |        |          |         | 
+#    outfitsModule.js        |  97.11 |    79.51 |   88.51 | 15-16 57-58 160-161 253 263
+#   packing                  |        |          |         | 
+#    packingModule.js        | 100.00 |    78.82 |   93.18 | 
+#   planner                  |        |          |         | 
+#    plannerModule.js        |  97.97 |    72.66 |   89.80 | 154-156 259 262 274
+#   privacy                  |        |          |         | 
+#    privacyModule.js        | 100.00 |   100.00 |  100.00 | 
+#   profile                  |        |          |         | 
+#    profileModule.js        | 100.00 |    73.33 |  100.00 | 
+#   recommendation           |        |          |         | 
+#    engine.js               | 100.00 |    91.73 |   96.30 | 
+#    recommendationModule.js |  99.11 |    87.88 |   97.06 | 102
+#    weatherAdapter.js       | 100.00 |    88.46 |   83.33 | 
+#   shopping                 |        |          |         | 
+#    shoppingModule.js       |  99.21 |    84.74 |   95.65 | 144 247
+#   wardrobe                 |        |          |         | 
+#    closetGaps.js           | 100.00 |    92.31 |  100.00 | 
+#    photoStorage.js         | 100.00 |    92.50 |  100.00 | 
+#    wardrobeModule.js       |  98.17 |    87.50 |   97.83 | 146-148 199-200
+#  shared                    |        |          |         | 
+#   deletionPolicy.js        | 100.00 |    91.67 |   90.91 | 
+#   errors.js                | 100.00 |   100.00 |  100.00 | 
+#   validate.js              |  98.89 |    97.40 |  100.00 | 50
+#   vocabulary.js            | 100.00 |   100.00 |  100.00 | 
+# ---------------------------------------------------------------------------------------
+# all files                  |  97.95 |    84.57 |   94.72 | 
+# ---------------------------------------------------------------------------------------
+# end of coverage report

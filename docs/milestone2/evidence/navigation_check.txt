@@ -1,0 +1,154 @@
+  1 o_1          fade               → 
+  2 o_2          morph auto 500 ms  → 
+  3 o_3          morph              → 
+  4 o_4          morph auto 400 ms  → 
+  5 o_5          morph              → 
+  6 o_6          morph auto 200 ms  → 
+  7 room1        morph              → s_in, p_in, p_bridge, q_in, r_in, d_in
+  8 s_in         morph auto 100 ms  → 
+  9 s_goal       fade               → s_stories, s_out
+ 10 s_stories    fade               → s_goal, s_s1
+ 11 s_s1         fade               → s_stories, s_jira
+ 12 s_jira       fade               → s_s1, s_feedback
+ 13 s_feedback   fade               → s_jira, s_uc
+ 14 s_uc         fade               → s_feedback, s_uml
+ 15 s_uml        fade               → s_uml_u, s_uml_a, s_uml_x, s_out
+ 16 s_uml_u      morph              → s_uml
+ 17 s_uml_a      morph              → s_uml
+ 18 s_uml_x      morph              → s_uml
+ 19 s_out        fade  auto 100 ms  → 
+ 20 room2        morph              → s_in, p_in, p_bridge, q_in, r_in, d_in
+ 21 p_in         morph auto 200 ms  → 
+ 22 p_fill       morph auto 150 ms  → 
+ 23 p_app        morph              → p_demo, x_video
+ 24 p_demo       morph              → 
+ 25 p_return     fade               → 
+ 26 p_simple     morph              → 
+ 27 p_bridge     fade               → a_open, p_hub
+ 28 a_open       morph auto 100 ms  → 
+ 29 a_cam        morph auto 100 ms  → 
+ 30 a_l1         morph              → a_out
+ 31 a_l2         morph              → a_out
+ 32 a_l3         morph              → a_out
+ 33 a_l4         morph              → a_out
+ 34 a_l5         morph              → a_out
+ 35 a_l6         morph              → a_out
+ 36 a_stack      morph              → a_uml, a_out
+ 37 a_uml        morph              → a_stack, a_uml_l, a_uml_r, a_design
+ 38 a_uml_l      morph              → a_uml
+ 39 a_uml_r      morph              → a_uml
+ 40 a_design     fade               → a_er, a_class, a_seq1, a_state, a_seq2, a_seq3, a_out
+ 41 a_er         fade               → a_design, a_er_core, a_er_out, a_er_int, a_er_shop
+ 42 a_er_core    morph              → a_er
+ 43 a_er_out     morph              → a_er
+ 44 a_er_int     morph              → a_er
+ 45 a_er_shop    morph              → a_er
+ 46 a_class      fade               → a_design
+ 47 a_seq1       fade               → a_design
+ 48 a_state      fade               → a_design
+ 49 a_seq2       fade               → a_design
+ 50 a_seq3       fade               → a_design
+ 51 a_out        fade  auto 100 ms  → 
+ 52 room3        morph              → s_in, p_in, p_bridge, q_in, r_in, d_in
+ 53 q_in         morph auto 100 ms  → 
+ 54 q_1          fade               → 
+ 55 q_2          morph              → 
+ 56 q_l1         fade               → 
+ 57 q_l2         morph              → 
+ 58 q_l3         morph              → 
+ 59 q_l4         morph              → 
+ 60 q_total      fade               → 
+ 61 q_proof      morph              → q_bug, q_out
+ 62 q_bug        fade               → 
+ 63 q_b2         morph              → 
+ 64 q_b3         morph              → 
+ 65 q_b4         morph              → 
+ 66 q_b5         morph              → 
+ 67 q_b6         morph              → q_proof, q_ci
+ 68 q_ci         fade               → q_out
+ 69 q_out        fade  auto 100 ms  → 
+ 70 room4        morph              → s_in, p_in, p_bridge, q_in, r_in, d_in
+ 71 r_in         morph auto 100 ms  → 
+ 72 r_0          fade               → 
+ 73 r_1          morph              → 
+ 74 r_2          morph              → 
+ 75 r_3          morph              → r_out
+ 76 r_out        fade  auto 100 ms  → 
+ 77 room5        morph              → s_in, p_in, p_bridge, q_in, r_in, d_in
+ 78 d_in         morph auto 100 ms  → 
+ 79 d_1          fade               → d_out
+ 80 d_out        fade  auto 100 ms  → 
+ 81 room6        morph              → s_in, p_in, p_bridge, q_in, r_in, d_in
+ 82 f_1          fade               → 
+ 83 f_2          morph              → 
+ 84 f_3          morph              → 
+ 85 f_4          morph auto 200 ms  → 
+ 86 f_5          fade  auto 300 ms  → 
+ 87 f_6          morph auto 300 ms  → 
+ 88 f_7          morph auto 300 ms  → 
+ 89 f_8          fade               → appx
+ 90 appx         fade               → room1, x_backlog, x_tests, x_defects, x_trace, x_flow, x_roles, x_video, p_hub
+ 91 x_backlog    fade               → appx
+ 92 x_tests      fade               → appx
+ 93 x_defects    fade               → appx
+ 94 x_trace      fade               → appx
+ 95 x_flow       fade               → appx
+ 96 x_roles      fade               → appx
+ 97 x_video      fade               → p_return, appx
+ 98 p_hub        fade               → p_bridge, pf_looks, pf_tryon, pf_mix, pf_forgot, pf_ask, pf_learn
+ 99 pf_looks     morph auto 150 ms  → 
+100 pf_looks_0   morph              → pr_looks
+101 pf_looks_1   fade               → pr_looks
+102 pr_looks     morph auto 100 ms  → 
+103 p_hub_looks  morph              → p_bridge, pf_looks, pf_tryon, pf_mix, pf_forgot, pf_ask, pf_learn
+104 pf_tryon     morph auto 150 ms  → 
+105 pf_tryon_0   morph              → pr_tryon
+106 pf_tryon_1   fade               → pr_tryon
+107 pr_tryon     morph auto 100 ms  → 
+108 p_hub_tryon  morph              → p_bridge, pf_looks, pf_tryon, pf_mix, pf_forgot, pf_ask, pf_learn
+109 pf_mix       morph auto 150 ms  → 
+110 pf_mix_0     morph              → pr_mix
+111 pf_mix_1     fade               → pr_mix
+112 pr_mix       morph auto 100 ms  → 
+113 p_hub_mix    morph              → p_bridge, pf_looks, pf_tryon, pf_mix, pf_forgot, pf_ask, pf_learn
+114 pf_forgot    morph auto 150 ms  → 
+115 pf_forgot_0  morph              → pr_forgot
+116 pf_forgot_1  fade               → pr_forgot
+117 pr_forgot    morph auto 100 ms  → 
+118 p_hub_forgot morph              → p_bridge, pf_looks, pf_tryon, pf_mix, pf_forgot, pf_ask, pf_learn
+119 pf_ask       morph auto 150 ms  → 
+120 pf_ask_0     morph              → pr_ask
+121 pf_ask_1     fade               → pr_ask
+122 pr_ask       morph auto 100 ms  → 
+123 p_hub_ask    morph              → p_bridge, pf_looks, pf_tryon, pf_mix, pf_forgot, pf_ask, pf_learn
+124 pf_learn     morph auto 150 ms  → 
+125 pf_learn_0   morph              → pr_learn
+126 pr_learn     morph auto 100 ms  → 
+127 p_hub_learn  morph              → p_bridge, pf_looks, pf_tryon, pf_mix, pf_forgot, pf_ask, pf_learn
+Morph pair o_1 → o_2: 1 shared named objects ['!!word']
+Morph pair o_5 → o_6: 5 shared named objects ['!!door_l', '!!door_r', '!!open_led', '!!open_lit', '!!open_room']
+Morph pair room1 → s_in: 10 shared named objects ['!!obj_box', '!!obj_door', '!!obj_dresser', '!!obj_mirror', '!!obj_oval', '!!obj_panel']
+Morph pair s_out → room2: 10 shared named objects ['!!obj_box', '!!obj_door', '!!obj_dresser', '!!obj_mirror', '!!obj_oval', '!!obj_panel']
+Morph pair room2 → p_in: 10 shared named objects ['!!obj_box', '!!obj_door', '!!obj_dresser', '!!obj_mirror', '!!obj_oval', '!!obj_panel']
+Morph pair p_in → p_fill: 10 shared named objects ['!!obj_box', '!!obj_door', '!!obj_dresser', '!!obj_mirror', '!!obj_oval', '!!obj_panel']
+Morph pair p_fill → p_app: 10 shared named objects ['!!obj_box', '!!obj_door', '!!obj_dresser', '!!obj_mirror', '!!obj_oval', '!!obj_panel']
+Morph pair p_app → p_demo: 12 shared named objects ['!!appscreen', '!!mirror_dark', '!!obj_box', '!!obj_door', '!!obj_dresser', '!!obj_mirror']
+Morph pair p_bridge → a_open: 1 shared named objects ['!!laptop']
+Morph pair a_open → a_cam: 1 shared named objects ['!!laptop']
+Morph pair a_l1 → a_l2: 1 shared named objects ['!!slab0']
+Morph pair a_l5 → a_l6: 4 shared named objects ['!!layerline', '!!layername', '!!slab3', '!!slab4']
+Morph pair a_l6 → a_stack: 3 shared named objects ['!!slab3', '!!slab4', '!!slab5']
+Morph pair a_stack → a_uml: 1 shared named objects ['!!slab3']
+Morph pair s_uml → s_uml_u: 1 shared named objects ['!!D1_use_case_overview']
+Morph pair q_l1 → q_l2: 11 shared named objects ['!!lvb0', '!!lvb1', '!!lvb2', '!!lvb3', '!!lvp0', '!!lvp1']
+Morph pair q_total → q_proof: 3 shared named objects ['!!qbig', '!!qbig2', '!!qbig3']
+Morph pair q_bug → q_b2: 14 shared named objects ['!!td0', '!!tl', '!!tn0', '!!tn1', '!!tn2', '!!tn3']
+Morph pair r_0 → r_1: 2 shared named objects ['!!ovalglass', '!!rt']
+Morph pair f_1 → f_2: 13 shared named objects ['!!fband', '!!fline', '!!fsp', '!!obj_box', '!!obj_door', '!!obj_dresser']
+Morph pair f_3 → f_4: 10 shared named objects ['!!obj_box', '!!obj_door', '!!obj_dresser', '!!obj_mirror', '!!obj_oval', '!!obj_panel']
+Morph pair f_6 → f_7: 4 shared named objects ['!!door_l', '!!door_r', '!!open_led', '!!open_room']
+Morph pair p_hub → pf_looks: 1 shared named objects ['!!tile-looks']
+Morph pair pf_looks → pf_looks_0: 1 shared named objects ['!!tile-looks']
+Morph pair pr_looks → p_hub_looks: 1 shared named objects ['!!tile-looks']
+embedded video files: ['ppt/media/media-97-1.mp4'] · linked (external) videos: none
+broken links: none · slides: 127

@@ -1,0 +1,16 @@
+{
+  "name": "closet",
+  "private": true,
+  "description": "Closet \u2013 AI digital wardrobe (CSCE 3701, Fall 2026)",
+  "scripts": {
+    "install:all": "npm --prefix server install && npm --prefix client install",
+    "db": "docker compose up -d",
+    "migrate": "npm --prefix server run migrate",
+    "seed": "npm --prefix server run seed",
+    "api": "npm --prefix server run dev",
+    "web": "npm --prefix client run dev",
+    "test": "npm --prefix server test",
+    "coverage": "npm --prefix server run coverage",
+    "demo:check": "npm --prefix server run demo:check"
+  }
+}

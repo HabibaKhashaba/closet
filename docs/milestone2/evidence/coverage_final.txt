@@ -1,0 +1,68 @@
+# start of coverage report
+# ---------------------------------------------------------------------------------------
+# file                       | line % | branch % | funcs % | uncovered lines
+# ---------------------------------------------------------------------------------------
+# src                        |        |          |         | 
+#  app.js                    |  95.37 |    81.82 |   96.30 | 98-102
+#  config.js                 | 100.00 |    62.50 |  100.00 | 
+#  db                        |        |          |         | 
+#   pool.js                  |  93.10 |    60.00 |  100.00 | 22-23
+#  events                    |        |          |         | 
+#   eventBus.js              | 100.00 |   100.00 |  100.00 | 
+#  gateway                   |        |          |         | 
+#   accessControl.js         | 100.00 |   100.00 |  100.00 | 
+#   audit.js                 | 100.00 |    87.50 |   95.00 | 
+#   authenticate.js          | 100.00 |   100.00 |  100.00 | 
+#   errorHandler.js          |  92.86 |    80.00 |  100.00 | 17-18
+#   security.js              |  83.33 |    66.67 |   75.00 | 38-46
+#  modules                   |        |          |         | 
+#   activity                 |        |          |         | 
+#    activityModule.js       | 100.00 |    82.35 |  100.00 | 
+#   admin                    |        |          |         | 
+#    adminModule.js          | 100.00 |    65.63 |  100.00 | 
+#   assistant                |        |          |         | 
+#    assistantModule.js      |  94.37 |    66.03 |   91.11 | 29-32 81-83 115 141-144
+#    keywordParser.js        | 100.00 |    97.59 |  100.00 | 
+#    llmAdapter.js           |  97.44 |    75.00 |   87.50 | 63 66
+#   availability             |        |          |         | 
+#    availabilityModule.js   |  96.09 |    89.33 |   94.44 | 101 112 121-123 129-130
+#    statusMachine.js        | 100.00 |   100.00 |  100.00 | 
+#   identity                 |        |          |         | 
+#    identityRepository.js   | 100.00 |   100.00 |  100.00 | 
+#    identityRoutes.js       | 100.00 |    93.33 |  100.00 | 
+#    identityService.js      |  90.38 |    92.86 |   90.91 | 93-102
+#    passwords.js            | 100.00 |   100.00 |  100.00 | 
+#    tokens.js               | 100.00 |   100.00 |  100.00 | 
+#   intelligence             |        |          |         | 
+#    health.js               | 100.00 |    88.14 |   94.74 | 
+#    intelligenceModule.js   |  99.02 |    77.39 |   97.56 | 154-155
+#    learning.js             |  93.07 |    78.26 |   94.74 | 38-44
+#   outfits                  |        |          |         | 
+#    outfitsModule.js        |  97.11 |    79.51 |   88.51 | 15-16 57-58 160-161 253 263
+#   packing                  |        |          |         | 
+#    packingModule.js        | 100.00 |    78.82 |   93.18 | 
+#   planner                  |        |          |         | 
+#    plannerModule.js        |  97.97 |    72.66 |   89.80 | 154-156 259 262 274
+#   privacy                  |        |          |         | 
+#    privacyModule.js        | 100.00 |   100.00 |  100.00 | 
+#   profile                  |        |          |         | 
+#    profileModule.js        | 100.00 |    73.33 |  100.00 | 
+#   recommendation           |        |          |         | 
+#    engine.js               | 100.00 |    91.73 |   96.30 | 
+#    recommendationModule.js |  99.11 |    87.88 |   97.06 | 102
+#    weatherAdapter.js       | 100.00 |    88.46 |   83.33 | 
+#   shopping                 |        |          |         | 
+#    shoppingModule.js       |  99.21 |    84.74 |   95.65 | 144 247
+#   wardrobe                 |        |          |         | 
+#    closetGaps.js           | 100.00 |    92.31 |  100.00 | 
+#    photoStorage.js         | 100.00 |    92.50 |  100.00 | 
+#    wardrobeModule.js       |  98.17 |    87.50 |   97.83 | 146-148 199-200
+#  shared                    |        |          |         | 
+#   deletionPolicy.js        | 100.00 |    91.67 |   90.91 | 
+#   errors.js                | 100.00 |   100.00 |  100.00 | 
+#   validate.js              |  98.89 |    97.40 |  100.00 | 50
+#   vocabulary.js            | 100.00 |   100.00 |  100.00 | 
+# ---------------------------------------------------------------------------------------
+# all files                  |  97.95 |    84.57 |   94.72 | 
+# ---------------------------------------------------------------------------------------
+# end of coverage report
