@@ -11,6 +11,9 @@
     "web": "npm --prefix client run dev",
     "test": "npm --prefix server test",
     "coverage": "npm --prefix server run coverage",
-    "demo:check": "npm --prefix server run demo:check"
+    "demo:check": "npm --prefix server run demo:check",
+    "demo": "npm --prefix server run demo:check",
+    "demo:offline": "npm --prefix client run build && bash tools/offline_demo/build.sh",
+    "e2e": "python3 e2e/demo_journey.py && python3 e2e/stateful_journey.py"
   }
 }

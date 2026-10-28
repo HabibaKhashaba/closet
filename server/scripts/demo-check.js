@@ -46,6 +46,14 @@ async function call(token, method, url, body, form) {
   const looks = rec.outfits.map((o) => ({ name: o.title, pieces: o.pieces.map((p) => p.name), match: o.compatibility }));
   ok(rec.outfits.length === 3, 'Style me → University gives exactly three looks');
   ok(new Set(looks.map((l) => l.name)).size === 3, 'the three looks have three different names', looks.map((l) => l.name).join(' · '));
+  // v1.5: three genuinely different looks — any two share at most ONE major garment (top, dress, bottom, layer, shoes)
+  const MAJOR = ['Top', 'Dress', 'Bottom', 'Layer', 'Shoes'];
+  let shared = 0;
+  for (let i = 0; i < 3; i += 1) for (let j = i + 1; j < 3; j += 1) {
+    const a = rec.outfits[i].pieces.filter((p) => MAJOR.includes(p.category)).map((p) => p.id); const b2 = rec.outfits[j].pieces.filter((p) => MAJOR.includes(p.category)).map((p) => p.id);
+    shared = Math.max(shared, a.filter((x) => b2.includes(x)).length);
+  }
+  ok(shared <= 1, 'the three looks are different styling directions (≤ 1 shared major garment)', `max shared: ${shared}`);
   ok(rec.weather.source === 'estimate', 'weather is the seasonal estimate (start the server with WEATHER_MODE=estimate for a repeatable demo)', `${rec.weather.tempC} °C · ${rec.weather.source}`);
   const first = rec.outfits[0];
   const sw = (await api('POST', '/recommendations/swap', { itemIds: first.itemIds, slot: 0, occasion: 'University' })).data;
@@ -73,6 +81,21 @@ async function call(token, method, url, body, form) {
   ok(!list.some((i) => /silk scarf/i.test(i.title)), 'no silk-scarf replacement yet (Act 6 adds it)');
   const buy = (await api('POST', '/chat', { message: 'I want to buy beige trousers. Do I need them?' })).data;
   ok(buy.function === 'buy_check', 'Ask Closet answers “Do I need beige trousers?”', `${buy.function} · ${String(buy.reply).slice(0, 70)}…`);
+  // v1.5: different questions → different functions (no replayed answer)
+  const qs = ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'What could I donate?', 'Who has my rose wrap dress?', 'Do I need to do laundry before Monday?',
+    'What did I wear to Salma’s birthday?', 'Why is my wardrobe health low?', 'Is tomorrow’s outfit still okay for the weather?', 'Pack me for 5 days in Paris', 'Tell me a joke'];
+  const fns = [];
+  for (const q of qs) fns.push((await api('POST', '/chat', { message: q })).data);
+  ok(new Set(fns.map((r) => r.function)).size === qs.length, 'Ask Closet: 10 different questions → 10 different functions', fns.map((r) => r.function).join(', '));
+  ok(new Set(fns.map((r) => r.reply)).size === qs.length && fns.every((r) => !/beige trousers/i.test(r.reply)), 'Ask Closet: 10 different answers, none about beige trousers');
+  const f2 = (await api('GET', '/intelligence/forgotten')).data;
+  ok(f2.top && f2.top.piece.name === 'Denim jacket' && f2.top.days === 104, '“Still love it?” → Denim jacket, 104 days', f2.top ? `${f2.top.piece.name} · ${f2.top.days} days` : 'none');
+  const mon = (await api('GET', '/intelligence/monitor')).data.alerts;
+  ok(mon.some((a) => a.kind === 'weather' && /navy blazer/.test(a.message)), 'Planner monitor: tomorrow’s planned blazer is too warm (24 → 30 °C)', mon.map((a) => a.kind).join(', '));
+  const bor = (await api('GET', '/intelligence/borrowed')).data;
+  ok(bor.overdue.some((x) => x.borrowedBy === 'Nour'), 'Borrow tracker: the rose wrap dress is overdue (with Nour)');
+  const sea = (await api('GET', '/intelligence/seasonal')).data;
+  ok(sea.pack.length >= 1, 'Seasonal rotation suggests cold-weather pieces at 30 °C (nothing moves until you confirm)', sea.pack.map((p) => p.name).join(', '));
   const learned = (await api('GET', '/intelligence/learned')).data;
   const pats = learned.patterns || learned.learned || learned;
   ok(Array.isArray(pats) && pats.length >= 3, 'Closet has learned shows patterns with evidence', Array.isArray(pats) ? pats.map((p) => p.key).join(', ') : '');
@@ -90,12 +113,17 @@ async function call(token, method, url, body, form) {
     const l2 = (await call(t, 'GET', '/shopping/list')).data.items;
     ok(da.status === 200 && !l2.some((i) => /scarf a/i.test(i.title)), '“No longer my style” creates no replacement');
     ok(db.status === 200 && l2.some((i) => i.source === 'replacement' && /scarf b/i.test(i.title)), '“Torn / damaged” puts a replacement in the bag');
+    // Save then Favourite → one record (defect D-10)
+    const c = await add('Test scarf C', 'Black'); const d = await add('Test scarf D', 'White');
+    const s1 = await call(t, 'POST', '/outfits', { itemIds: [c.id, d.id] }); const s2 = await call(t, 'POST', '/outfits', { itemIds: [d.id, c.id], favorite: true });
+    const all = (await call(t, 'GET', '/outfits')).data.outfits; const fav = (await call(t, 'GET', '/outfits?favorites=true')).data.outfits;
+    ok(s1.data.id === s2.data.id && all.length === 1 && fav.length === 1, 'Save then Favourite keeps ONE look, and it is in Favourites');
     const gone = await call(t, 'DELETE', '/account', { confirm: 'DELETE MY ACCOUNT', password: pw });
     ok(gone.status === 200 || gone.status === 204, 'the throwaway account is deleted again');
   }
 
   // ---------- same result as last time? ----------
-  const snapshot = { looks, fixed: fx.outfits.map((o) => o.title), mix: [good.compatibility, weak.compatibility, best && best.compatibility], tray: (sw.options || []).map((o) => o.piece.name) };
+  const snapshot = { looks, fixed: fx.outfits.map((o) => o.title), mix: [good.compatibility, weak.compatibility, best && best.compatibility], tray: (sw.options || []).map((o) => o.piece.name), ask: fns.map((r) => r.function) };
   if (SAVE) { fs.writeFileSync(EXPECTED, JSON.stringify(snapshot, null, 2)); console.log(`  • saved the expected demo results to ${path.basename(EXPECTED)}`); }
   else if (fs.existsSync(EXPECTED)) ok(JSON.stringify(JSON.parse(fs.readFileSync(EXPECTED, 'utf8'))) === JSON.stringify(snapshot), 'the demo gives the same looks, tray and scores as the saved run');
   console.log(failed ? `\n${failed} check(s) failed — fix them before presenting.` : '\nReady: every demo check passed.');

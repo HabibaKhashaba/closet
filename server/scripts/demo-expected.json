@@ -4,35 +4,37 @@
       "name": "Campus Stripes",
       "pieces": [
         "Breton striped top",
-        "Beige wide-leg trousers",
-        "White sneakers",
+        "Cream pleated skirt",
+        "Black loafers",
         "Tortoise sunglasses"
       ],
       "match": 98
     },
     {
-      "name": "Classic Midi",
-      "pieces": [
-        "Breton striped top",
-        "Black midi skirt",
-        "White sneakers"
-      ],
-      "match": 98
-    },
-    {
-      "name": "Classic Oxford",
+      "name": "Clean Oxford",
       "pieces": [
         "Blue Oxford shirt",
         "Beige wide-leg trousers",
-        "White sneakers"
+        "Black loafers",
+        "Tortoise sunglasses"
       ],
       "match": 99
+    },
+    {
+      "name": "Relaxed Midi",
+      "pieces": [
+        "Breton striped top",
+        "Black midi skirt",
+        "White sneakers",
+        "Tan leather tote"
+      ],
+      "match": 98
     }
   ],
   "fixed": [
     "Campus Denim",
-    "Classic Oxford",
-    "Classic Denim"
+    "Clean Oxford",
+    "Classic Midi"
   ],
   "mix": [
     98,
@@ -43,5 +45,17 @@
     "Blue Oxford shirt",
     "Sage linen shirt",
     "Red cropped tee"
+  ],
+  "ask": [
+    "recommend",
+    "availability",
+    "donate_candidates",
+    "borrowed",
+    "laundry_risk",
+    "memory",
+    "health",
+    "plan_check",
+    "trip_pack",
+    "help"
   ]
 }
