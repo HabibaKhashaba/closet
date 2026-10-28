@@ -8,17 +8,24 @@ const { canMove } = require('../availability/statusMachine');
 const { CATEGORIES, COLOURS } = require('../../shared/vocabulary');
 
 const UUID = /^[0-9a-f-]{36}$/i;
-const SUGGESTIONS = ['What should I wear to university tomorrow?', 'I want to buy beige trousers. Do I need them?', 'Put beige trousers on my shopping list', 'Add a replacement for my torn loafers', 'What is missing from my wardrobe?', 'Style my blue skirt', 'What have I not worn recently?'];
+const SUGGESTIONS = ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'Do I need beige trousers?', 'What could I donate?', 'Do I need to do laundry before Monday?', 'Pack me for 5 days in Paris', 'Who has my rose wrap dress?', 'What has the best cost per wear?', 'Why is my wardrobe health low?', 'What is missing from my wardrobe?'];
 const NOUN = { Top: 'top', Dress: 'dress', Bottom: 'bottom', Layer: 'layer', Shoes: 'shoes', Bag: 'bag', Extra: 'accessory' };
 const label = (p) => p.name || [p.colour, p.fabric && p.fabric !== 'Other' ? p.fabric.toLowerCase() : null, NOUN[p.category]].filter(Boolean).join(' ');
 const lower = (p) => label(p).toLowerCase();
 
 function matchPieces(pieces, q) {
   if (!q) return [];
-  return pieces.filter((p) => (!q.colour || p.colour === q.colour) && (!q.category || p.category === q.category) && (!q.fabric || p.fabric === q.fabric));
+  const base = pieces.filter((p) => (!q.colour || p.colour === q.colour) && (!q.category || p.category === q.category) && (!q.fabric || p.fabric === q.fabric));
+  // A garment word ("blazer", "loafers") narrows to pieces with that word in their name, when there are any.
+  if (!q.name) return base;
+  const stem = q.name.replace(/s$/, '');
+  const named = base.filter((p) => String(p.name || '').toLowerCase().includes(stem));
+  return named.length ? named : base;
 }
+const WHERE = { Available: 'Available — clean and at home', Laundry: 'in the laundry', Borrowed: 'lent out', Packed: 'packed', Unavailable: 'unavailable' };
+const SCOPE = 'I can help with your wardrobe, outfits, laundry, shopping, weather and planner.';
 
-function assistantService({ db, parser, rec, outfits, wardrobe, availability, planner, shopping }) {
+function assistantService({ db, parser, rec, outfits, wardrobe, availability, planner, shopping, proactive, intelligence, packing, profile }) {
   async function logAction(userId, fn, undo) {
     const { rows } = await db.query('INSERT INTO assistant.actions (user_id, function, undo) VALUES ($1, $2, $3) RETURNING id', [userId, fn, JSON.stringify(undo)]);
     return rows[0].id;
@@ -34,9 +41,20 @@ function assistantService({ db, parser, rec, outfits, wardrobe, availability, pl
     const usable = found.filter(filter);
     if (usable.length === 1) return { piece: usable[0] };
     if (!found.length) return { none: true };
+    if (found.length === 1) return { piece: found[0] };
     return { choices: (usable.length ? usable : found).slice(0, 6) };
   }
-  const describe = (q) => [q.colour, q.fabric, q.category ? NOUN[q.category] : 'piece'].filter(Boolean).join(' ').toLowerCase();
+  const describe = (q) => [q.colour, q.fabric, q.name || (q.category ? NOUN[q.category] : 'piece')].filter(Boolean).join(' ').toLowerCase();
+  // The piece a follow-up ("keep it", "add this") refers to: named now, or remembered from the last reply.
+  async function pieceFor(userId, a, ctx, pieceId, filter) {
+    if (a.piece) return resolve(userId, a.piece, pieceId, filter);
+    const id = pieceId || (a.useContext && ctx && ctx.pieceId);
+    if (id) return resolve(userId, null, id);
+    return { none: true, missing: true };
+  }
+  const notFound = (a) => ({ reply: a.piece ? `I couldn’t find a ${describe(a.piece)} in your closet.` : 'Which piece do you mean? Name it, for example “the denim jacket”.' });
+  const isoDay = (d) => new Date(d).toISOString().slice(0, 10);
+  const addDays = (day, n) => isoDay(new Date(`${day}T12:00:00Z`).getTime() + n * 86400000);
 
   const run = {
     async recommend(userId, a) {
@@ -94,8 +112,13 @@ function assistantService({ db, parser, rec, outfits, wardrobe, availability, pl
       return { reply: `${res.outfits.length} ways to wear your ${lower(p)}:`, outfits: res.outfits, context: { occasion, date: a.date } };
     },
     async buy_check(userId, a) {
+      if (shopping && a.piece && a.piece.category && (a.impact || !a.piece.colour)) {
+        const im = await shopping().impact(userId, { category: a.piece.category, colour: a.piece.colour, name: a.word || a.piece.name || undefined });
+        const buy = { category: a.piece.category, colour: a.piece.colour || null, word: a.word || null };
+        return { context: { buy }, reply: `${im.sentence} Recommendation: ${im.recommendation}.${im.fillsGap ? ` It fills a ${im.fillsGap.confidence.toLowerCase()}-confidence ${im.fillsGap.levelName.toLowerCase()} gap.` : ''}${im.similarOwned ? ` You own ${im.similarOwned} similar piece${im.similarOwned === 1 ? '' : 's'}.` : ''} (Simulated — nothing was added to your closet.)`, impact: im, pieces: im.similar.length ? im.similar : undefined, piecesTitle: 'Similar pieces you own' };
+      }
       if (!shopping || !a.piece || !a.piece.colour || !a.piece.category) return { reply: 'Tell me the colour and the kind of piece, for example “beige trousers”.' };
-      const r = await shopping().check(userId, { category: a.piece.category, colour: a.piece.colour });
+      const r = await shopping().check(userId, { category: a.piece.category, colour: a.piece.colour, name: a.word || a.piece.name || undefined });
       const buy = { category: a.piece.category, colour: a.piece.colour, word: a.word || null };
       return { context: { buy }, reply: r.verdict === 'Skip' ? `Probably not. ${r.advice}` : r.duplicate ? `${r.verdict}. ${r.duplicate.message} ${r.advice}` : `${r.verdict}. ${r.advice}`, verdict: r.verdict, pieces: r.similarOwned.length ? r.similarOwned : r.pairsWith, piecesTitle: r.similarOwned.length ? 'Similar pieces you own' : 'It would pair with', outfitsUnlocked: r.outfitsUnlocked };
     },
@@ -163,8 +186,154 @@ function assistantService({ db, parser, rec, outfits, wardrobe, availability, pl
       const r = await planner().recommendFor(userId, e.id);
       return { reply: `For “${e.title}” on ${e.date} (${e.occasion}, ${r.levelName}, ${r.weather.tempC} °C), here are ${r.outfits.length} options. Open the Planner to choose one.`, outfits: r.outfits, eventId: e.id, context: { occasion: e.occasion, date: e.date } };
     },
-    async help() {
-      return { reply: 'I can suggest outfits, style one piece, change one piece, move pieces to the laundry or back, tell you the weather, find forgotten pieces, check what you already own, whether a purchase is worth it, and put things on your shopping list. Try one of these:', suggestions: SUGGESTIONS };
+    // ---------- v1.5: questions that READ state ----------
+    async availability(userId, a, ctx, pieceId) {
+      const r = await resolve(userId, a.piece, pieceId);
+      if (r.none) return notFound(a);
+      if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
+      const p = r.piece;
+      const extra = p.status === 'Available' ? '' : `${p.statusNote && p.status === 'Borrowed' ? ` (with ${p.statusNote})` : ''}${p.expectedBack ? `, expected back ${p.expectedBack}` : ''}`;
+      return { reply: `Your ${lower(p)} is ${WHERE[p.status]}${extra}.${p.rehome ? ` It is marked “${p.rehome.label}”.` : ''}`, pieces: [p], context: { pieceId: p.id } };
+    },
+    async laundry_list(userId) {
+      const ids = await availability.laundryIds(userId);
+      if (!ids.length) return { reply: 'Nothing needs washing: your laundry basket is empty.' };
+      const pieces = (await wardrobe().allPieces(userId)).filter((p) => ids.includes(p.id));
+      return { reply: `${pieces.length} piece${pieces.length === 1 ? ' is' : 's are'} in your laundry basket. Say “laundry is done” when they’re clean.`, pieces, piecesTitle: 'In the laundry' };
+    },
+    async laundry_risk(userId) {
+      const r = await proactive().laundryRisk(userId);
+      const ids = await availability.laundryIds(userId);
+      if (!r.warnings.length) return { reply: ids.length ? `No rush. ${ids.length} piece${ids.length === 1 ? ' is' : 's are'} in the laundry, but your most-worn pieces for your upcoming plans are clean.` : 'No — your laundry basket is empty.' };
+      return { reply: r.warnings.map((w) => w.message).join('\n'), pieces: r.warnings[0].pieces, piecesTitle: 'Wash these first' };
+    },
+    async week_plan(userId, a) {
+      const r = await proactive().planDays(userId, { days: Math.min(7, Math.max(1, a.days || 4)) });
+      const lines = r.days.map((d) => `${new Date(`${d.date}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} · ${d.event || d.occasion}: ${d.outfit ? d.outfit.pieces.map((p) => lower(p)).join(', ') : d.note}`);
+      return { reply: `Here’s a plan for ${r.days.length} days${r.repeatsAllowed ? '' : ' — no top, bottom or dress twice before a wash'}:\n• ${lines.join('\n• ')}`, outfits: r.days.filter((d) => d.outfit).map((d) => d.outfit).slice(0, 3) };
+    },
+    async borrowed(userId, a, ctx, pieceId) {
+      const b = await proactive().borrowed(userId);
+      if (a.piece) {
+        const r = await resolve(userId, a.piece, pieceId, (p) => p.status === 'Borrowed');
+        if (r.none) return notFound(a);
+        if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
+        const hit = b.borrowed.find((x) => x.id === r.piece.id);
+        return hit ? { reply: hit.message, pieces: [r.piece], context: { pieceId: r.piece.id } } : { reply: `Your ${lower(r.piece)} isn’t lent out — it is ${WHERE[r.piece.status]}.`, context: { pieceId: r.piece.id } };
+      }
+      if (!b.borrowed.length) return { reply: 'You haven’t lent anything out.' };
+      return { reply: b.borrowed.map((x) => x.message).join('\n'), pieces: b.borrowed.map((x) => x.piece), piecesTitle: 'Lent out' };
+    },
+    // ---------- v1.5: long-unworn pieces — the user always decides ----------
+    async donate_candidates(userId) {
+      const f = await proactive().forgotten(userId);
+      if (!f.candidates.length) return { reply: 'Nothing stands out: every piece that’s in season has been worn recently. Closet only suggests pieces you haven’t worn in a long while.' };
+      const c = f.candidates[0];
+      return { reply: `You haven’t worn your ${lower(c.piece)} in ${c.days} days. I can style it again first, you can keep it, or you can mark it to donate to someone who may need it.${f.candidates.length > 1 ? ` ${f.candidates.length - 1} more piece${f.candidates.length === 2 ? '' : 's'} could be considered too.` : ''}`, pieces: f.candidates.slice(0, 4).map((x) => ({ ...x.piece, daysSince: x.days })), styleIt: true, context: { pieceId: c.id } };
+    },
+    async keep_piece(userId, a, ctx, pieceId) {
+      const r = await pieceFor(userId, a, ctx, pieceId);
+      if (r.none) return notFound(a);
+      if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
+      const k = await proactive().keep(userId, r.piece.id, {});
+      const undoId = await logAction(userId, 'keep_piece', { type: 'snooze', key: `keep:${r.piece.id}` });
+      return { reply: k.message, context: { pieceId: r.piece.id }, undoId };
+    },
+    async rehome_piece(userId, a, ctx, pieceId) {
+      const r = await pieceFor(userId, a, ctx, pieceId);
+      if (r.none) return notFound(a);
+      if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
+      const method = a.how === 'give' ? 'give' : a.how === 'sell' ? 'sell' : 'donate';
+      const p = await wardrobe().startRehome(userId, r.piece.id, method);
+      const undoId = await logAction(userId, 'rehome_piece', { type: 'rehome', itemId: p.id });
+      return { reply: `Marked your ${lower(p)} “${p.rehome.label}”. It stays in your closet until it has left; Closet won’t suggest it in outfits meanwhile. When it’s gone, say “I donated the ${lower(p)}”.`, pieces: [p], context: { pieceId: p.id }, undoId };
+    },
+    async rehome_done(userId, a, ctx, pieceId) {
+      const r = await pieceFor(userId, a, ctx, pieceId);
+      if (r.none) return notFound(a);
+      if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
+      const p = r.piece;
+      if (!p.rehome) {
+        await wardrobe().startRehome(userId, p.id, a.how === 'give' ? 'give' : a.how === 'sell' ? 'sell' : 'donate');
+        return { reply: `I’ve marked your ${lower(p)} as ready to donate. Open the piece and tap “Mark as donated” to confirm it has left — that removes it from your active closet.`, pieces: [p], confirmRehome: p.id, context: { pieceId: p.id } };
+      }
+      const done = await wardrobe().completeRehome(userId, p.id);
+      return { reply: `${done.effect} Your ${lower(p)} has left your active closet. Nothing was added to your shopping bag.`, rehomed: done.piece };
+    },
+    async seasonal(userId, a) {
+      const s = await proactive().seasonal(userId);
+      if (a.direction === 'bring_back') {
+        if (!s.bringBack.length) return { reply: `Nothing is in seasonal storage right now. At ${s.tempC} °C it feels like ${s.season ? s.season.toLowerCase() : 'mild weather'}.` };
+        return { reply: `${s.bringBack.length} stored piece${s.bringBack.length === 1 ? ' is' : 's are'} ready to come back. Open Closet → Seasonal rotation to bring them back.`, pieces: s.bringBack, piecesTitle: 'Ready to bring back' };
+      }
+      if (!s.pack.length) return { reply: `Nothing is out of season at ${s.tempC} °C. Closet suggests storing pieces only when the weather really calls for it.` };
+      return { reply: `${s.headline} Nothing changes until you choose “Pack for season”.`, pieces: s.pack, piecesTitle: 'Out of season now' };
+    },
+    async memory(userId, a) {
+      const m = await proactive().memory(userId, { q: a.text, best: a.best });
+      if (!m.matches.length) return { reply: 'I couldn’t find that in your outfit history. Outfits appear here after you tap “Wear this”.' };
+      const line = (w) => `${w.date}${w.eventTitle ? ` · ${w.eventTitle}` : w.occasion ? ` · ${w.occasion}` : ''}${w.weather ? ` · ${w.weather.tempC} °C` : ''}${w.rating ? ` · ${'★'.repeat(w.rating)}` : ''}: ${w.pieces.map((p) => lower(p)).join(', ')}`;
+      if (a.similar) {
+        const w = m.matches[0];
+        const r = await rec().recommend(userId, { occasion: w.occasion || 'Everyday' });
+        return { reply: `You wore: ${line(w)}. Here are fresh looks in the same spirit (looks you rated highly rank higher):`, outfits: r.outfits, context: { occasion: w.occasion || 'Everyday' } };
+      }
+      return { reply: `${a.best ? 'Your best-rated looks' : 'From your outfit memory'}:\n• ${m.matches.map(line).join('\n• ')}`, pieces: m.matches[0].pieces, piecesTitle: m.matches[0].eventTitle || 'That look' };
+    },
+    async repeat_check(userId) {
+      const h = await outfits().history(userId, {});
+      const last = h.wears[0];
+      if (!last) return { reply: 'You haven’t logged an outfit yet. Tap “Wear this” on a look to start your outfit memory.' };
+      const pieces = await wardrobe().allPieces(userId);
+      const away = last.pieces.find((p) => (pieces.find((x) => x.id === p.id) || {}).status !== 'Available');
+      const r = await proactive().repeat(userId, last.pieces.map((p) => p.id));
+      const msg = r.insight ? r.insight.message : 'Repeating a look you like is completely fine.';
+      return { reply: `${msg}${away ? ` One thing: your ${lower(away)} is ${WHERE[(pieces.find((x) => x.id === away.id) || {}).status] || 'not available'}.` : ''}`, pieces: last.pieces, piecesTitle: `Worn ${last.date}` };
+    },
+    async health(userId) {
+      const h = await intelligence().health(userId);
+      return { reply: `Wardrobe Health: ${h.explain.summary}${h.explain.lowering.length ? `\nWhat lowers it:\n• ${h.explain.lowering.join('\n• ')}` : ''}${h.actions.length ? `\nTry: ${h.actions[0]}` : ''}`, health: { score: h.score, grade: h.grade } };
+    },
+    async plan_check(userId) {
+      const m = await proactive().monitor(userId);
+      if (!m.alerts.length) {
+        const e = (await planner().upcoming(userId, 3)).find((x) => x.plannedOutfit);
+        return { reply: e ? `Yes — your outfit for “${e.title}” still works: every piece is Available and the forecast (${e.weather ? `${e.weather.tempC} °C` : 'not available'}) hasn’t changed much.` : 'You have no planned outfits in the next few days.' };
+      }
+      return { reply: m.alerts.map((x) => x.message).join('\n'), alerts: m.alerts, link: '#/planner' };
+    },
+    async event_rescue(userId, a) {
+      const r = await rec().recommend(userId, { occasion: a.occasion, date: a.date || undefined });
+      if (r.outfits.length) {
+        return { reply: `You already have what you need. Here are your ${r.outfits.length} strongest ${r.levelName.toLowerCase()} options for ${a.occasion.toLowerCase()}${a.date ? ` on ${a.date}` : ''}, all Available now (${r.weather.tempC} °C).`, outfits: r.outfits, context: { occasion: a.occasion, date: a.date } };
+      }
+      const g = await proactive().gaps(userId);
+      const gap = g.gaps.find((x) => x.level === r.level);
+      return { reply: `I couldn’t build a complete ${r.levelName.toLowerCase()} outfit from what’s Available${gap ? `: you’re missing ${gap.message.replace(/^0 /, 'any ')}` : ''}. ${r.note || ''}`.trim(), gaps: gap ? [gap] : [], shopping: Boolean(gap) };
+    },
+    async trip_pack(userId, a) {
+      const start = a.date || addDays(isoDay(Date.now()), 7);
+      const days = Math.min(14, Math.max(1, a.days || 4));
+      const trip = { destination: a.destination || 'your trip', startDate: start, endDate: addDays(start, days - 1), tripType: a.business ? 'Work' : 'Travel', activities: a.business ? ['Work', 'Dinner'] : ['Travel', 'Everyday', 'Dinner'], carryOn: a.carryOn };
+      const p = await packing().plan(userId, trip);
+      return { reply: `${a.destination ? `${a.destination}, ` : ''}${days} days${a.carryOn ? ', carry-on' : ''}: ${p.summary}${p.fitsLimit === false ? ' It does not fit the luggage limit — open Packing to remove a piece.' : ''}${p.reuse.length ? ` Pieces worn more than once: ${p.reuse.slice(0, 3).map((x) => x.name.toLowerCase()).join(', ')}.` : ''}`, pieces: p.items, piecesTitle: 'Packing list', link: '#/packing' };
+    },
+    async value(userId, a, ctx, pieceId) {
+      if (a.piece) {
+        const r = await resolve(userId, a.piece, pieceId);
+        if (r.none) return notFound(a);
+        if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
+        const c = r.piece.costPerWear;
+        if (!c || !c.hasPrice) return { reply: `Add a purchase price to your ${lower(r.piece)} to see its cost per wear.`, context: { pieceId: r.piece.id } };
+        return { reply: c.perWear === null ? `Your ${lower(r.piece)} hasn’t been worn yet, so there’s no cost per wear.` : `Your ${lower(r.piece)}: ${c.text}.`, pieces: [r.piece], context: { pieceId: r.piece.id } };
+      }
+      const v2 = await proactive().value(userId);
+      if (!v2.bestValue.length) return { reply: 'Add purchase prices to a few pieces (optional) and wear them — cost per wear counts only outfits you actually wore.' };
+      return { reply: `Best value so far:\n• ${v2.bestValue.map((x) => `${x.piece.name}: ${x.text}`).join('\n• ')}${v2.underused[0] ? `\nLeast used for its price: ${v2.underused[0].piece.name}${v2.underused[0].perWear ? ` (${v2.underused[0].text})` : ' (not worn yet)'}.` : ''}${v2.note ? `\n${v2.note}` : ''}` };
+    },
+    async help(userId, a = {}) {
+      if (a.outOfScope) return { reply: `${SCOPE} Try one of these:`, suggestions: SUGGESTIONS.slice(0, 5) };
+      return { reply: 'I can suggest outfits, style or change one piece, move pieces to the laundry or back, tell you what’s clean or lent out, plan several days or a trip, find pieces you haven’t worn (to style, keep or donate), explain your Wardrobe Health and cost per wear, check what a purchase would add, and keep your shopping list. Try one of these:', suggestions: SUGGESTIONS };
     },
   };
 
@@ -183,6 +352,8 @@ function assistantService({ db, parser, rec, outfits, wardrobe, availability, pl
       if (a.undo.type === 'status') for (const it of a.undo.items) await availability.restore(userId, it.id, it.status);
       if (a.undo.type === 'hide') await outfits().unhide(userId, a.undo.itemId);
       if (a.undo.type === 'shopping') await shopping().removeFromList(userId, a.undo.itemId).catch(() => null);
+      if (a.undo.type === 'snooze') await db.query('DELETE FROM intelligence.snoozes WHERE user_id = $1 AND key = $2', [userId, a.undo.key]);
+      if (a.undo.type === 'rehome') await wardrobe().cancelRehome(userId, a.undo.itemId).catch(() => null);
       await db.query('UPDATE assistant.actions SET undone = true WHERE id = $1', [id]);
       return { undone: true, function: a.function };
     },
@@ -201,6 +372,7 @@ function registerAssistant(deps) {
       if (req.valid.pieceId && !UUID.test(req.valid.pieceId)) throw errors.notFound('Piece');
       // A remembered “do I need …?” item may only name values from the shared vocabulary.
       if (ctx && ctx.buy && (!CATEGORIES.includes(ctx.buy.category) || (ctx.buy.colour && !COLOURS.includes(ctx.buy.colour)))) delete ctx.buy;
+      if (ctx && ctx.pieceId !== undefined && !UUID.test(String(ctx.pieceId))) delete ctx.pieceId;
       res.json(await service.chat(req.user.id, { message: req.valid.message, context: ctx, pieceId: req.valid.pieceId }));
     } catch (e) { next(e); }
   });

@@ -18,6 +18,14 @@ const SCHEMA = {
     category: { type: 'string', enum: CATEGORIES },
     text: { type: 'string' },
     replacement: { type: 'boolean', description: 'add_to_shopping: replaces a piece the user owns' },
+    name: { type: 'string', description: 'garment word from the message, e.g. blazer, loafers' },
+    days: { type: 'integer', minimum: 1, maximum: 14 },
+    destination: { type: 'string' },
+    carryOn: { type: 'boolean' },
+    how: { type: 'string', enum: ['donate', 'give', 'sell'] },
+    direction: { type: 'string', enum: ['pack', 'bring_back'] },
+    impact: { type: 'boolean', description: 'buy_check: "what would it add"' },
+    useContext: { type: 'boolean', description: 'the message says it / this / that' },
   },
   required: ['fn'],
 };
@@ -25,14 +33,17 @@ const SCHEMA = {
 const SYSTEM = (today) => `You route requests for Closet, a wardrobe app. Today is ${today}. Choose exactly one function:
 recommend (outfit ideas; occasion, style, date), change_piece (swap one slot of the last outfit), set_status (colour, category, status),
 wash_done, forgotten, style_piece (colour, category), closet_needs (what is missing / what to buy),
-buy_check ("should I buy X"; colour, category), add_to_shopping (put X on the shopping list, or a replacement for a piece; colour, category, replacement, text), similar_owned ("do I own something like X"; colour, category), weather (date), hide_piece (colour, category), plan_event (text), help.
+buy_check ("should I buy X" / "what would X add"; colour, category, impact), add_to_shopping (put X on the shopping list, or a replacement for a piece; colour, category, replacement, text), similar_owned ("do I own something like X"; colour, category), weather (date), hide_piece (colour, category), plan_event (text),
+availability ("is my X clean/available"), laundry_list, laundry_risk ("do I need to do laundry before ..."), week_plan (days), borrowed ("who has my X"), donate_candidates, keep_piece, rehome_piece (how), rehome_done (how), seasonal (direction), memory (text), repeat_check, health, plan_check, event_rescue (occasion, date), trip_pack (destination, days, carryOn), value (cost per wear), help.
 Call the tool "route" once. Never answer in prose.`;
 
 function toCall(o) {
   const piece = o.colour || o.category ? { ...(o.colour && { colour: o.colour }), ...(o.category && { category: o.category }) } : undefined;
-  const args = { occasion: o.occasion, style: o.style, date: o.date, slot: o.slot, status: o.status, text: o.text, piece, replacement: o.replacement };
+  const piece2 = piece && o.name ? { ...piece, name: o.name } : piece;
+  const args = { occasion: o.occasion, style: o.style, date: o.date, slot: o.slot, status: o.status, text: o.text, piece: piece2, replacement: o.replacement,
+    days: o.days, destination: o.destination, carryOn: o.carryOn, how: o.how, direction: o.direction, impact: o.impact, useContext: o.useContext };
   Object.keys(args).forEach((k) => args[k] === undefined && delete args[k]);
-  if (o.fn === 'recommend' && !args.occasion) args.occasion = 'Everyday';
+  if ((o.fn === 'recommend' || o.fn === 'event_rescue') && !args.occasion) args.occasion = 'Everyday';
   return { fn: FUNCTIONS.includes(o.fn) ? o.fn : 'help', args };
 }
 

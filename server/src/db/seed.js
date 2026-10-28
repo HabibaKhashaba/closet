@@ -56,6 +56,8 @@ async function main() {
       const piece = await upload(token, file, name, details);
       ids[file] = piece.id;
       if (worn) await pool.query("UPDATE wardrobe.items SET wear_count = $2, last_worn_at = now() - ($3 || ' days')::interval WHERE id = $1", [piece.id, worn, String(lastDays)]);
+      // The demo closet has existed for a while (new pieces are never judged as "forgotten").
+      await pool.query("UPDATE wardrobe.items SET created_at = now() - interval '400 days' WHERE id = $1", [piece.id]);
     }
     for (const [file, status, daysAgo, until, note] of STATUSES) {
       // A return date in the past cannot be entered through the API (validation), so an overdue loan is back-dated with SQL.

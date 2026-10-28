@@ -269,24 +269,30 @@ function purchaseImpact(pieces, want, { prefs = {}, similar = [], gaps = [] } = 
   const owned = pieces.filter((p) => !p.rehome).map((p) => ({ ...p, status: 'Available', lastWornAt: null }));
   const hyp = { id: 'hypothetical', name: want.name || null, category: want.category, colour: want.colour, fabric: want.fabric || 'Cotton', season: want.season || 'All seasons',
     styles: want.styles || prefs.styles || [], dressCodes: want.dressCodes || [prefs.dressCode || 2], modest: true, status: 'Available', wearCount: 0, lastWornAt: null };
-  let combos = 0; const partners = new Set(); const occasions = [];
+  // Distinct outfits = distinct sets of MAJOR garments (+ the new piece); accessory variations of the same
+  // outfit are not counted again, so the number is honest rather than inflated.
+  const keys = new Set(); const partners = new Set(); const occasions = [];
+  const keyOf = (o) => o.filter((p) => p.id === hyp.id || engine.MAJOR_CATS.includes(p.category)).map((p) => p.id).sort().join('|');
   for (const level of hyp.dressCodes) {
     const pool = engine.filterPieces([...owned, hyp], { level, prefs: { ...prefs, repeatDays: 0 } });
     if (!pool.includes(hyp)) continue;
     const list = engine.combine(pool, { fixedId: hyp.id, cap: 8 }).filter((o) => engine.ruleScore(engine.criteria(o, { level, prefs })) >= 83);
     if (list.length) occasions.push(DRESS_CODES[level]);
-    combos += list.length;
-    list.forEach((o) => o.forEach((p) => p.id !== hyp.id && partners.add(p.id)));
+    list.forEach((o) => { keys.add(keyOf(o)); o.forEach((p) => p.id !== hyp.id && partners.add(p.id)); });
   }
+  const combos = keys.size;
+  const accessory = ['Bag', 'Extra'].includes(hyp.category);
   const fills = gaps.find((g) => (GROUP_CATS[g.group] || []).includes(hyp.category) && hyp.dressCodes.includes(g.level));
   const versatility = hyp.dressCodes.length >= 3 ? 'High' : hyp.dressCodes.length === 2 ? 'Medium' : 'Low';
   let recommendation;
-  if (similar.length >= 2) recommendation = 'Probably unnecessary';
+  const twin = similar.find((p) => (p.matched || []).includes('type') && (p.matched || []).includes('colour'));
+  if (similar.length >= 2 || twin) recommendation = 'Probably unnecessary';
+  else if (accessory) recommendation = combos > 0 ? 'Optional' : 'Low wardrobe impact'; // nice to have, never essential
   else if (fills && fills.confidence !== 'LOW' && combos >= 4) recommendation = 'Useful purchase';
   else if (combos >= 8 && similar.length === 0) recommendation = 'Useful purchase';
   else if (combos > 0) recommendation = 'Optional';
   else recommendation = 'Low wardrobe impact';
-  return { simulated: true, newCombinations: combos, compatiblePieces: partners.size, occasions, similarOwned: similar.length, versatility,
+  return { simulated: true, newCombinations: combos, compatiblePieces: partners.size, occasions, similarOwned: similar.length, twin: twin ? { id: twin.id, name: twin.name } : null, versatility,
     fillsGap: fills ? { group: fills.group, level: fills.level, levelName: DRESS_CODES[fills.level], confidence: fills.confidence } : null, recommendation };
 }
 

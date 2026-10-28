@@ -12,7 +12,7 @@ const OCCASION_WORDS = [
   [/\b(party|birthday|graduation)\b/, 'Party'], [/\bdate\b(?! ?night)|\bdate night\b/, 'Date night'], [/\b(dinner|restaurant|lunch)\b/, 'Dinner'],
   [/\b(uni|university|class|college|campus|lecture|presentation)\b/, 'University'], [/\b(travel|trip|flight|airport)\b/, 'Travel'], [/\b(everyday|errands|casual day|today)\b/, 'Everyday'],
 ];
-const COLOUR_WORDS = { cream: 'Beige', camel: 'Beige', tan: 'Beige', nude: 'Beige', peach: 'Orange', gray: 'Grey', 'dark blue': 'Navy', burgundy: 'Red', olive: 'Green', khaki: 'Green', violet: 'Purple', lilac: 'Purple', gold: 'Yellow', mustard: 'Yellow' };
+const COLOUR_WORDS = { rose: 'Pink', blush: 'Pink', ivory: 'White', sage: 'Green', cream: 'Beige', camel: 'Beige', tan: 'Beige', nude: 'Beige', peach: 'Orange', gray: 'Grey', 'dark blue': 'Navy', burgundy: 'Red', olive: 'Green', khaki: 'Green', violet: 'Purple', lilac: 'Purple', gold: 'Yellow', mustard: 'Yellow' };
 const CATEGORY_WORDS = [
   [/\b(t-?shirts?|tees?|tops?|shirts?|blouses?|cami|turtleneck|henley|sweaters?|jumpers?)\b/, 'Top'],
   [/\b(jeans|trousers|pants|skirts?|shorts|bottoms?)\b/, 'Bottom'], [/\b(dress(es)?|gowns?)\b/, 'Dress'],
@@ -85,7 +85,7 @@ function parse(message, now = new Date()) {
 
   // Planning several days / a trip / an urgent event
   if (/\b(pack|packing|bring|carry-?on|suitcase|luggage)\b/.test(t) && (/\b(trip|days? in|in [a-z]+|to [a-z]+ next|business trip|carry-?on|for \d+ days|weekend in|travel)\b/.test(t)) && !/\b(pack away|packed away)\b/.test(t)) {
-    const dest = (t.match(/\b(?:in|to)\s+([a-z][a-z ]{2,20}?)(?=\s+(?:next|for|this|on|in)\b|[?.!,]|\s*$)/) || [])[1];
+    const dest = (t.match(/\b(?:in|to)\s+([a-z][a-z ]{2,20}?)(?=\s+(?:next|for|this|on|in|with|from)\b|[?.!,]|\s*$)/) || [])[1];
     return { fn: 'trip_pack', args: { destination: dest ? dest.trim().replace(/\b\w/g, (c) => c.toUpperCase()) : null, days: nDays, carryOn: /carry-?on|cabin|hand luggage/.test(t), business: /business/.test(t), date } };
   }
   if (/\b(plan|schedule)\b.*\b(outfits|week|next \d+|next (two|three|four|five|six|seven))\b/.test(t)) return { fn: 'week_plan', args: { days: nDays || 5 } };
@@ -114,7 +114,7 @@ function parse(message, now = new Date()) {
   if (/\b(change|swap|replace|different)\b/.test(t) && (SLOT_WORDS.find(([re]) => re.test(t)))) return { fn: 'change_piece', args: { slot: SLOT_WORDS.find(([re]) => re.test(t))[1] } };
   if (/\b(hide|dont show|do not show|skip)\b/.test(t) && piece) return { fn: 'hide_piece', args: { piece } };
   if (/\b(similar|already (have|own)|do i (have|own)|own anything like|own something like)\b/.test(t) && piece) return { fn: 'similar_owned', args: { piece } };
-  const impact = /\b(what would (these|this|a|an)|would (this|these|a|an) .* (be useful|add)|how many outfits could i make|add to my wardrobe|is (this|it) (purchase )?worth)\b/.test(t);
+  const impact = /\b(what would .* add|would (this|these|a|an) .* (be useful|add)|how many outfits could i make|add to my wardrobe|is (this|it) (purchase )?worth)\b/.test(t);
   if ((/\b(buy|buying|purchase|get a|getting|need another|need a new|need new|need a|do i need|do i actually need|should i get)\b/.test(t) || impact) && piece && piece.category) return { fn: 'buy_check', args: { piece, word: pieceWord(t), impact } };
   const status = (STATUS_WORDS.find(([re]) => re.test(t)) || [])[1];
   if (status && piece && /\b(put|move|mark|set|lent|lend|gave|packed|pack|got|is|are|in the|back|took)\b/.test(t)) return { fn: 'set_status', args: { piece, status } };

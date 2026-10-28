@@ -40,7 +40,9 @@ function outfitsWith(pieces, hyp, { level, prefs }) {
   const partners = new Map();
   for (const o of combos) for (const p of o) if (p.id !== hyp.id) partners.set(p.id, (partners.get(p.id) || 0) + 1);
   const pairs = [...partners.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([id]) => id);
-  return { count: combos.length, pairs };
+  // v1.5: count distinct outfits (sets of major garments), not every accessory variation.
+  const distinct = new Set(combos.map((o) => o.filter((p) => p.id === hyp.id || engine.MAJOR_CATS.includes(p.category)).map((p) => p.id).sort().join('|')));
+  return { count: distinct.size, pairs };
 }
 const hypothetical = (category, colour, dressCodes, styles) => ({
   id: 'hypothetical', category, colour, fabric: 'Cotton', season: 'All seasons', styles: styles || [], dressCodes, modest: true, status: 'Available', wearCount: 0, lastWornAt: null,
@@ -52,10 +54,15 @@ const similarTo = (pieces, category, colour) => pieces.filter((p) => p.category 
 // style 15 × shared styles ÷ all styles · formality 15 × shared levels ÷ all levels · season 10 (same or all-season).
 // 70 or more = "similar" (a potential duplicate).
 const SIMILAR_AT = 70;
+// v1.5: the garment type inside a category (skirt ≠ trousers, loafers ≠ boots), read from the name.
+const SUBTYPES = [/skirt/, /jean/, /trouser|pant|chino/, /short/, /sneaker|trainer/, /loafer/, /heel|pump/, /boot/, /sandal/, /flat/, /blazer/, /trench|coat/, /cardigan/, /jacket/, /dress/, /tee|t-shirt/, /shirt|blouse/, /sweater|knit|jumper/, /cami/];
+const subtypeOf = (p) => { const n = String(p.name || p.word || '').toLowerCase(); const i = SUBTYPES.findIndex((re) => re.test(n)); return i < 0 ? null : i; };
 function similarity(owned, want) {
   if (owned.category !== want.category) return { score: 0, matched: [] };
   const matched = ['category'];
   let score = 25;
+  const a = subtypeOf(owned); const b = subtypeOf(want);
+  if (a !== null && b !== null && a !== b) score -= 20; else if (a !== null && a === b) matched.push('type');
   if (owned.colour === want.colour) { score += 35; matched.push('colour'); } else if (NEUTRALS.includes(owned.colour) && NEUTRALS.includes(want.colour)) { score += 15; matched.push('neutral colour'); }
   const ws = want.styles || []; const os = owned.styles || [];
   const su = new Set([...ws, ...os]);
@@ -129,9 +136,9 @@ function shoppingService({ db, wardrobe, profile }) {
       return { suggestions: list, decided: [...decided.entries()].map(([key, state]) => ({ key, state })), avoid: deletions.filter((d) => d.reason === 'No longer my style').map((d) => ({ category: d.category, colour: d.colour, name: d.name })) };
     },
     // "I want to buy beige trousers. Do I need them?"
-    async check(userId, { category, colour, level, styles, season }) {
+    async check(userId, { category, colour, level, styles, season, name }) {
       const [pieces, prefs, deletions] = await Promise.all([wardrobe().allPieces(userId), profile.preferences(userId), wardrobe().deletions(userId)]);
-      const want = { ...wantFor(prefs, category, colour, level, styles), season };
+      const want = { ...wantFor(prefs, category, colour, level, styles), season, name };
       const lvl = level || prefs.dressCode || 1;
       const levelsFor = want.dressCodes;
       const similar = similarOwned(pieces, want);
@@ -140,9 +147,12 @@ function shoppingService({ db, wardrobe, profile }) {
       let verdict; let advice;
       const plural = `${colour.toLowerCase()} ${NOUN[category]}${category === 'Shoes' ? '' : 's'}`;
       const duplicate = similar.length ? { count: similar.length, message: `You already own ${similar.length === 1 ? 'a similar' : `${similar.length} similar`} ${similar.length === 1 ? `${colour.toLowerCase()} ${NOUN[category]}` : plural}.`, basis: ['colour', 'category', 'style', 'formality', 'season'] } : null;
+      const twin = similar.find((p) => (p.matched || []).includes('type') && (p.matched || []).includes('colour'));
       if (similar.length >= 2) { verdict = 'Skip'; advice = `You already own ${similar.length} similar ${plural}. Style what you have first.`; }
+      else if (twin) { verdict = 'Skip'; advice = `You already own ${twin.name ? `your ${twin.name.toLowerCase()}` : 'one'} — almost the same piece.`; }
       else if (disliked) { verdict = 'Think twice'; advice = `You removed a ${colour.toLowerCase()} ${NOUN[category]} before because it was no longer your style.`; }
-      else if (r.count >= 6) { verdict = 'Good buy'; advice = `It would make ${r.count} new complete outfits with pieces you already own.`; }
+      // v1.5: 4+ DISTINCT outfits (accessory variations are no longer counted as new outfits)
+      else if (r.count >= 4) { verdict = 'Good buy'; advice = `It would make ${r.count} new complete outfits with pieces you already own.`; }
       else if (r.count > 0) { verdict = 'Optional'; advice = `It only adds ${r.count} new outfit${r.count === 1 ? '' : 's'}. Fine if you love it.`; }
       else { verdict = 'Not yet'; advice = `Nothing you own pairs well with it at ${DRESS_CODES[lvl]}. You would need other pieces too.`; }
       if (similar.length === 1 && verdict !== 'Skip') advice += ` You already have one similar piece.`;
@@ -154,13 +164,16 @@ function shoppingService({ db, wardrobe, profile }) {
       const [pieces, prefs] = await Promise.all([wardrobe().allPieces(userId), profile.preferences(userId)]);
       const owned = pieces.filter((p) => !p.rehome);
       const levels = dressCodes && dressCodes.length ? dressCodes : wantFor(prefs, category, colour || 'Black').dressCodes;
-      const similar = colour ? similarOwned(owned, { category, colour, styles: styles || prefs.styles || [], dressCodes: levels, season }) : owned.filter((p) => p.category === category);
+      const similar = colour ? similarOwned(owned, { category, colour, styles: styles || prefs.styles || [], dressCodes: levels, season, name }) : owned.filter((p) => p.category === category && (!name || subtypeOf(p) === null || subtypeOf(p) === subtypeOf({ name })));
       const gaps = closetGaps(owned.map((p) => ({ category: p.category, dressCodes: p.dressCodes })), prefs).gaps.map((g) => ins.gapConfidence(g, owned, prefs));
       const r = ins.purchaseImpact(owned, { category, colour: colour || 'Black', styles, dressCodes: levels, season, fabric, name }, { prefs, similar: colour ? similar : [], gaps });
       const what = `${colour ? `${colour.toLowerCase()} ` : ''}${name || NOUN[category]}`;
-      const sentence = r.recommendation === 'Probably unnecessary' ? `You already own ${similar.length} similar pieces, so ${what} would add little.`
-        : r.newCombinations ? `This would create ${r.newCombinations} new outfit combination${r.newCombinations === 1 ? '' : 's'} with ${r.compatiblePieces} piece${r.compatiblePieces === 1 ? '' : 's'} you already own.`
-          : `Nothing you own pairs well with ${what} yet.`;
+      const accessory = ['Bag', 'Extra'].includes(category);
+      const sentence = r.twin ? `You already own your ${String(r.twin.name || what).toLowerCase()} — ${what} would be almost the same piece.`
+        : r.recommendation === 'Probably unnecessary' ? `You already own ${similar.length} similar pieces, so ${what} would add little.`
+          : !r.newCombinations ? `Nothing you own pairs well with ${what} yet.`
+            : accessory ? `It would finish ${r.newCombinations} of your outfits — nice to have, not essential.`
+              : `This would create ${r.newCombinations} new outfit combination${r.newCombinations === 1 ? '' : 's'} with ${r.compatiblePieces} piece${r.compatiblePieces === 1 ? '' : 's'} you already own.`;
       return { ...r, piece: { category, colour: colour || null, dressCodes: levels }, sentence, similar: similar.slice(0, 4).map((p) => ({ id: p.id, name: p.name, photoUrl: p.photoUrl, similarity: p.similarity })) };
     },
     // ---------- shopping list (US-36) ----------

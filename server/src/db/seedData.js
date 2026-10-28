@@ -10,7 +10,7 @@ const PIECES = [
   ['ivory_silk_blouse', 'Ivory silk blouse', { category: 'Top', colour: 'White', fabric: 'Silk', season: 'All seasons', size: 'S', styles: ['Elegant', 'Chic'], dressCodes: [2, 3, 4], modest: true }, 6, 9],
   ['breton_striped_top', 'Breton striped top', { category: 'Top', colour: 'Navy', fabric: 'Cotton', season: 'Spring / Autumn', size: 'S', styles: ['Classic', 'Casual'], dressCodes: [1, 2], modest: true }, 7, 12],
   ['blush_satin_cami', 'Blush satin cami', { category: 'Top', colour: 'Pink', fabric: 'Silk', season: 'Summer', size: 'S', styles: ['Chic', 'Elegant'], dressCodes: [2, 4], modest: false }, 3, 47],
-  ['sage_linen_shirt', 'Sage linen shirt', { category: 'Top', colour: 'Green', fabric: 'Linen', season: 'Summer', size: 'M', styles: ['Casual', 'Minimal'], dressCodes: [1, 2], modest: true }, 0, null],
+  ['sage_linen_shirt', 'Sage linen shirt', { category: 'Top', colour: 'Green', fabric: 'Linen', season: 'Summer', size: 'M', styles: ['Casual', 'Minimal'], dressCodes: [1, 2], modest: true }, 2, 18],
   ['black_tailored_trousers', 'Black tailored trousers', { category: 'Bottom', colour: 'Black', fabric: 'Polyester', season: 'All seasons', size: '38', styles: ['Classic', 'Minimal', 'Chic'], dressCodes: [2, 3, 4], modest: true }, 14, 3],
   ['light_wash_jeans', 'Light-wash jeans', { category: 'Bottom', colour: 'Blue', fabric: 'Denim', season: 'All seasons', size: '28', styles: ['Casual', 'Minimal'], dressCodes: [1, 2], modest: true }, 18, 1],
   ['beige_wide_leg_trousers', 'Beige wide-leg trousers', { category: 'Bottom', colour: 'Beige', fabric: 'Linen', season: 'Summer', size: '38', styles: ['Chic', 'Minimal', 'Elegant'], dressCodes: [1, 2, 3], modest: true }, 8, 5],
