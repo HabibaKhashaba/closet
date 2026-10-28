@@ -24,7 +24,7 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
     if (savedId) return;
     try {
       const s = await api.saveOutfit({ itemIds: ids, occasion, style, ruleScore: outfit.ruleScore, reasons: outfit.reasons || [] });
-      setSavedId(s.id); toast('Saved to your lookbook');
+      setSavedId(s.id); setFav(Boolean(s.favorite)); toast(s.existing ? 'Already in your lookbook' : 'Saved to your lookbook');
     } catch (e) { toast(e.message, true); }
   }
   async function favourite() {
