@@ -122,11 +122,11 @@ function profileRoutes({ profile }) {
   return r;
 }
 
-function registerProfile({ db, bus }) {
-  const repo = profileRepository(db);
+function registerProfile({ db, repo: givenRepo, bus }) {
+  const repo = givenRepo || profileRepository(db);
   const service = profileService({ repo });
   bus.subscribe(TOPICS.UserRegistered, ({ userId }) => repo.createDefault(userId));
   return { service, routes: profileRoutes({ profile: service }) };
 }
 
-module.exports = { registerProfile, profileService, profileSchema, settingsSchema, toApi };
+module.exports = { registerProfile, profileService, profileRepository, profileSchema, settingsSchema, toApi };

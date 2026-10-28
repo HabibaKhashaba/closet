@@ -73,7 +73,21 @@ function tripApi(r) {
   return { id: r.id, destination: r.destination, startDate: isoDay(r.start_date), endDate: isoDay(r.end_date), tripType: r.trip_type, activities: r.activities, itemIds: r.item_ids, plan: r.plan, packed: r.packed, createdAt: r.created_at };
 }
 
-function packingService({ db, wardrobe, profile, weather, planner, availability, outfits }) {
+function packingRepository(db) {
+  return {
+    async insert(userId, t) {
+      return (await db.query(`INSERT INTO packing.trips (user_id, destination, start_date, end_date, trip_type, activities, item_ids, plan)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`, [userId, t.destination, t.startDate, t.endDate, t.tripType, t.activities, t.itemIds, t.plan])).rows[0];
+    },
+    async list(userId) { return (await db.query('SELECT * FROM packing.trips WHERE user_id = $1 ORDER BY start_date', [userId])).rows; },
+    async get(userId, id) { return (await db.query('SELECT * FROM packing.trips WHERE id = $1 AND user_id = $2', [id, userId])).rows[0] || null; },
+    async setPacked(userId, id, packed) { await db.query('UPDATE packing.trips SET packed = $3 WHERE id = $1 AND user_id = $2', [id, userId, packed]); },
+    async remove(userId, id) { return (await db.query('DELETE FROM packing.trips WHERE id = $1 AND user_id = $2', [id, userId])).rowCount; },
+  };
+}
+
+function packingService({ db, repo: givenRepo, wardrobe, profile, weather, planner, availability, outfits }) {
+  const repo = givenRepo || packingRepository(db);
   async function days(userId, { startDate, endDate, tripType, activities = [], destination }) {
     const out = [];
     const events = planner ? await planner().upcoming(userId, 400) : [];
@@ -94,22 +108,18 @@ function packingService({ db, wardrobe, profile, weather, planner, availability,
     },
     async save(userId, input) {
       const p = await this.plan(userId, input);
-      const { rows } = await db.query(
-        `INSERT INTO packing.trips (user_id, destination, start_date, end_date, trip_type, activities, item_ids, plan)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-        [userId, input.destination, input.startDate, input.endDate, input.tripType, input.activities || [], p.itemIds, { days: p.days.map((x) => ({ date: x.date, occasion: x.occasion, event: x.event, weather: x.weather, outfit: x.outfit })), warnings: p.warnings, missing: p.missing, counts: p.counts, luggage: p.luggage, summary: p.summary, carryOn: Boolean(input.carryOn), laundryAvailable: Boolean(input.laundryAvailable) }],
-      );
-      return tripApi(rows[0]);
+      const row = await repo.insert(userId, { destination: input.destination, startDate: input.startDate, endDate: input.endDate, tripType: input.tripType, activities: input.activities || [], itemIds: p.itemIds,
+        plan: { days: p.days.map((x) => ({ date: x.date, occasion: x.occasion, event: x.event, weather: x.weather, outfit: x.outfit })), warnings: p.warnings, missing: p.missing, counts: p.counts, luggage: p.luggage, summary: p.summary, carryOn: Boolean(input.carryOn), laundryAvailable: Boolean(input.laundryAvailable) } });
+      return tripApi(row);
     },
     async trips(userId) {
-      const { rows } = await db.query('SELECT * FROM packing.trips WHERE user_id = $1 ORDER BY start_date', [userId]);
-      return rows.map(tripApi);
+      return (await repo.list(userId)).map(tripApi);
     },
     async get(userId, id) {
       if (!UUID.test(id)) throw errors.notFound('Trip');
-      const { rows } = await db.query('SELECT * FROM packing.trips WHERE id = $1 AND user_id = $2', [id, userId]);
-      if (!rows[0]) throw errors.notFound('Trip');
-      return tripApi(rows[0]);
+      const row = await repo.get(userId, id);
+      if (!row) throw errors.notFound('Trip');
+      return tripApi(row);
     },
     // Mark as packed: each piece goes Available → Packed (state machine); others are reported, not forced.
     async pack(userId, id) {
@@ -124,7 +134,7 @@ function packingService({ db, wardrobe, profile, weather, planner, availability,
         await availability.setStatus(userId, itemId, 'Packed', { until: addDays(t.endDate, 1), note: t.destination.slice(0, 60) });
         packed.push(itemId);
       }
-      await db.query('UPDATE packing.trips SET packed = true WHERE id = $1 AND user_id = $2', [id, userId]);
+      await repo.setPacked(userId, id, true);
       return { trip: { ...t, packed: true }, packed: packed.length, skipped };
     },
     async unpack(userId, id) {
@@ -135,13 +145,12 @@ function packingService({ db, wardrobe, profile, weather, planner, availability,
         const p = pieces.find((x) => x.id === itemId);
         if (p && p.status === 'Packed') { await availability.setStatus(userId, itemId, 'Available'); n += 1; }
       }
-      await db.query('UPDATE packing.trips SET packed = false WHERE id = $1 AND user_id = $2', [id, userId]);
+      await repo.setPacked(userId, id, false);
       return { trip: { ...t, packed: false }, unpacked: n };
     },
     async remove(userId, id) {
       if (!UUID.test(id)) throw errors.notFound('Trip');
-      const { rowCount } = await db.query('DELETE FROM packing.trips WHERE id = $1 AND user_id = $2', [id, userId]);
-      if (!rowCount) throw errors.notFound('Trip');
+      if (!(await repo.remove(userId, id))) throw errors.notFound('Trip');
     },
   };
 }
@@ -170,4 +179,4 @@ function registerPacking(deps) {
   return { service, routes: r };
 }
 
-module.exports = { registerPacking, planTrip, planCapsule };
+module.exports = { registerPacking, packingService, packingRepository, planTrip, planCapsule, tripSchema };

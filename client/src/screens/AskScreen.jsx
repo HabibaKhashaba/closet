@@ -6,8 +6,8 @@ import { api } from '../api.js';
 import { Icon, SprintNote, SprintTag, Tile, pieceName, useApp } from '../ui.jsx';
 import OutfitCard from './OutfitCard.jsx';
 
-const EXAMPLES = ['What should I wear to university tomorrow?', 'I want to buy beige trousers. Do I need them?', 'Put beige trousers on my shopping list', 'Add a replacement for my torn loafers', 'What is missing from my wardrobe?', 'Style my blue skirt', 'Put my light-wash jeans in the laundry', 'Weather on Friday?'];
-const FN_LABEL = { recommend: 'Recommendation Engine', change_piece: 'Recommendation Engine · swap', set_status: 'Availability', wash_done: 'Availability · wash done', forgotten: 'Analytics · forgotten', style_piece: 'Recommendation Engine · style a piece', closet_needs: 'Smart Shopping', buy_check: 'Smart Shopping · do I need it?', add_to_shopping: 'Smart Shopping · shopping list', similar_owned: 'Wardrobe · similar pieces', weather: 'Weather adapter', hide_piece: 'Outfits · hide', plan_event: 'Planner', help: 'Help' };
+const EXAMPLES = ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'Do I need beige trousers?', 'Add this to my shopping list', 'What could I donate?', 'Do I need to do laundry before Monday?', 'Is tomorrow’s outfit still okay for the weather?', 'Pack me for 5 days in Paris with a carry-on', 'What did I wear to Salma’s birthday?', 'What has the best cost per wear?', 'Who has my rose wrap dress?', 'I have a wedding tomorrow and nothing to wear'];
+const FN_LABEL = { recommend: 'Recommendation Engine', change_piece: 'Recommendation Engine · swap', set_status: 'Availability', wash_done: 'Availability · wash done', forgotten: 'Analytics · forgotten', style_piece: 'Recommendation Engine · style a piece', closet_needs: 'Smart Shopping', buy_check: 'Smart Shopping · do I need it?', add_to_shopping: 'Smart Shopping · shopping list', similar_owned: 'Wardrobe · similar pieces', weather: 'Weather adapter', hide_piece: 'Outfits · hide', plan_event: 'Planner', availability: 'Availability · status', laundry_list: 'Availability · laundry', laundry_risk: 'Laundry intelligence', week_plan: 'Planner · several days', borrowed: 'Borrow tracker', donate_candidates: 'Wardrobe insights · still love it?', keep_piece: 'Wardrobe insights · keep', rehome_piece: 'Wardrobe · donate', rehome_done: 'Wardrobe · donated', seasonal: 'Seasonal rotation', memory: 'Outfit memory', repeat_check: 'Repeat insight', health: 'Wardrobe Health', plan_check: 'Planned-outfit monitor', event_rescue: 'Event rescue', trip_pack: 'Packing Mode', value: 'Cost per wear', help: 'Help' };
 
 function Pieces({ list, styleIt, onStyle }) {
   return (
@@ -88,6 +88,9 @@ export default function AskScreen({ query }) {
                 )}
                 {m.shopping && <div className="stack" style={{ gap: 6, marginTop: 10 }}><a className="btn line sm" href="#/shopping" style={{ alignSelf: 'flex-start' }}><Icon name="bag" size={14} />Open Smart Shopping</a></div>}
                 {m.suggestions && <div className="chips" style={{ marginTop: 10 }}>{m.suggestions.map((s) => <button type="button" key={s} className="chip" onClick={() => send(s)}>{s}</button>)}</div>}
+                {m.confirmRehome && <div style={{ marginTop: 10 }}><a className="btn sm" href={`#/closet/${m.confirmRehome}`}><Icon name="check" size={14} />Open the piece to confirm</a></div>}
+                {m.alerts && <div style={{ marginTop: 10 }}><a className="btn line sm" href="#/planner"><Icon name="calendar" size={14} />Open the Planner to adjust</a></div>}
+                {m.link && !m.alerts && <div style={{ marginTop: 10 }}><a className="btn line sm" href={m.link}><Icon name="arrow" size={14} />Open</a></div>}
                 {m.undoId && <div style={{ marginTop: 10 }}>{m.undone ? <span className="tag plain">Undone</span> : <button type="button" className="btn line sm" onClick={() => undo(m.undoId, i)}><Icon name="undo" size={14} />Undo</button>}</div>}
                 {m.function && <span className="via">→ {FN_LABEL[m.function] || m.function} · understood by {m.via}</span>}
               </div>
@@ -107,7 +110,7 @@ export default function AskScreen({ query }) {
           </section>
           <section className="card pad tint-lilac">
             <div className="eyebrow" style={{ marginBottom: 8 }}>How it works</div>
-            <p className="small">The <b>language model</b> only picks one of 14 Closet functions and fills in its details. It never sees your photos or the database, and it can’t invent pieces.</p>
+            <p className="small">The <b>language model</b> only picks one of 31 Closet functions and fills in its details. It never sees your photos or the database, and it can’t invent pieces.</p>
             <p className="small" style={{ marginTop: 8 }}>Now answering: <b>{model === 'anthropic' || model === 'openai' ? `${model} model` : 'keyword parser'}</b>{model && model !== 'anthropic' && model !== 'openai' ? ' (no API key set — same functions, simpler understanding).' : '.'}</p>
           </section>
           <SprintNote n={3} />

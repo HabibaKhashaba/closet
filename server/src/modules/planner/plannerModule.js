@@ -293,9 +293,9 @@ function plannerRoutes({ planner }) {
   return r;
 }
 
-function registerPlanner({ db, rec, outfits, wardrobe, availability }) {
-  const service = plannerService({ repo: plannerRepository(db), rec, outfits, wardrobe, availability });
+function registerPlanner({ db, repo, rec, outfits, wardrobe, availability }) {
+  const service = plannerService({ repo: repo || plannerRepository(db), rec, outfits, wardrobe, availability });
   return { service, routes: plannerRoutes({ planner: service }) };
 }
 
-module.exports = { registerPlanner, eventSchema, toApi, parseIcs };
+module.exports = { registerPlanner, plannerService, plannerRepository, eventSchema, toApi, parseIcs };

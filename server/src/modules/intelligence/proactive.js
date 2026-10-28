@@ -29,16 +29,15 @@ const isoDay = (d) => new Date(d).toISOString().slice(0, 10);
 const addDays = (day, n) => isoDay(new Date(`${day}T12:00:00Z`).getTime() + n * 86400000);
 const label = (p) => (p.name || `${p.colour} ${p.category}`).toLowerCase();
 
-function proactiveService({ db, wardrobe, outfits, profile, planner, rec, availability, intelligence }) {
+function proactiveService({ repo, wardrobe, outfits, profile, planner, rec, availability, intelligence }) {
   const today = () => isoDay(Date.now());
   async function snoozeMap(userId, prefix) {
-    const { rows } = await db.query('SELECT key, until FROM intelligence.snoozes WHERE user_id = $1 AND key LIKE $2 AND until >= CURRENT_DATE', [userId, `${prefix}:%`]);
-    return new Map(rows.map((r) => [r.key.slice(prefix.length + 1), r.until]));
+    const rows = await repo.snoozes(userId, prefix);
+    return new Map(rows.map((r) => [r.key.slice(prefix.length + 1), typeof r.until === 'string' ? r.until : isoDay(r.until)]));
   }
   async function snooze(userId, key, days, reason = null) {
     const until = addDays(today(), days);
-    await db.query(`INSERT INTO intelligence.snoozes (user_id, key, until, reason) VALUES ($1, $2, $3, $4)
-      ON CONFLICT (user_id, key) DO UPDATE SET until = EXCLUDED.until, reason = EXCLUDED.reason, created_at = now()`, [userId, key, until, reason]);
+    await repo.snooze(userId, key, until, reason);
     return until;
   }
   async function own(userId, itemId) {
@@ -49,6 +48,7 @@ function proactiveService({ db, wardrobe, outfits, profile, planner, rec, availa
 
   const svc = {
     snoozeMap,
+    async unsnooze(userId, key) { await repo.unsnooze(userId, key); },
     async forgotten(userId) {
       const [pieces, w, snoozes, deletions] = await Promise.all([wardrobe().allPieces(userId), todayWeather(userId), snoozeMap(userId, 'keep'), wardrobe().deletions(userId)]);
       const candidates = ins.forgottenCandidates(pieces, { today: new Date(), tempC: w.tempC, snoozes });

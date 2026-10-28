@@ -294,9 +294,9 @@ function outfitsRoutes({ outfits }) {
   return { outfits: r, items, insights };
 }
 
-function registerOutfits({ db, bus, wardrobe }) {
-  const service = outfitsService({ repo: outfitsRepository(db), wardrobe, bus });
+function registerOutfits({ db, repo, bus, wardrobe }) {
+  const service = outfitsService({ repo: repo || outfitsRepository(db), wardrobe, bus });
   return { service, routes: outfitsRoutes({ outfits: service }) };
 }
 
-module.exports = { registerOutfits, REJECT_REASONS, checkIds, outfitKey, mergeSave };
+module.exports = { registerOutfits, outfitsService, outfitsRepository, REJECT_REASONS, checkIds, outfitKey, mergeSave };

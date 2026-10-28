@@ -2,7 +2,7 @@
 import React from 'react';
 import { CATEGORY_ONE, Chips, Field, Toggle, useApp, dressName } from '../ui.jsx';
 
-export const emptyDetails = { name: '', category: '', colour: '', fabric: '', season: '', size: '', styles: [], dressCodes: [], modest: false };
+export const emptyDetails = { name: '', category: '', colour: '', fabric: '', season: '', size: '', styles: [], dressCodes: [], modest: false, price: '', currency: 'EGP', purchaseDate: '' };
 
 export default function PieceForm({ value, onChange, errors }) {
   const { vocab } = useApp();
@@ -38,6 +38,15 @@ export default function PieceForm({ value, onChange, errors }) {
         <Chips options={vocab.STYLES} value={value.styles} onChange={set('styles')} />
       </div>
       <Toggle label="Modest piece" sub="Covered shoulders, longer hemline" value={value.modest} onChange={set('modest')} />
+      <details className="purchase" open={Boolean(value.price)}>
+        <summary className="small">Purchase details <span className="muted">(optional · for cost per wear)</span></summary>
+        <div className="grid g3" style={{ gap: '0 12px', marginTop: 10 }}>
+          <Field label="Price" error={err('price')}><input type="number" min="0" step="0.01" inputMode="decimal" value={value.price ?? ''} onChange={(e) => set('price')(e.target.value)} placeholder="2400" /></Field>
+          <Field label="Currency" error={err('currency')}><select value={value.currency || 'EGP'} onChange={(e) => set('currency')(e.target.value)}>{(vocab.CURRENCIES || ['EGP']).map((c) => <option key={c}>{c}</option>)}</select></Field>
+          <Field label="Bought on" error={err('purchaseDate')}><input type="date" value={value.purchaseDate || ''} max={new Date().toISOString().slice(0, 10)} onChange={(e) => set('purchaseDate')(e.target.value)} /></Field>
+        </div>
+        <p className="tiny muted">Private to you. Leave empty if you prefer; you can remove it any time.</p>
+      </details>
     </>
   );
 }
@@ -46,5 +55,7 @@ export default function PieceForm({ value, onChange, errors }) {
 export function cleanDetails(d) {
   const out = { category: d.category, colour: d.colour, dressCodes: d.dressCodes, styles: d.styles, modest: d.modest };
   for (const k of ['name', 'fabric', 'season', 'size']) if (d[k]) out[k] = d[k].trim ? d[k].trim() : d[k];
+  if (d.price !== '' && d.price !== null && d.price !== undefined) { out.price = Number(d.price); out.currency = d.currency || 'EGP'; }
+  if (d.purchaseDate) out.purchaseDate = d.purchaseDate;
   return out;
 }

@@ -96,10 +96,32 @@ function listItem(r, pieces, prefs) {
   };
 }
 
-function shoppingService({ db, wardrobe, profile }) {
+function shoppingRepository(db) {
+  return {
+    async decisions(userId) { return (await db.query('SELECT key, state FROM shopping.decisions WHERE user_id = $1', [userId])).rows; },
+    async decide(userId, key, state) {
+      await db.query(`INSERT INTO shopping.decisions (user_id, key, state) VALUES ($1, $2, $3)
+        ON CONFLICT (user_id, key) DO UPDATE SET state = EXCLUDED.state, decided_at = now()`, [userId, key, state]);
+    },
+    async undecide(userId, key) { await db.query('DELETE FROM shopping.decisions WHERE user_id = $1 AND key = $2', [userId, key]); },
+    async listItems(userId) { return (await db.query('SELECT * FROM shopping.list_items WHERE user_id = $1 ORDER BY status = \'bought\', created_at DESC', [userId])).rows; },
+    async findOpen(userId, { category, colour, title }) {
+      return (await db.query(`SELECT * FROM shopping.list_items WHERE user_id = $1 AND status = 'to_buy' AND category = $2
+        AND colour IS NOT DISTINCT FROM $3 AND lower(title) = lower($4)`, [userId, category, colour || null, title])).rows[0] || null;
+    },
+    async insertItem(userId, i) {
+      return (await db.query(`INSERT INTO shopping.list_items (user_id, title, category, colour, source, reason, suggestion_key, replaces)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`, [userId, i.title, i.category, i.colour || null, i.source, i.reason || null, i.suggestionKey || null, i.replaces || null])).rows[0];
+    },
+    async setStatus(userId, id, status) { return (await db.query('UPDATE shopping.list_items SET status = $3 WHERE id = $1 AND user_id = $2 RETURNING *', [id, userId, status])).rows[0] || null; },
+    async removeItem(userId, id) { return (await db.query('DELETE FROM shopping.list_items WHERE id = $1 AND user_id = $2 RETURNING suggestion_key', [id, userId])).rows[0] || null; },
+  };
+}
+
+function shoppingService({ db, repo: givenRepo, wardrobe, profile }) {
+  const repo = givenRepo || shoppingRepository(db);
   async function decisions(userId) {
-    const { rows } = await db.query('SELECT key, state FROM shopping.decisions WHERE user_id = $1', [userId]);
-    return new Map(rows.map((r) => [r.key, r.state]));
+    return new Map((await repo.decisions(userId)).map((r) => [r.key, r.state]));
   }
   return {
     async suggestions(userId) {
@@ -178,35 +200,31 @@ function shoppingService({ db, wardrobe, profile }) {
     },
     // ---------- shopping list (US-36) ----------
     async list(userId) {
-      const [{ rows }, pieces, prefs] = await Promise.all([
-        db.query('SELECT * FROM shopping.list_items WHERE user_id = $1 ORDER BY status = \'bought\', created_at DESC', [userId]),
-        wardrobe().allPieces(userId), profile.preferences(userId)]);
+      const [rows, pieces, prefs] = await Promise.all([repo.listItems(userId), wardrobe().allPieces(userId), profile.preferences(userId)]);
       const items = rows.map((r) => listItem(r, pieces, prefs));
       return { items, toBuy: items.filter((i) => i.status === 'to_buy').length, bought: items.filter((i) => i.status === 'bought').length };
     },
     async addToList(userId, { title, category, colour, source = 'manual', reason, suggestionKey, replaces }) {
       const [pieces, prefs, deletions] = await Promise.all([wardrobe().allPieces(userId), profile.preferences(userId), wardrobe().deletions(userId)]);
-      const { rows: same } = await db.query(`SELECT * FROM shopping.list_items WHERE user_id = $1 AND status = 'to_buy' AND category = $2
-        AND colour IS NOT DISTINCT FROM $3 AND lower(title) = lower($4)`, [userId, category, colour || null, title]);
-      if (same[0]) return { item: listItem(same[0], pieces, prefs), added: false };
-      const { rows } = await db.query(`INSERT INTO shopping.list_items (user_id, title, category, colour, source, reason, suggestion_key, replaces)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`, [userId, title, category, colour || null, source, reason || null, suggestionKey || null, replaces || null]);
+      const same = await repo.findOpen(userId, { category, colour, title });
+      if (same) return { item: listItem(same, pieces, prefs), added: false };
+      const row = await repo.insertItem(userId, { title, category, colour, source, reason, suggestionKey, replaces });
       if (suggestionKey) await this.decide(userId, suggestionKey, 'saved');
-      const item = listItem(rows[0], pieces, prefs);
+      const item = listItem(row, pieces, prefs);
       const letGo = colour && isAvoided(deletions, { category, colour });
       return { item, added: true, note: letGo ? `You let go of a ${colour.toLowerCase()} ${NOUN[category]} before because it was no longer your style.` : null };
     },
     async setListStatus(userId, id, status) {
       if (!UUID.test(id)) throw errors.notFound('Shopping list item');
-      const { rows } = await db.query('UPDATE shopping.list_items SET status = $3 WHERE id = $1 AND user_id = $2 RETURNING *', [id, userId, status]);
-      if (!rows[0]) throw errors.notFound('Shopping list item');
-      return listItem(rows[0], [], {});
+      const row = await repo.setStatus(userId, id, status);
+      if (!row) throw errors.notFound('Shopping list item');
+      return listItem(row, [], {});
     },
     async removeFromList(userId, id) {
       if (!UUID.test(id)) throw errors.notFound('Shopping list item');
-      const { rows } = await db.query('DELETE FROM shopping.list_items WHERE id = $1 AND user_id = $2 RETURNING suggestion_key', [id, userId]);
-      if (!rows[0]) throw errors.notFound('Shopping list item');
-      if (rows[0].suggestion_key) await this.undecide(userId, rows[0].suggestion_key);
+      const row = await repo.removeItem(userId, id);
+      if (!row) throw errors.notFound('Shopping list item');
+      if (row.suggestion_key) await this.undecide(userId, row.suggestion_key);
       return { removed: true };
     },
     // ItemDeleted (Observer): Torn / damaged or Became too small → replacement on the list (US-33).
@@ -217,12 +235,11 @@ function shoppingService({ db, wardrobe, profile }) {
       return (await this.addToList(userId, r)).item;
     },
     async decide(userId, key, state) {
-      await db.query(`INSERT INTO shopping.decisions (user_id, key, state) VALUES ($1, $2, $3)
-        ON CONFLICT (user_id, key) DO UPDATE SET state = EXCLUDED.state, decided_at = now()`, [userId, key, state]);
+      await repo.decide(userId, key, state);
       return { key, state };
     },
     async undecide(userId, key) {
-      await db.query('DELETE FROM shopping.decisions WHERE user_id = $1 AND key = $2', [userId, key]);
+      await repo.undecide(userId, key);
       return { key, state: null };
     },
   };
@@ -290,4 +307,4 @@ function registerShopping(deps) {
   return { service, routes: r };
 }
 
-module.exports = { registerShopping, outfitsWith, BASICS, similarity, similarOwned, SIMILAR_AT };
+module.exports = { shoppingService, shoppingRepository, registerShopping, outfitsWith, BASICS, similarity, similarOwned, SIMILAR_AT };

@@ -3,7 +3,7 @@
 // "Mark as packed" moves every piece to Packed through Availability, so they leave normal outfits.
 import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
-import { Chips, Icon, PageHead, Skeleton, SprintNote, Tile, fmtDate, pieceName, useApp, useLoad } from '../ui.jsx';
+import { Chips, Icon, PageHead, Skeleton, SprintNote, Tile, Toggle, fmtDate, pieceName, useApp, useLoad } from '../ui.jsx';
 
 const iso = (n) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
 
@@ -11,7 +11,7 @@ export default function PackingScreen() {
   const { vocab, toast, refresh } = useApp();
   const trips = useLoad(() => api.trips(), []);
   const closet = useLoad(() => api.items(), []);
-  const [form, setForm] = useState({ destination: 'Paris', startDate: iso(12), endDate: iso(15), tripType: 'Travel', activities: ['Travel', 'Dinner', 'Everyday'] });
+  const [form, setForm] = useState({ destination: 'Paris', startDate: iso(12), endDate: iso(15), tripType: 'Travel', activities: ['Travel', 'Dinner', 'Everyday'], carryOn: true, laundryAvailable: false, exclude: [] });
   const [plan, setPlan] = useState(null);
   const [busy, setBusy] = useState(false);
   const [current, setCurrent] = useState(null); // a saved trip
@@ -19,9 +19,15 @@ export default function PackingScreen() {
 
   useEffect(() => { if (trips.data && !current && !plan && trips.data.trips[0]) setCurrent(trips.data.trips[0]); }, [trips.data, current, plan]);
 
+  // Remove one piece and plan again without it (the capsule finds the next best piece).
+  async function removePiece(id) {
+    const next = { ...form, exclude: [...new Set([...(form.exclude || []), id])] };
+    setForm(next); setBusy(true);
+    try { setPlan(await api.packPlan(next)); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+  }
   async function propose() {
     setBusy(true);
-    try { setPlan(await api.packPlan(form)); setCurrent(null); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+    try { setForm({ ...form, exclude: [] }); setPlan(await api.packPlan({ ...form, exclude: [] })); setCurrent(null); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
   }
   async function save() {
     try { const t = await api.saveTrip(form); toast(`Packing list for ${t.destination} saved`); setPlan(null); setCurrent(t); trips.reload(true); } catch (e) { toast(e.message, true); }
@@ -62,15 +68,21 @@ export default function PackingScreen() {
                 </div>
               </div>
               <div className="lining">
-                {pieces.map((p, i) => <a key={p.id} href={`#/closet/${p.id}`} title={pieceName(p)}><Tile piece={p} status={false} style={{ animationDelay: `${i * 50}ms` }} /></a>)}
+                {pieces.map((p, i) => (
+                  <span key={p.id} className="lining-item">
+                    <a href={`#/closet/${p.id}`} title={pieceName(p)}><Tile piece={p} status={false} style={{ animationDelay: `${i * 50}ms` }} /></a>
+                    {plan && <button type="button" className="lining-x" aria-label={`Remove ${pieceName(p)}`} onClick={() => removePiece(p.id)}><Icon name="x" size={12} /></button>}
+                  </span>
+                ))}
               </div>
               <div className="straps" />
               <div className="trip-stats">
-                <div><b>{view.counts.pieces}</b><span>pieces</span></div>
-                <div><b>{view.counts.outfits}</b><span>outfits</span></div>
+                <div><b>{view.counts.clothing ?? view.counts.pieces}</b><span>{view.counts.clothing !== undefined ? 'clothing' : 'pieces'}</span></div>
+                {view.counts.shoes !== undefined && <div><b>{view.counts.shoes}</b><span>shoes</span></div>}
+                <div><b>{view.counts.combinations ?? view.counts.outfits}</b><span>{view.counts.combinations !== undefined ? 'possible outfits' : 'outfits'}</span></div>
                 <div><b>{view.counts.days}</b><span>days</span></div>
-                <div><b>{view.counts.missing}</b><span>missing</span></div>
               </div>
+              {view.summary && <p className="small" style={{ color: '#e9dcd6', padding: '0 22px 18px' }}>{view.luggage === 'carry-on' ? 'Carry-on · ' : ''}{view.summary}</p>}
             </section>
           )}
           {view && (view.warnings.length > 0 || view.missing.length > 0) && (
@@ -104,6 +116,8 @@ export default function PackingScreen() {
             </div>
             <div className="field"><span>Trip type</span><Chips options={['Travel', 'Work', 'Wedding', 'Everyday']} value={form.tripType} multiple={false} onChange={(v) => setForm({ ...form, tripType: v || form.tripType })} /></div>
             <div className="field"><span>Activities (one per day, in turn)</span><Chips options={Object.keys(vocab.OCCASIONS)} value={form.activities} onChange={(v) => setForm({ ...form, activities: v.slice(0, 6) })} /></div>
+            <Toggle label="Carry-on only" sub="At most 8 clothing pieces and 2 pairs of shoes" value={form.carryOn} onChange={(v) => setForm({ ...form, carryOn: v, exclude: [] })} />
+            <Toggle label="Laundry at the destination" sub="Pieces can be worn up to 3 times instead of 2" value={form.laundryAvailable} onChange={(v) => setForm({ ...form, laundryAvailable: v, exclude: [] })} />
             <button type="button" className="btn block lg" onClick={propose} disabled={busy || form.destination.trim().length < 2}><Icon name="wand" size={16} />{busy ? 'Packing…' : 'Plan my suitcase'}</button>
           </section>
           {trips.data && trips.data.trips.length > 0 && (

@@ -50,7 +50,9 @@ function BuyCheck({ onAdded }) {
   const { vocab, toast } = useApp();
   const [q, setQ] = useState({ category: 'Bottom', colour: 'Beige', styles: ['Minimal'] });
   const [r, setR] = useState(null);
-  async function run() { try { setR(await api.buyCheck(q)); } catch (e) { toast(e.message, true); } }
+  const [im, setIm] = useState(null);
+  // "Do I need this?" (similarity) and "What would it add?" (purchase simulation) run together; nothing is saved.
+  async function run() { try { const [a, b] = await Promise.all([api.buyCheck(q), api.impact({ category: q.category, colour: q.colour, styles: q.styles })]); setR(a); setIm(b); } catch (e) { toast(e.message, true); } }
   async function addAnyway() {
     try { await api.addToList({ title: `${q.colour} ${CATEGORY_ONE[q.category].toLowerCase()}`, category: q.category, colour: q.colour, source: 'manual', reason: r ? `Checked first: ${r.verdict.toLowerCase()}.` : undefined }); toast('Added to your bag'); onAdded(); } catch (e) { toast(e.message, true); }
   }
@@ -58,7 +60,7 @@ function BuyCheck({ onAdded }) {
   return (
     <section className={`card pad-lg ${tone}`}>
       <div className="eyebrow">Before you buy</div>
-      <h3 style={{ margin: '4px 0 14px' }}>Do I need this?</h3>
+      <h3 style={{ margin: '4px 0 14px' }}>Do I need this? What would it add?</h3>
       <div className="grid g2" style={{ gap: 10 }}>
         <select className="input" value={q.category} onChange={(e) => setQ({ ...q, category: e.target.value })} aria-label="Category">{vocab.CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_ONE[c]}</option>)}</select>
         <select className="input" value={q.colour} onChange={(e) => setQ({ ...q, colour: e.target.value })} aria-label="Colour">{vocab.COLOURS.map((c) => <option key={c}>{c}</option>)}</select>
@@ -69,6 +71,18 @@ function BuyCheck({ onAdded }) {
         <div className="stack" style={{ marginTop: 16, gap: 10 }}>
           <div className="verdict">{r.verdict}</div>
           <p className="small">{r.advice}</p>
+          {im && (
+            <div>
+              <div className="eyebrow">Purchase impact · simulated, not added</div>
+              <div className="impact">
+                <div><b>{im.newCombinations}</b><span className="tiny muted">new outfits</span></div>
+                <div><b>{im.compatiblePieces}</b><span className="tiny muted">pieces it pairs with</span></div>
+                <div><b>{im.similarOwned}</b><span className="tiny muted">similar owned</span></div>
+                <div><b>{im.versatility}</b><span className="tiny muted">versatility</span></div>
+              </div>
+              <p className="small" style={{ marginTop: 8 }}><b>{im.recommendation}.</b> {im.sentence}{im.fillsGap ? ` Fills a ${im.fillsGap.confidence.toLowerCase()}-confidence ${im.fillsGap.levelName.toLowerCase()} gap.` : ''}{im.occasions.length ? ` Main use: ${im.occasions.join(', ')}.` : ''}</p>
+            </div>
+          )}
           {r.duplicate && (
             <div className="dup-warn">
               <b className="small" style={{ display: 'block', marginBottom: 6 }}><Icon name="alert" size={14} /> {r.duplicate.message}</b>

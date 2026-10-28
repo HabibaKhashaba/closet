@@ -169,11 +169,11 @@ function availabilityRoutes({ availability, wardrobe }) {
   return { items, laundry };
 }
 
-function registerAvailability({ db, transaction, bus, wardrobe, profile }) {
-  const repo = availabilityRepository(db, transaction);
+function registerAvailability({ db, transaction, repo: givenRepo, bus, wardrobe, profile }) {
+  const repo = givenRepo || availabilityRepository(db, transaction);
   const service = availabilityService({ repo, profile });
   bus.subscribe(TOPICS.ItemCreated, ({ userId, itemId }) => repo.init(userId, itemId));
   return { service, routes: availabilityRoutes({ availability: service, wardrobe }) };
 }
 
-module.exports = { registerAvailability, availabilityService };
+module.exports = { registerAvailability, availabilityService, availabilityRepository };

@@ -6,6 +6,7 @@ import { api } from '../api.js';
 import { CountUp, Icon, Look, Ring, Skeleton, SprintTag, Tile, matchWord, pieceName, relDay, useApp, useLoad, fmtDate } from '../ui.jsx';
 import { go } from '../App.jsx';
 import { LearnedCard } from './AnalyticsScreen.jsx';
+import { ClosetNoticed, StillLoveIt } from './Proactive.jsx';
 
 const hello = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
 
@@ -76,6 +77,7 @@ export default function HomeScreen() {
   const health = useLoad(() => api.health(), []);
   const learned = useLoad(() => api.learned(), []);
   const conflicts = useLoad(() => api.conflicts(), []);
+  const still = useLoad(() => api.forgotten(), []);
   const occasion = events.data ? todaysOccasion(profile, events.data.events) : null;
   const pick = useLoad(() => (occasion ? api.recommend({ occasion }) : null), [occasion]);
 
@@ -137,11 +139,14 @@ export default function HomeScreen() {
         <Health h={health.data} />
       </div>
 
+      <ClosetNoticed />
+
       {closet.data && <Launch items={closet.data.items} />}
 
       <div className="dash">
         <div className="stack lg">
-          {forgotten && (
+          {still.data?.top && <StillLoveIt candidate={still.data.top} onChanged={() => { still.reload(true); insights.reload(true); closet.reload(true); }} />}
+          {!still.data?.top && forgotten && (
             <section className="forgot rise">
               <div className="polaroid"><Tile piece={forgotten} status={false} /><span>{forgotten.daysSince} days</span></div>
               <div className="stack" style={{ gap: 8 }}>

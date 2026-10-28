@@ -4,6 +4,7 @@
 import React, { useMemo, useState } from 'react';
 import { api } from '../api.js';
 import { CATEGORY_LABEL, CountUp, Icon, PageHead, Ring, Skeleton, SprintNote, SprintTag, Stars, Tile, fmtDate, pieceName, useApp, useLoad } from '../ui.jsx';
+import { DonateFlow, SeasonalReview, StillLoveIt } from './Proactive.jsx';
 
 const BAR = ['#e8b4c0', '#b9cde4', '#d3c3e3', '#bcd4b8', '#ecd59c'];
 const NEUTRAL = ['Black', 'White', 'Grey', 'Beige', 'Navy', 'Brown'];
@@ -84,13 +85,58 @@ function History() {
         <div className="timeline">
           {h.data.wears.slice(0, 8).map((w) => (
             <div key={w.id} className="tl-item">
-              <div><b style={{ fontFamily: 'var(--serif)', fontSize: 16 }}>{fmtDate(w.date, { day: 'numeric', month: 'short' })}</b><div className="tiny muted">{w.occasion || 'Outfit'}{w.weather ? ` · ${w.weather.tempC}°` : ''}</div></div>
+              <div><b style={{ fontFamily: 'var(--serif)', fontSize: 16 }}>{fmtDate(w.date, { day: 'numeric', month: 'short' })}</b><div className="tiny muted">{w.eventTitle ? <b>{w.eventTitle} · </b> : null}{w.occasion || 'Outfit'}{w.weather ? ` · ${w.weather.tempC}°` : ''}</div></div>
               <div className="tl-pieces">{w.pieces.map((p) => <a key={p.id} href={`#/closet/${p.id}`} title={`${pieceName(p)} · worn ${p.wearCount}×`}><Tile piece={p} status={false} /></a>)}</div>
               <span>{w.rating ? <Stars value={w.rating} onChange={() => {}} /> : <span className="tiny muted">not rated</span>}</span>
             </div>
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+// v1.5 Long-unworn pieces: style it, keep it or donate it — plus pieces already marked to leave.
+function StillLove() {
+  const f = useLoad(() => api.forgotten(), []);
+  const [donate, setDonate] = useState(null);
+  if (!f.data) return null;
+  const { candidates, pending, stats, thresholds } = f.data;
+  return (
+    <section className="card pad-lg" id="forgotten" style={{ marginBottom: 22 }}>
+      <div className="card-head"><div><div className="row"><h2>Still love it?</h2><SprintTag n={3} short /></div><p className="small muted" style={{ marginTop: 4 }}>Pieces that haven’t made it into your rotation recently: everyday pieces after {thresholds.everyday} days, special-occasion pieces after {thresholds.special}. Seasonal pieces are only judged in their season; new, lent, packed or laundry pieces never.</p></div>
+        <span className="tiny muted">{stats.passedOn} passed on · {stats.kept} kept</span></div>
+      {!candidates.length ? <p className="small muted">Nothing to decide right now.</p> : (
+        <div className="still-list">{candidates.slice(0, 3).map((c) => <StillLoveIt key={c.id} candidate={c} compact onChanged={() => f.reload(true)} />)}</div>
+      )}
+      {pending.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>Ready to leave</div>
+          <div className="row wrap">{pending.map((p) => <button key={p.id} type="button" className="pending-chip" onClick={() => setDonate(p)}><Tile piece={{ ...p, category: 'Top', status: 'Available' }} status={false} /><span className="small"><b>{p.name}</b><br /><span className="tiny muted">{p.rehome.label} · tap to confirm</span></span></button>)}</div>
+        </div>
+      )}
+      {donate && <DonateFlow piece={donate} onClose={() => { setDonate(null); f.reload(true); }} onChanged={() => f.reload(true)} />}
+    </section>
+  );
+}
+
+function Value() {
+  const v = useLoad(() => api.value(), []);
+  if (!v.data || !v.data.priced) return null;
+  const row = (x, tone) => (
+    <a key={x.piece.id} className="bar-row" href={`#/closet/${x.piece.id}`} style={{ gridTemplateColumns: '44px 1fr auto' }}>
+      <Tile piece={x.piece} status={false} /><span><b className="small">{x.piece.name}</b><br /><span className="tiny muted">{x.perWear === null ? 'Not worn yet' : `${x.wears} wears`}</span></span>
+      <b className={tone}>{x.perWear === null ? `${x.currency} ${x.price.toLocaleString('en-US')}` : `${x.currency} ${x.perWear.toLocaleString('en-US')} / wear`}</b>
+    </a>
+  );
+  return (
+    <section className="card pad-lg" style={{ marginBottom: 22 }}>
+      <div className="card-head"><div className="row"><h3>Cost per wear</h3><SprintTag n={3} short /></div><span className="tiny muted">{v.data.priced} of {v.data.of} pieces have a price · only outfits you wore count</span></div>
+      <div className="grid g2" style={{ gap: 20 }}>
+        <div><div className="eyebrow" style={{ marginBottom: 8 }}>Best value</div><div className="bars">{v.data.bestValue.map((x) => row(x, 'pos'))}</div></div>
+        <div><div className="eyebrow" style={{ marginBottom: 8 }}>Least used for its price</div><div className="bars">{v.data.underused.map((x) => row(x, ''))}</div></div>
+      </div>
+      {v.data.note && <p className="tiny muted" style={{ marginTop: 10 }}>{v.data.note}</p>}
     </section>
   );
 }
@@ -155,6 +201,7 @@ export default function AnalyticsScreen() {
               {[...health.data.parts, ...health.data.penalties].map((p) => <div key={p.key}><span>{p.label} <span className="tiny muted">— {p.detail}</span></span><b className={p.points < 0 ? 'neg' : 'pos'}>{p.points > 0 ? '+' : ''}{p.points}{p.max ? <span className="tiny muted"> / {p.max}</span> : ''}</b></div>)}
             </div>
             <div className="stack" style={{ gap: 10 }}>
+              {health.data.explain && health.data.explain.lowering.length > 0 && (<><span className="eyebrow">What lowers it</span>{health.data.explain.lowering.map((t) => <div key={t} className="tiny">{t}</div>)}</>)}
               <span className="eyebrow">What would raise it</span>
               {health.data.actions.map((a) => <div key={a} className="notice small"><Icon name="wand" size={16} style={{ flex: 'none' }} />{a}</div>)}
               <p className="tiny muted">Score = utilisation (35) + versatility (20) + balance (20) + readiness (15) + basics (10) − forgotten (≤10) − near-duplicates (≤10). Every part is listed, so the number is never a black box.</p>
@@ -163,7 +210,9 @@ export default function AnalyticsScreen() {
         </section>
       )}
 
+      <StillLove />
       {learned.data && <Learned data={learned.data} reload={() => learned.reload(true)} />}
+      <div className="grid g2" style={{ marginBottom: 22, alignItems: 'start' }}><SeasonalReview /><Value /></div>
       <History />
 
       <div className="grid g2" style={{ marginBottom: 22, alignItems: 'start' }}>

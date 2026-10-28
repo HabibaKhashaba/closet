@@ -25,11 +25,17 @@ function matchPieces(pieces, q) {
 const WHERE = { Available: 'Available — clean and at home', Laundry: 'in the laundry', Borrowed: 'lent out', Packed: 'packed', Unavailable: 'unavailable' };
 const SCOPE = 'I can help with your wardrobe, outfits, laundry, shopping, weather and planner.';
 
-function assistantService({ db, parser, rec, outfits, wardrobe, availability, planner, shopping, proactive, intelligence, packing, profile }) {
-  async function logAction(userId, fn, undo) {
-    const { rows } = await db.query('INSERT INTO assistant.actions (user_id, function, undo) VALUES ($1, $2, $3) RETURNING id', [userId, fn, JSON.stringify(undo)]);
-    return rows[0].id;
-  }
+function assistantRepository(db) {
+  return {
+    async log(userId, fn, undo) { return (await db.query('INSERT INTO assistant.actions (user_id, function, undo) VALUES ($1, $2, $3) RETURNING id', [userId, fn, JSON.stringify(undo)])).rows[0].id; },
+    async get(userId, id) { return (await db.query('SELECT * FROM assistant.actions WHERE id = $1 AND user_id = $2', [id, userId])).rows[0] || null; },
+    async markUndone(id) { await db.query('UPDATE assistant.actions SET undone = true WHERE id = $1', [id]); },
+  };
+}
+
+function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe, availability, planner, shopping, proactive, intelligence, packing, profile }) {
+  const repo = givenRepo || assistantRepository(db);
+  async function logAction(userId, fn, undo) { return repo.log(userId, fn, undo); }
   async function resolve(userId, query, pieceId, filter = () => true) {
     const all = await wardrobe().allPieces(userId);
     if (pieceId) {
@@ -345,16 +351,15 @@ function assistantService({ db, parser, rec, outfits, wardrobe, availability, pl
     },
     async undo(userId, id) {
       if (!UUID.test(id)) throw errors.notFound('Action');
-      const { rows } = await db.query('SELECT * FROM assistant.actions WHERE id = $1 AND user_id = $2', [id, userId]);
-      const a = rows[0];
+      const a = await repo.get(userId, id);
       if (!a) throw errors.notFound('Action');
       if (a.undone) throw errors.conflict('ALREADY_UNDONE', 'This change was already undone.');
       if (a.undo.type === 'status') for (const it of a.undo.items) await availability.restore(userId, it.id, it.status);
       if (a.undo.type === 'hide') await outfits().unhide(userId, a.undo.itemId);
       if (a.undo.type === 'shopping') await shopping().removeFromList(userId, a.undo.itemId).catch(() => null);
-      if (a.undo.type === 'snooze') await db.query('DELETE FROM intelligence.snoozes WHERE user_id = $1 AND key = $2', [userId, a.undo.key]);
+      if (a.undo.type === 'snooze') await proactive().unsnooze(userId, a.undo.key);
       if (a.undo.type === 'rehome') await wardrobe().cancelRehome(userId, a.undo.itemId).catch(() => null);
-      await db.query('UPDATE assistant.actions SET undone = true WHERE id = $1', [id]);
+      await repo.markUndone(id);
       return { undone: true, function: a.function };
     },
     suggestions: SUGGESTIONS,
@@ -382,4 +387,4 @@ function registerAssistant(deps) {
   return { service, routes: r };
 }
 
-module.exports = { registerAssistant, matchPieces, SUGGESTIONS };
+module.exports = { registerAssistant, assistantService, assistantRepository, matchPieces, SUGGESTIONS };

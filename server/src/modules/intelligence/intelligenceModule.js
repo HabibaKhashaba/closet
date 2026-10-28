@@ -26,7 +26,28 @@ const WHERE = { Laundry: 'in the laundry', Borrowed: 'lent out', Packed: 'packed
 const RAIN = /rain|shower|drizzle|thunder/i;
 const PUSH_LIMIT = 3; // NFR-13: at most 3 highlighted notices a day
 
-function intelligenceService({ db, wardrobe, outfits, profile, planner, rec, activity, packing }) {
+function intelligenceRepository(db) {
+  return {
+    async learned(userId) { return (await db.query('SELECT key, state, previous, decided_at FROM intelligence.learned WHERE user_id = $1 ORDER BY decided_at DESC', [userId])).rows; },
+    async upsertLearned(userId, key, state, previous) {
+      await db.query(`INSERT INTO intelligence.learned (user_id, key, state, previous) VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id, key) DO UPDATE SET state = EXCLUDED.state, previous = EXCLUDED.previous, decided_at = now()`, [userId, key, state, previous]);
+    },
+    async deleteLearned(userId, key) { return (await db.query('DELETE FROM intelligence.learned WHERE user_id = $1 AND key = $2 RETURNING state, previous', [userId, key])).rows[0] || null; },
+    async readKeys(userId) { return (await db.query('SELECT key FROM intelligence.notifications_read WHERE user_id = $1', [userId])).rows.map((r) => r.key); },
+    async markRead(userId, key) { await db.query('INSERT INTO intelligence.notifications_read (user_id, key) VALUES ($1, $2) ON CONFLICT DO NOTHING', [userId, key]); },
+    // snoozes ("Keep it", "Not now", "Remind me later") — used by the proactive service
+    async snoozes(userId, prefix) { return (await db.query('SELECT key, until FROM intelligence.snoozes WHERE user_id = $1 AND key LIKE $2 AND until >= CURRENT_DATE', [userId, `${prefix}:%`])).rows; },
+    async snooze(userId, key, until, reason) {
+      await db.query(`INSERT INTO intelligence.snoozes (user_id, key, until, reason) VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id, key) DO UPDATE SET until = EXCLUDED.until, reason = EXCLUDED.reason, created_at = now()`, [userId, key, until, reason]);
+    },
+    async unsnooze(userId, key) { await db.query('DELETE FROM intelligence.snoozes WHERE user_id = $1 AND key = $2', [userId, key]); },
+  };
+}
+
+function intelligenceService({ db, repo: givenRepo, wardrobe, outfits, profile, planner, rec, activity, packing }) {
+  const repo = givenRepo || intelligenceRepository(db);
   async function health(userId) {
     const [pieces, worn, gaps] = await Promise.all([wardrobe().allPieces(userId), outfits().wornIds(userId, 30), wardrobe().gaps(userId)]);
     const missingBasics = BASICS.filter((b) => !pieces.some(b.has)).map((b) => b.title);
@@ -35,8 +56,7 @@ function intelligenceService({ db, wardrobe, outfits, profile, planner, rec, act
   }
 
   async function decisions(userId) {
-    const { rows } = await db.query('SELECT key, state, previous, decided_at FROM intelligence.learned WHERE user_id = $1 ORDER BY decided_at DESC', [userId]);
-    return rows;
+    return repo.learned(userId);
   }
   async function patterns(userId) {
     const from = addDays(isoDay(Date.now()), -60);
@@ -105,15 +125,14 @@ function intelligenceService({ db, wardrobe, outfits, profile, planner, rec, act
       const state = decision === 'confirm' ? 'confirmed' : 'dismissed';
       const values = state === 'confirmed' ? previousOf(prefs, p.change) : null;
       if (state === 'confirmed' && p.change) await profile.update(userId, p.change);
-      await db.query(`INSERT INTO intelligence.learned (user_id, key, state, previous) VALUES ($1, $2, $3, $4)
-        ON CONFLICT (user_id, key) DO UPDATE SET state = EXCLUDED.state, previous = EXCLUDED.previous, decided_at = now()`, [userId, key, state, { values, text: p.text, effect: p.effect }]);
+      await repo.upsertLearned(userId, key, state, { values, text: p.text, effect: p.effect });
       return { key, state, effect: state === 'confirmed' ? p.effect : 'Closet will not suggest this pattern again.', profile: state === 'confirmed' && p.change ? await profile.get(userId) : undefined };
     },
     async undo(userId, key) {
-      const { rows } = await db.query('DELETE FROM intelligence.learned WHERE user_id = $1 AND key = $2 RETURNING state, previous', [userId, key]);
-      if (!rows[0]) throw errors.notFound('Decision');
-      const values = rows[0].previous && rows[0].previous.values;
-      if (rows[0].state === 'confirmed' && values) await profile.update(userId, values);
+      const row = await repo.deleteLearned(userId, key);
+      if (!row) throw errors.notFound('Decision');
+      const values = row.previous && row.previous.values;
+      if (row.state === 'confirmed' && values) await profile.update(userId, values);
       return { key, undone: true, profile: await profile.get(userId) };
     },
     async conflicts(userId) {
@@ -141,10 +160,10 @@ function intelligenceService({ db, wardrobe, outfits, profile, planner, rec, act
       ]) : [{ alerts: [] }, { warnings: [] }, { overdue: [] }, {}, {}];
       const [rem, conf, insights, readRows, trips, recent] = await Promise.all([
         planner().reminders(userId), conflicts(userId), outfits().insights(userId),
-        db.query('SELECT key FROM intelligence.notifications_read WHERE user_id = $1', [userId]),
+        repo.readKeys(userId),
         packing ? packing().trips(userId) : [], activity ? activity().recent(userId, 24) : [],
       ]);
-      const read = new Set(readRows.rows.map((r) => r.key));
+      const read = new Set(readRows);
       const list = [];
       const add = (n) => list.push({ ...n, read: read.has(n.key) });
       for (const c of conf) add({ key: c.key, kind: 'conflict', priority: 5, title: c.kind === 'double-booked' ? 'Piece planned twice' : 'Planned outfit conflict', text: c.message, link: '#/planner', date: c.event.date });
@@ -179,7 +198,7 @@ function intelligenceService({ db, wardrobe, outfits, profile, planner, rec, act
       return { notifications: list, unread: list.filter((n) => !n.read).length, dailyLimit: PUSH_LIMIT, channel: 'in-app' };
     },
     async markRead(userId, keys) {
-      for (const k of keys) await db.query('INSERT INTO intelligence.notifications_read (user_id, key) VALUES ($1, $2) ON CONFLICT DO NOTHING', [userId, k]);
+      for (const k of keys) await repo.markRead(userId, k);
       return { read: keys.length };
     },
   };
@@ -187,7 +206,7 @@ function intelligenceService({ db, wardrobe, outfits, profile, planner, rec, act
 
 function registerIntelligence(deps) {
   const service = intelligenceService(deps);
-  service.proactive = proactiveService({ ...deps, intelligence: service });
+  service.proactive = proactiveService({ ...deps, repo: deps.repo || intelligenceRepository(deps.db), intelligence: service });
   const r = express.Router();
   r.use(proactiveRoutes(service.proactive));
   r.get('/health', async (req, res, next) => { try { res.json(await service.health(req.user.id)); } catch (e) { next(e); } });
@@ -220,4 +239,4 @@ function registerIntelligence(deps) {
   return { service, routes: { intelligence: r, notifications: n } };
 }
 
-module.exports = { registerIntelligence };
+module.exports = { registerIntelligence, intelligenceService, intelligenceRepository };

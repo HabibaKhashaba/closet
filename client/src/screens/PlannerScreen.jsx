@@ -74,6 +74,10 @@ export default function PlannerScreen({ query }) {
   const [options, setOptions] = useState(null);
   const cal = useLoad(() => api.calendar(ym(month)), [ym(month)]);
   const conf = useLoad(() => api.conflicts(), []);
+  const mon = useLoad(() => api.monitor(), []); // v1.5: the same monitor also watches the forecast
+  async function adjust(a) {
+    try { const r = await api.adjustPlanned(a.eventId, a.itemId); toast(`Changed only the ${pieceName(r.replaced).toLowerCase()} → ${pieceName(r.with).toLowerCase()}`); mon.reload(true); conf.reload(true); cal.reload(true); } catch (x) { toast(x.message, true); }
+  }
   const conflictOf = (id) => (conf.data?.conflicts || []).find((c) => c.eventId === id);
   async function fix(c) {
     try { const r = await api.fixConflict(c.eventId, c.itemId); toast(`Replaced the ${pieceName(r.replaced).toLowerCase()} with the ${pieceName(r.with).toLowerCase()}`); conf.reload(true); cal.reload(true); refresh(); } catch (x) { toast(x.message, true); }
@@ -111,6 +115,13 @@ export default function PlannerScreen({ query }) {
     <>
       <PageHead title="Planner" sprint={1} sub="Your events and your wardrobe on one calendar — with outfits planned for the weather of the day."
         actions={<><button type="button" className="btn line" onClick={() => setConnect(true)}><Icon name="link" size={16} />Connect calendar</button><button type="button" className="btn" onClick={() => setAdding(true)}><Icon name="plus" size={16} />New event</button></>} />
+      {(mon.data?.alerts || []).filter((a) => a.kind === 'weather').map((a) => (
+        <div key={a.key} className="conflict rise" style={{ marginBottom: 12 }}>
+          <span className="ico"><Icon name="cloud" size={16} /></span>
+          <span className="small grow"><b>{a.event.title} · {relDay(a.event.date)}.</b> {a.message}</span>
+          {a.itemId && <button type="button" className="btn sm" onClick={() => adjust(a)}><Icon name="swap" size={14} />Adjust outfit</button>}
+        </div>
+      ))}
       {(conf.data?.conflicts || []).map((c) => (
         <div key={c.key} className="conflict rise" style={{ marginBottom: 12 }}>
           <span className="ico"><Icon name="alert" size={16} /></span>

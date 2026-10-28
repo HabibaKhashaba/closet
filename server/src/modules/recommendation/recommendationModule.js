@@ -115,4 +115,4 @@ function registerRecommendation(deps) {
   return { service, routes: recommendationRoutes({ rec: service }) };
 }
 
-module.exports = { registerRecommendation, optionsSchema };
+module.exports = { registerRecommendation, recommendationService, optionsSchema };

@@ -1,7 +1,7 @@
 // US-08 add a piece by photo → US-09 details → US-11 review; the piece is created only on Save.
 import React, { useMemo, useRef, useState } from 'react';
 import { api, ApiError } from '../api.js';
-import { CATEGORY_ONE, Icon, SprintTag, useApp, dressName } from '../ui.jsx';
+import { CATEGORY_ONE, Icon, SprintTag, Tile, useApp, dressName } from '../ui.jsx';
 import { go } from '../App.jsx';
 import PieceForm, { cleanDetails, emptyDetails } from './PieceForm.jsx';
 
@@ -11,6 +11,8 @@ const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/hei
 export default function AddPieceScreen() {
   const { vocab, toast } = useApp();
   const [step, setStep] = useState(0);
+  const [similar, setSimilar] = useState(null);
+  const [showSimilar, setShowSimilar] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [photoError, setPhotoError] = useState(null);
   const [details, setDetails] = useState(emptyDetails);
@@ -34,7 +36,11 @@ export default function AddPieceScreen() {
     if (!details.colour) missing.push({ field: 'colour', message: 'Colour is required' });
     if (!details.dressCodes.length) missing.push({ field: 'dressCodes', message: 'Choose at least one dress-code level' });
     setErrors(missing);
-    if (!missing.length) setStep(2);
+    if (!missing.length) {
+      setStep(2);
+      // v1.5 duplicate detection before saving (structured metadata): the user can still add it.
+      api.similarPieces(cleanDetails(details)).then(setSimilar).catch(() => setSimilar(null));
+    }
   }
 
   async function save() {
@@ -93,10 +99,20 @@ export default function AddPieceScreen() {
                 <dt>Style</dt><dd>{d.styles.join(', ') || '—'}</dd>
                 <dt>Modest</dt><dd>{d.modest ? 'Yes' : 'No'}</dd>
               </dl>
+              {similar && similar.count > 0 && (
+                <div className="notice warn" style={{ display: 'block', marginTop: 16 }} role="status">
+                  <b>{similar.message}</b>
+                  {showSimilar && <div className="mini-tiles" style={{ marginTop: 10 }}>{similar.similar.map((x) => <a key={x.id} href={`#/closet/${x.id}`} title={`${x.name} · ${x.similarity}% similar`}><Tile piece={{ ...x, status: 'Available' }} status={false} /></a>)}</div>}
+                  <div className="row" style={{ marginTop: 10 }}>
+                    <button type="button" className="btn line sm" onClick={() => setShowSimilar((v) => !v)}>{showSimilar ? 'Hide similar' : 'View similar'}</button>
+                    <button type="button" className="btn ghost sm" onClick={() => go('/closet')}>Cancel</button>
+                  </div>
+                </div>
+              )}
               <p className="small muted" style={{ margin: '16px 0' }}>Nothing is saved until you press Save.</p>
               <div className="row end">
                 <button type="button" className="btn line" onClick={() => setStep(1)}>Edit details</button>
-                <button type="button" className="btn" onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save to closet'}</button>
+                <button type="button" className="btn" onClick={save} disabled={busy}>{busy ? 'Saving…' : similar && similar.count ? 'Add anyway' : 'Save to closet'}</button>
               </div>
             </>
           )}

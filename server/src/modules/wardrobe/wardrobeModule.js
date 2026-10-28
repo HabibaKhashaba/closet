@@ -337,8 +337,8 @@ function photoRoutes({ storage }) {
   return r;
 }
 
-function registerWardrobe({ db, bus, storage, availability, profile }) {
-  const repo = wardrobeRepository(db);
+function registerWardrobe({ db, repo: givenRepo, bus, storage, availability, profile }) {
+  const repo = givenRepo || wardrobeRepository(db);
   const service = wardrobeService({ repo, storage, bus, availability, profile });
   bus.subscribe(TOPICS.AccountDeleted, ({ userId }) => service.deletePhotosOf(userId));
   const gapsRouter = express.Router();
@@ -348,4 +348,4 @@ function registerWardrobe({ db, bus, storage, availability, profile }) {
   return { service, routes: wardrobeRoutes({ wardrobe: service }), photos: photoRoutes({ storage }), gaps: gapsRouter };
 }
 
-module.exports = { registerWardrobe, detailsSchema, editSchema, toApi };
+module.exports = { registerWardrobe, wardrobeService, wardrobeRepository, detailsSchema, editSchema, toApi };

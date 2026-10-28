@@ -5,14 +5,9 @@ import { api, ApiError } from '../api.js';
 import { CATEGORY_ONE, Field, Icon, Modal, PageHead, Spinner, SprintTag, STATUS_LABEL, Tile, daysSince, dressName, fmtDate, pieceName, useApp, useLoad, COLOUR_SWATCH } from '../ui.jsx';
 import { go } from '../App.jsx';
 import PieceForm, { cleanDetails } from './PieceForm.jsx';
+import { BorrowInfo, CostPerWear, DonateFlow } from './Proactive.jsx';
 
-const ALLOWED = {
-  Available: ['Laundry', 'Borrowed', 'Packed', 'Unavailable'],
-  Laundry: ['Available', 'Unavailable'],
-  Borrowed: ['Available', 'Laundry'],
-  Packed: ['Available', 'Laundry'],
-  Unavailable: ['Available', 'Laundry'],
-};
+// Allowed moves come from the server's state machine (GET /vocabulary → STATUS_TRANSITIONS): one source of truth.
 const STATUS_HELP = {
   Available: 'Clean and ready — can appear in outfits.',
   Laundry: 'In the basket. Comes back by itself after your laundry time.',
@@ -39,6 +34,7 @@ export default function PieceScreen({ id }) {
   const [deleting, setDeleting] = useState(false);
   const [reason, setReason] = useState('');
   const [hidden, setHidden] = useState(false);
+  const [donating, setDonating] = useState(false);
 
   if (error) return <div className="card pad">This piece doesn’t exist or isn’t yours. <a className="link" href="#/closet">Back to closet</a></div>;
   if (!p) return <Spinner />;
@@ -55,6 +51,8 @@ export default function PieceScreen({ id }) {
     try {
       const body = cleanDetails(editing);
       for (const k of ['name', 'fabric', 'season', 'size']) if (!editing[k]) body[k] = null;
+      if (editing.price === '' || editing.price === null) { body.price = null; delete body.currency; }
+      if (!editing.purchaseDate) body.purchaseDate = null;
       setData(await api.editItem(p.id, body)); setEditing(null); toast('Changes saved');
     } catch (e) { if (e instanceof ApiError) setErrors(e.details); toast(e.message, true); }
   }
@@ -80,23 +78,30 @@ export default function PieceScreen({ id }) {
         </div>
         <div className="stack lg">
           <PageHead eyebrow={CATEGORY_ONE[p.category]} title={pieceName(p)} sprint={1}
-            actions={<><button type="button" className="btn line sm" onClick={() => { setEditing({ ...p, name: p.name || '', fabric: p.fabric || '', season: p.season || '', size: p.size || '' }); setErrors([]); }}><Icon name="edit" size={15} />Edit</button>
+            actions={<><button type="button" className="btn line sm" onClick={() => { setEditing({ ...p, name: p.name || '', fabric: p.fabric || '', season: p.season || '', size: p.size || '', price: p.price ?? '', currency: p.currency || 'EGP', purchaseDate: p.purchaseDate || '' }); setErrors([]); }}><Icon name="edit" size={15} />Edit</button>
               <button type="button" className="btn line sm" onClick={() => setDeleting(true)} title="Sprint 2 · built early"><Icon name="trash" size={15} />Remove</button></>} />
 
           <section className="card pad">
-            <div className="card-head"><h3>Availability</h3><span className={`status ${p.status}`} style={{ background: 'var(--bg-2)' }}>{STATUS_LABEL[p.status]}</span></div>
+            <div className="card-head"><h3>Availability</h3><span className="row" style={{ gap: 6 }}>{p.rehome && <span className="tag rose">{p.rehome.label}</span>}<span className={`status ${p.status}`} style={{ background: 'var(--bg-2)' }}>{STATUS_LABEL[p.status]}</span></span></div>
+            {p.rehome && (
+              <div className="notice" style={{ display: 'block', marginBottom: 12 }}>
+                <b>{p.rehome.label}.</b> It stays in your closet and is left out of new outfits until it has left.
+                <div className="row" style={{ marginTop: 8 }}><button type="button" className="btn sm" onClick={() => setDonating(true)}><Icon name="check" size={14} />{p.rehome.method === 'give' ? 'Mark as given away' : p.rehome.method === 'sell' ? 'Mark as rehomed' : 'Mark as donated'}</button></div>
+              </div>
+            )}
             <p className="small muted" style={{ marginBottom: 14 }}>
               {STATUS_HELP[p.status]}
               {p.statusNote && <> With <b>{p.statusNote}</b>.</>}
               {p.expectedBack && <> Back <b>{fmtDate(p.expectedBack)}</b>.</>}
             </p>
             <div className="row">
-              {ALLOWED[p.status].map((s) => (
+              {(vocab.STATUS_TRANSITIONS?.[p.status] || []).map((s) => (
                 <button key={s} type="button" className="btn line sm" onClick={() => (['Borrowed', 'Packed', 'Unavailable'].includes(s) ? setMoving(s) : move(s))}>
-                  {s === 'Available' ? <Icon name="check" size={14} /> : s === 'Laundry' ? <Icon name="laundry" size={14} /> : <Icon name="arrow" size={14} />}{s === 'Available' ? 'Mark available' : STATUS_LABEL[s]}
+                  {s === 'Available' ? <Icon name="check" size={14} /> : s === 'Laundry' ? <Icon name="laundry" size={14} /> : <Icon name="arrow" size={14} />}{s === 'Available' ? (p.status === 'Borrowed' ? 'Mark returned' : 'Mark available') : STATUS_LABEL[s]}
                 </button>
               ))}
             </div>
+            <BorrowInfo piece={p} onChanged={() => reload(true)} />
             {moving && (
               <div className="notice" style={{ marginTop: 14, display: 'block' }}>
                 <div className="grid g2" style={{ gap: '0 12px' }}>
@@ -127,7 +132,10 @@ export default function PieceScreen({ id }) {
                 <div className="stat" style={{ background: 'rgba(255,255,255,.6)' }}><b>{p.wearCount}×</b><span>worn</span></div>
                 <div className="stat" style={{ background: 'rgba(255,255,255,.6)' }}><b>{since === null ? '—' : since === 0 ? 'Today' : `${since}d`}</b><span>since last worn</span></div>
               </div>
-              {since !== null && since >= 40 && <p className="small" style={{ marginTop: 12 }}>Forgotten for {since} days — <a className="link" href={`#/outfits?fixed=${p.id}`}>style it</a>.</p>}
+              {since !== null && since >= 40 && <p className="small" style={{ marginTop: 12 }}>Not worn for {since} days — <a className="link" href={`#/outfits?fixed=${p.id}`}>style it</a>{!p.rehome && <> or <button type="button" className="link" onClick={() => setDonating(true)}>donate it</button></>}.</p>}
+              <div className="divider" />
+              <div className="eyebrow" style={{ marginBottom: 6 }}>Cost per wear</div>
+              <CostPerWear piece={p} />
               <div className="divider" />
               <button type="button" className="btn line sm" onClick={hide}><Icon name="eyeoff" size={15} />{hidden ? 'Show in suggestions again' : 'Hide from suggestions for 7 days'}</button>
               <p className="tiny muted" style={{ marginTop: 8 }}>Hiding does not count as a dislike. <SprintTag n={2} short /></p>
@@ -136,6 +144,7 @@ export default function PieceScreen({ id }) {
         </div>
       </div>
 
+      {donating && <DonateFlow piece={p} onClose={() => setDonating(false)} onChanged={(x) => (x ? setData(x) : null)} />}
       {editing && (
         <Modal title="Edit piece" onClose={() => setEditing(null)}>
           <PieceForm value={editing} onChange={setEditing} errors={errors} />

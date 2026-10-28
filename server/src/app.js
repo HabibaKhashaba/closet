@@ -27,6 +27,7 @@ const { registerPacking } = require('./modules/packing/packingModule');
 const { registerActivity } = require('./modules/activity/activityModule');
 const { audit } = require('./gateway/audit');
 const vocabulary = require('./shared/vocabulary');
+const { ALLOWED: STATUS_TRANSITIONS } = require('./modules/availability/statusMachine');
 
 function createApp(deps = {}) {
   const { pool, transaction } = deps.db || require('./db/pool');
@@ -66,7 +67,8 @@ function createApp(deps = {}) {
   const api = express.Router();
 
   api.get('/health', (_req, res) => res.json({ status: 'ok' }));
-  api.get('/vocabulary', (_req, res) => res.json(vocabulary));
+  // The client reads the status rules from here (one source of truth — defect D-12: the web app had its own copy).
+  api.get('/vocabulary', (_req, res) => res.json({ ...vocabulary, STATUS_TRANSITIONS }));
   const auditStep = audit(activity.service);
   api.use('/auth', auditStep, identityRoutes({ identity, auth }));
   api.use('/photos', wardrobe.photos); // protected by signed URLs instead of the login token
