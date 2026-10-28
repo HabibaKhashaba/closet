@@ -25,6 +25,7 @@ const settingsSchema = {
   reminders: { type: 'bool' },
   reminderHour: { type: 'int', min: 0, max: 23 },
   avoidStyles: { type: 'enumArray', values: STYLES, max: STYLES.length },
+  allowRepeats: { type: 'bool', label: 'Repeating outfits is fine' },
 };
 
 function toApi(row) {
@@ -43,6 +44,7 @@ function toApi(row) {
     repeatDays: row.repeat_days ?? 3,
     reminders: row.reminders ?? true,
     reminderHour: row.reminder_hour ?? 20,
+    allowRepeats: row.allow_repeats ?? false, // v1.5: "I'm okay repeating outfits"
     avoidStyles: row.avoid_styles || [], // learned from “No longer my style” (US-34, confirmed by the user)
   };
 }
@@ -67,13 +69,13 @@ function profileRepository(db) {
            laundry_auto_return = COALESCE($12, laundry_auto_return),
            laundry_weekday = CASE WHEN $13::boolean THEN $14 ELSE laundry_weekday END,
            repeat_days = COALESCE($15, repeat_days), reminders = COALESCE($16, reminders), reminder_hour = COALESCE($17, reminder_hour),
-           avoid_styles = COALESCE($18, avoid_styles),
+           avoid_styles = COALESCE($18, avoid_styles), allow_repeats = COALESCE($19, allow_repeats),
            updated_at = now()
          WHERE user_id = $1 RETURNING *`,
         [userId, p.styles ?? null, p.colours ?? null, p.occasions ?? null, p.dressCode ?? null,
           p.modest ?? null, 'city' in p, p.city ?? null, completeQuiz,
           p.displayName ?? null, p.laundryDays ?? null, p.laundryAutoReturn ?? null, 'laundryWeekday' in p, p.laundryWeekday ?? null,
-          p.repeatDays ?? null, p.reminders ?? null, p.reminderHour ?? null, p.avoidStyles ?? null],
+          p.repeatDays ?? null, p.reminders ?? null, p.reminderHour ?? null, p.avoidStyles ?? null, p.allowRepeats ?? null],
       );
       return rows[0];
     },

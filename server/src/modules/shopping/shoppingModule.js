@@ -12,7 +12,8 @@ const { CATEGORIES, COLOURS, DRESS_CODES, STYLES, SEASONS } = require('../../sha
 const engine = require('../recommendation/engine');
 const { TOPICS } = require('../../events/eventBus');
 const { replacementFor, isAvoided } = require('../../shared/deletionPolicy');
-const { levelsUserDressesFor } = require('../wardrobe/closetGaps');
+const { levelsUserDressesFor, closetGaps } = require('../wardrobe/closetGaps');
+const ins = require('../intelligence/insights');
 
 const NEUTRALS = engine.NEUTRALS;
 // A small capsule: if none of these exists, outfits are much harder to build.
@@ -29,8 +30,10 @@ const GROUP_TO_CATEGORY = { 'Tops & dresses': 'Dress', 'Bottoms & layers': 'Bott
 const NOUN = { Top: 'top', Dress: 'dress', Bottom: 'bottom', Layer: 'layer', Shoes: 'shoes', Bag: 'bag', Extra: 'accessory' };
 
 // How many new rule-perfect outfits a hypothetical piece makes possible with what the user owns.
+// v1.5: every piece the user OWNS counts (a piece in the laundry is still part of the wardrobe), so a
+// full laundry basket never makes a purchase look more useful than it is. Pieces being donated do not count.
 function outfitsWith(pieces, hyp, { level, prefs }) {
-  const available = pieces.filter((p) => p.status === 'Available');
+  const available = pieces.filter((p) => !p.rehome).map((p) => ({ ...p, status: 'Available' }));
   const pool = engine.filterPieces([...available, hyp], { level, prefs: { ...prefs, repeatDays: 0 } });
   if (!pool.some((p) => p.id === hyp.id)) return { count: 0, pairs: [] };
   const combos = engine.combine(pool, { fixedId: hyp.id, cap: 8 }).filter((o) => engine.ruleScore(engine.criteria(o, { level, prefs })) >= 83);
@@ -145,6 +148,21 @@ function shoppingService({ db, wardrobe, profile }) {
       if (similar.length === 1 && verdict !== 'Skip') advice += ` You already have one similar piece.`;
       return { category, colour, level: lvl, levelName: DRESS_CODES[lvl], verdict, advice, duplicate, similarOwned: similar, outfitsUnlocked: r.count, pairsWith: r.pairs.map((id) => pieces.find((p) => p.id === id)) };
     },
+    // v1.5 Purchase simulation: what would this piece ADD? Runs the real engine with a hypothetical piece;
+    // nothing is saved. Reuses duplicate detection (similarity) and gap confidence.
+    async impact(userId, { category, colour, styles, dressCodes, season, fabric, name }) {
+      const [pieces, prefs] = await Promise.all([wardrobe().allPieces(userId), profile.preferences(userId)]);
+      const owned = pieces.filter((p) => !p.rehome);
+      const levels = dressCodes && dressCodes.length ? dressCodes : wantFor(prefs, category, colour || 'Black').dressCodes;
+      const similar = colour ? similarOwned(owned, { category, colour, styles: styles || prefs.styles || [], dressCodes: levels, season }) : owned.filter((p) => p.category === category);
+      const gaps = closetGaps(owned.map((p) => ({ category: p.category, dressCodes: p.dressCodes })), prefs).gaps.map((g) => ins.gapConfidence(g, owned, prefs));
+      const r = ins.purchaseImpact(owned, { category, colour: colour || 'Black', styles, dressCodes: levels, season, fabric, name }, { prefs, similar: colour ? similar : [], gaps });
+      const what = `${colour ? `${colour.toLowerCase()} ` : ''}${name || NOUN[category]}`;
+      const sentence = r.recommendation === 'Probably unnecessary' ? `You already own ${similar.length} similar pieces, so ${what} would add little.`
+        : r.newCombinations ? `This would create ${r.newCombinations} new outfit combination${r.newCombinations === 1 ? '' : 's'} with ${r.compatiblePieces} piece${r.compatiblePieces === 1 ? '' : 's'} you already own.`
+          : `Nothing you own pairs well with ${what} yet.`;
+      return { ...r, piece: { category, colour: colour || null, dressCodes: levels }, sentence, similar: similar.slice(0, 4).map((p) => ({ id: p.id, name: p.name, photoUrl: p.photoUrl, similarity: p.similarity })) };
+    },
     // ---------- shopping list (US-36) ----------
     async list(userId) {
       const [{ rows }, pieces, prefs] = await Promise.all([
@@ -235,6 +253,16 @@ function registerShopping(deps) {
     season: { type: 'enum', values: SEASONS },
   }), async (req, res, next) => {
     try { res.json(await service.check(req.user.id, req.valid)); } catch (e) { next(e); }
+  });
+  r.post('/impact', v.body({
+    category: { type: 'enum', values: CATEGORIES, required: true, label: 'Category' },
+    colour: { type: 'enum', values: COLOURS },
+    styles: { type: 'enumArray', values: STYLES, max: 4 },
+    dressCodes: { type: 'enumArray', values: [1, 2, 3, 4, 5], max: 5 },
+    season: { type: 'enum', values: SEASONS },
+    name: { type: 'string', max: 40 },
+  }), async (req, res, next) => {
+    try { res.json(await service.impact(req.user.id, req.valid)); } catch (e) { next(e); }
   });
   const KEY = /^[a-z0-9-]{3,80}$/;
   r.put('/:key', v.body({ state: { type: 'enum', values: ['saved', 'dismissed', 'bought'], required: true } }), async (req, res, next) => {

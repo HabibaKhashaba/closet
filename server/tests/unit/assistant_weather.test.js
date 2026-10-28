@@ -117,7 +117,7 @@ describe('Version 1.2 intents and calendar import', () => {
   ])('%s “%s” → %s', (_id, msg, fn) => expect(parse(msg).fn).toBe(fn));
   test('AI-26 bags and jewellery are recognised', () => {
     expect(pieceQuery(' my black bag ')).toEqual({ colour: 'Black', category: 'Bag' });
-    expect(pieceQuery(' gold earrings ')).toEqual({ colour: 'Yellow', category: 'Extra' });
+    expect(pieceQuery(' gold earrings ')).toEqual({ colour: 'Yellow', category: 'Extra', name: 'earrings' }); // v1.5: the garment word is kept to match piece names
   });
   test('AI-27 calendar titles → occasion', () => {
     expect(guessOccasion("Nour's wedding")).toBe('Wedding');

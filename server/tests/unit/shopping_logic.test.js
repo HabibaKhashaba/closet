@@ -54,7 +54,7 @@ describe('Learning from deletions (US-34 → UC-22)', () => {
 
 describe('Ask Closet → shopping list (US-36)', () => {
   test('SL-01 “Put beige trousers on my shopping list” → add_to_shopping with the piece and the user’s word', () => {
-    expect(parse('Put beige trousers on my shopping list')).toEqual({ fn: 'add_to_shopping', args: { piece: { colour: 'Beige', category: 'Bottom' }, word: 'trousers', replacement: false, damaged: false, small: false, useContext: false } });
+    expect(parse('Put beige trousers on my shopping list')).toEqual({ fn: 'add_to_shopping', args: { piece: { colour: 'Beige', category: 'Bottom', name: 'trousers' }, word: 'trousers', replacement: false, damaged: false, small: false, useContext: false } });
   });
   test('SL-02 “add this to my shopping list” uses the last item; “Add a replacement for my torn loafers” is a replacement', () => {
     expect(parse('add this to my shopping list').args).toMatchObject({ piece: null, useContext: true });

@@ -4,7 +4,8 @@ const express = require('express');
 const multer = require('multer');
 const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
-const { CATEGORIES, COLOURS, FABRICS, SEASONS, STYLES, STATUSES, DELETE_REASONS } = require('../../shared/vocabulary');
+const { CATEGORIES, COLOURS, FABRICS, SEASONS, STYLES, STATUSES, DELETE_REASONS, CURRENCIES, REHOME_METHODS } = require('../../shared/vocabulary');
+const { costPerWear } = require('../intelligence/insights');
 const { TOPICS } = require('../../events/eventBus');
 const { sniffType } = require('./photoStorage');
 const { closetGaps } = require('./closetGaps');
@@ -21,6 +22,10 @@ const detailsSchema = {
   styles: { type: 'enumArray', values: STYLES, max: STYLES.length },
   dressCodes: { type: 'enumArray', values: [1, 2, 3, 4, 5], min: 1, max: 5, required: true, label: 'At least one dress-code level' },
   modest: { type: 'bool' },
+  // v1.5 cost per wear — optional personal data
+  price: { type: 'number', min: 0, max: 1000000, label: 'Price' },
+  currency: { type: 'enum', values: CURRENCIES, label: 'Currency' },
+  purchaseDate: { type: 'date', label: 'Purchase date' },
 };
 // Editing: every field optional, but if given it must still be valid.
 const editSchema = Object.fromEntries(Object.entries(detailsSchema).map(([k, r]) => [k, { ...r, required: false }]));
@@ -49,6 +54,11 @@ function toApi(row, info, storage) {
     expectedBack: st.expectedBack || null,
     wearCount: row.wear_count,
     lastWornAt: row.last_worn_at,
+    price: row.price === null || row.price === undefined ? null : Number(row.price),
+    currency: row.price === null || row.price === undefined ? null : (row.currency || 'EGP'),
+    purchaseDate: row.purchase_date ? String(row.purchase_date).slice(0, 10) : null,
+    costPerWear: costPerWear({ price: row.price === null || row.price === undefined ? null : Number(row.price), currency: row.currency, wearCount: row.wear_count }),
+    rehome: row.rehome_method ? { method: row.rehome_method, label: { donate: 'Ready to donate', give: 'Ready to give away', sell: 'Ready to sell / rehome' }[row.rehome_method], since: row.rehome_started } : null,
     photoUrl: storage.signedUrl(row.photo_key),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -59,26 +69,41 @@ function wardrobeRepository(db) {
   return {
     async create(userId, photoKey, d) {
       const { rows } = await db.query(
-        `INSERT INTO wardrobe.items (user_id, photo_key, category, colour, fabric, season, size, styles, dress_codes, modest, name)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+        `INSERT INTO wardrobe.items (user_id, photo_key, category, colour, fabric, season, size, styles, dress_codes, modest, name, price, currency, purchase_date)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
         [userId, photoKey, d.category, d.colour, d.fabric || null, d.season || null, d.size || null,
-          d.styles || [], d.dressCodes, d.modest || false, d.name ? d.name.trim() : null],
+          d.styles || [], d.dressCodes, d.modest || false, d.name ? d.name.trim() : null,
+          d.price ?? null, d.price !== undefined && d.price !== null ? (d.currency || 'EGP') : null, d.purchaseDate || null],
       );
       return rows[0];
     },
     // Every query is scoped by user_id: a user can never reach another user's pieces.
     async list(userId, category) {
       const { rows } = await db.query(
-        `SELECT * FROM wardrobe.items WHERE user_id = $1 AND ($2::text IS NULL OR category = $2)
-         ORDER BY created_at DESC`,
+        `SELECT i.*, r.method AS rehome_method, r.started_at AS rehome_started FROM wardrobe.items i
+           LEFT JOIN wardrobe.rehoming r ON r.item_id = i.id
+          WHERE i.user_id = $1 AND ($2::text IS NULL OR i.category = $2)
+         ORDER BY i.created_at DESC`,
         [userId, category || null],
       );
       return rows;
     },
     async get(userId, id) {
       if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
-      const { rows } = await db.query('SELECT * FROM wardrobe.items WHERE id = $1 AND user_id = $2', [id, userId]);
+      const { rows } = await db.query(`SELECT i.*, r.method AS rehome_method, r.started_at AS rehome_started FROM wardrobe.items i
+        LEFT JOIN wardrobe.rehoming r ON r.item_id = i.id WHERE i.id = $1 AND i.user_id = $2`, [id, userId]);
       return rows[0] || null;
+    },
+    // Rehoming (v1.5): the piece is still owned until the user confirms it has left.
+    async startRehome(userId, id, method) {
+      const { rows } = await db.query(`INSERT INTO wardrobe.rehoming (item_id, user_id, method)
+        SELECT id, user_id, $3 FROM wardrobe.items WHERE id = $1 AND user_id = $2
+        ON CONFLICT (item_id) DO UPDATE SET method = EXCLUDED.method RETURNING item_id`, [id, userId, method]);
+      return rows.length === 1;
+    },
+    async cancelRehome(userId, id) {
+      const { rowCount } = await db.query('DELETE FROM wardrobe.rehoming WHERE item_id = $1 AND user_id = $2', [id, userId]);
+      return rowCount === 1;
     },
     async update(userId, id, d) {
       const { rows } = await db.query(
@@ -89,13 +114,17 @@ function wardrobeRepository(db) {
            size = CASE WHEN $13::boolean THEN $7 ELSE size END,
            styles = COALESCE($8, styles), dress_codes = COALESCE($9, dress_codes), modest = COALESCE($10, modest),
            name = CASE WHEN $14::boolean THEN $15 ELSE name END,
+           price = CASE WHEN $16::boolean THEN $17::numeric ELSE price END,
+           currency = CASE WHEN $16::boolean AND $17::numeric IS NULL THEN NULL WHEN $18::boolean THEN $19 WHEN $16::boolean AND currency IS NULL THEN 'EGP' ELSE currency END,
+           purchase_date = CASE WHEN $20::boolean THEN $21::date ELSE purchase_date END,
            updated_at = now()
          WHERE id = $1 AND user_id = $2 RETURNING *`,
         [id, userId, d.category ?? null, d.colour ?? null, d.fabric ?? null, d.season ?? null, d.size ?? null,
           d.styles ?? null, d.dressCodes ?? null, d.modest ?? null, 'fabric' in d, 'season' in d, 'size' in d,
-          'name' in d, d.name ? d.name.trim() : null],
+          'name' in d, d.name ? d.name.trim() : null, 'price' in d, d.price ?? null, 'currency' in d && d.currency !== null, d.currency ?? null,
+          'purchaseDate' in d, d.purchaseDate ?? null],
       );
-      return rows[0] || null;
+      return rows[0] ? this.get(userId, id) : null;
     },
     async recordWear(userId, ids, day) {
       await db.query(
@@ -182,9 +211,45 @@ function wardrobeService({ repo, storage, bus, availability, profile }) {
     },
     async deletions(userId) { return repo.deletions(userId); },
 
+    // v1.5 Donate / give / sell: two steps, the user stays in control.
+    //   start  → "Ready to donate": still in the closet, left out of new outfits
+    //   done   → leaves the active closet with reason Donated / Given away / Sold / rehomed (history kept, no replacement)
+    //   cancel → back to normal
+    async startRehome(userId, id, method) {
+      const p = await this.getPiece(userId, id);
+      if (!(await repo.startRehome(userId, id, method))) throw errors.notFound('Piece');
+      return { ...p, rehome: { method, label: { donate: 'Ready to donate', give: 'Ready to give away', sell: 'Ready to sell / rehome' }[method], since: new Date().toISOString() } };
+    },
+    async cancelRehome(userId, id) {
+      if (!(await repo.cancelRehome(userId, id))) throw errors.notFound('Donation');
+      return this.getPiece(userId, id);
+    },
+    async completeRehome(userId, id) {
+      const p = await this.getPiece(userId, id);
+      if (!p.rehome) throw errors.conflict('NOT_MARKED', 'Mark the piece as ready to donate, give or sell first.');
+      const reason = REHOME_METHODS[p.rehome.method];
+      return { ...(await this.deletePiece(userId, id, reason)), piece: { id: p.id, name: p.name, category: p.category, colour: p.colour } };
+    },
+
     async gaps(userId) {
       const items = (await repo.list(userId)).map((r) => ({ category: r.category, dressCodes: r.dress_codes.map(Number) }));
       return closetGaps(items, await profile.preferences(userId));
+    },
+
+    // v1.5 duplicate detection on Add (also used by Ask Closet and Smart Shopping through similarOwned).
+    async similar(userId, d) {
+      const { similarOwned } = require('../shopping/shoppingModule');
+      const pieces = (await this.allPieces(userId)).filter((p) => !p.rehome);
+      const want = { category: d.category, colour: d.colour, styles: d.styles || [], dressCodes: d.dressCodes || [], season: d.season };
+      const list = similarOwned(pieces, want);
+      const noun = { Top: 'top', Dress: 'dress', Bottom: 'bottom', Layer: 'layer', Shoes: 'pair of shoes', Bag: 'bag', Extra: 'accessory' }[d.category];
+      const plural = { Top: 'tops', Dress: 'dresses', Bottom: 'bottoms', Layer: 'layers', Shoes: 'pairs of shoes', Bag: 'bags', Extra: 'accessories' }[d.category];
+      return {
+        count: list.length,
+        similar: list.slice(0, 6).map((p) => ({ id: p.id, name: p.name, category: p.category, colour: p.colour, photoUrl: p.photoUrl, similarity: p.similarity, matched: p.matched })),
+        message: list.length ? `You already own ${list.length === 1 ? `a similar ${d.colour.toLowerCase()} ${noun}` : `${list.length} similar ${d.colour.toLowerCase()} ${plural}`}.` : null,
+        actions: list.length ? ['Add anyway', 'View similar', 'Cancel'] : [],
+      };
     },
 
     // IWardrobe: every piece with its status, for the recommendation engine and the builder.
@@ -226,6 +291,19 @@ function wardrobeRoutes({ wardrobe }) {
       res.status(201).json(await wardrobe.addPiece(req.user.id, req.file, details));
     } catch (e) { next(e); }
   });
+  // v1.5 duplicate check before adding (structured metadata, no computer vision): "You already own 3 black fitted tops."
+  r.post('/similar', v.body({ ...Object.fromEntries(Object.entries(detailsSchema).map(([k, x]) => [k, { ...x, required: ['category', 'colour'].includes(k) }])), dressCodes: { ...detailsSchema.dressCodes, required: false } }), async (req, res, next) => {
+    try { res.json(await wardrobe.similar(req.user.id, req.valid)); } catch (e) { next(e); }
+  });
+  r.post('/:id/rehome', v.body({ method: { type: 'enum', values: Object.keys(REHOME_METHODS), required: true, label: 'How' } }), async (req, res, next) => {
+    try { res.json(await wardrobe.startRehome(req.user.id, req.params.id, req.valid.method)); } catch (e) { next(e); }
+  });
+  r.delete('/:id/rehome', async (req, res, next) => {
+    try { res.json(await wardrobe.cancelRehome(req.user.id, req.params.id)); } catch (e) { next(e); }
+  });
+  r.post('/:id/rehome/done', async (req, res, next) => {
+    try { res.json(await wardrobe.completeRehome(req.user.id, req.params.id)); } catch (e) { next(e); }
+  });
   r.get('/', v.query(filterSchema), async (req, res, next) => {
     try { res.json(await wardrobe.browse(req.user.id, req.validQuery)); } catch (e) { next(e); }
   });
@@ -234,7 +312,7 @@ function wardrobeRoutes({ wardrobe }) {
   });
   r.patch('/:id', v.body(editSchema), async (req, res, next) => {
     try {
-      for (const f of ['fabric', 'season', 'size', 'name']) if (req.body[f] === null || req.body[f] === '') req.valid[f] = null;
+      for (const f of ['fabric', 'season', 'size', 'name', 'price', 'currency', 'purchaseDate']) if (req.body[f] === null || req.body[f] === '') req.valid[f] = null;
       res.json(await wardrobe.editPiece(req.user.id, req.params.id, req.valid));
     } catch (e) { next(e); }
   });

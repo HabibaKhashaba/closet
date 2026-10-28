@@ -40,6 +40,14 @@ function checkField(field, rule, value) {
       if (rule.max !== undefined && n > rule.max) return `${name} must be between ${rule.min} and ${rule.max}`;
       return null;
     }
+    case 'number': { // decimals allowed (prices); at most 2 decimal places
+      const n = Number(value);
+      if (typeof value === 'boolean' || !Number.isFinite(n)) return `${name} must be a number`;
+      if (rule.min !== undefined && n < rule.min) return `${name} must be at least ${rule.min}`;
+      if (rule.max !== undefined && n > rule.max) return `${name} must be at most ${rule.max}`;
+      if (Math.round(n * 100) !== Math.round(n * 100 * 1000) / 1000) return `${name} can have at most 2 decimals`;
+      return null;
+    }
     case 'bool':
       return typeof value === 'boolean' || value === 'true' || value === 'false' ? null : `${name} must be true or false`;
     case 'date':
@@ -53,7 +61,7 @@ function checkField(field, rule, value) {
 
 function coerce(rule, value) {
   if (value === undefined || value === null || value === '') return undefined;
-  if (rule.type === 'int') return Number(value);
+  if (rule.type === 'int' || rule.type === 'number') return Number(value);
   if (rule.type === 'bool') return value === true || value === 'true';
   if (rule.type === 'string') return value.trim();
   if (rule.type === 'email') return value.trim().toLowerCase();

@@ -21,6 +21,7 @@ function filterPieces(pieces, { level, prefs = {}, weather, hiddenIds = [], toda
   const repeat = prefs.repeatDays || 0; // recycle time: do not repeat a piece worn in the last N days
   return pieces.filter((p) => {
     if (p.status !== 'Available') return false; // US-17: never an unavailable piece
+    if (p.rehome) return false; // being donated / given away: the user decided it is leaving
     if (hidden.has(p.id)) return false; // US-61: hidden for 7 days
     if (prefs.modest && !p.modest) return false; // US-21: modest respected
     if ((isMain(p) || isAccent(p)) && !p.dressCodes.includes(level)) return false; // US-21: suits the dress code
@@ -119,6 +120,8 @@ function makeRanker({ prefs = {}, style, today = new Date(), signals, level }) {
       if ((rc['Too casual'] || 0) >= 2 && p.dressCodes.some((l) => l > level)) r += 2;
     }
     if (signals && (signals.favouriteIds || []).includes(p.id)) r += 1;
+    // Outfit memory (bounded at +3 by insights.memorySignals): pieces from highly rated looks in a similar context.
+    if (signals && signals.memoryBoost && typeof signals.memoryBoost.get === 'function') r += signals.memoryBoost.get(p.id) || 0;
     // Learned from deletions (US-34): styles the user confirmed they let go of rank lower.
     if ((prefs.avoidStyles || []).length && (p.styles || []).some((x) => prefs.avoidStyles.includes(x))) r -= 3;
     return r;
@@ -178,6 +181,10 @@ function why(outfit, crit, { level, occasion, weather, prefs = {}, style, today 
   const favColour = outfit.find((p) => (prefs.colours || []).includes(p.colour));
   if (fav) f.push({ factor: 'Favourites', text: `The ${name(fav)} is in one of your favourite looks.` });
   else if (favColour) f.push({ factor: 'Favourites', text: `Uses ${favColour.colour.toLowerCase()}, one of your favourite colours.` });
+  const mem = signals.memorySource;
+  if (mem && mem.pieces && outfit.filter((p) => mem.pieces.some((q) => q.id === p.id)).length >= 2) {
+    f.push({ factor: 'Outfit memory', text: `You rated a similar look ${mem.rating}/5${mem.eventTitle ? ` at “${mem.eventTitle}”` : mem.occasion ? ` for ${mem.occasion.toLowerCase()}` : ''}${mem.weather ? ` (${mem.weather.tempC} °C)` : ''}.` });
+  }
   const rc = signals.rejectCounts || {};
   if ((rc['Too formal'] || 0) >= 2 && level <= 3) f.push({ factor: 'Your feedback', text: `You rejected ${rc['Too formal']} looks as too formal, so relaxed pieces rank higher.` });
   else if ((rc['Too casual'] || 0) >= 2) f.push({ factor: 'Your feedback', text: `You rejected ${rc['Too casual']} looks as too casual, so sharper pieces rank higher.` });
@@ -187,7 +194,7 @@ function why(outfit, crit, { level, occasion, weather, prefs = {}, style, today 
 }
 // One sentence for the card: "Recommended because …" built from the three most specific factors.
 function explanationSentence(factors) {
-  const order = ['Style', 'Modesty', 'Weather', 'Wear history', 'Your feedback', 'Favourites', 'Occasion', 'Availability'];
+  const order = ['Style', 'Modesty', 'Weather', 'Outfit memory', 'Wear history', 'Your feedback', 'Favourites', 'Occasion', 'Availability'];
   const picked = order.map((k) => factors.find((x) => x.factor === k)).filter(Boolean).slice(0, 3);
   const low = (t) => t.replace(/\.$/, '').replace(/^([A-Z])(?![A-Z0-9])/, (m) => m.toLowerCase());
   return picked.length ? `Recommended because ${picked.map((x) => low(x.text)).join('; ')}.` : 'Recommended for this occasion.';
@@ -250,6 +257,48 @@ function lookNames(looks, { occasion, level }) {
 
 const explained = (pieces, crit, ctx) => { const w = why(pieces, crit, ctx); return { why: w, explanation: explanationSentence(w) }; };
 
+// ---------- 5. diversity-aware selection (US-19, Milestone 2 fix) ----------
+// Three looks must read as three styling directions, not one look with a different accessory.
+// Major garments (top, dress, bottom, layer, shoes) weigh 1; a bag or accessory weighs 0.3.
+// The piece the user asked to style (fixedId) is in every look by design and is not counted.
+const MAJOR_CATS = ['Top', 'Dress', 'Bottom', 'Layer', 'Shoes'];
+const isMajor = (p) => MAJOR_CATS.includes(p.category);
+const DIVERSITY_WEIGHT = 6; // rank points lost per shared garment (a failed rule costs 17)
+function sharedMajor(a, b, fixedId) {
+  return a.filter((p) => isMajor(p) && p.id !== fixedId && b.some((q) => q.id === p.id)).length;
+}
+function weightedOverlap(a, b, fixedId) {
+  return a.filter((p) => p.id !== fixedId && b.some((q) => q.id === p.id)).reduce((t, p) => t + (isMajor(p) ? 1 : 0.3), 0);
+}
+const silhouette = (o) => (o.some((p) => p.category === 'Dress') ? 'dress' : 'separates');
+// Greedy: the best look first, then the look that maximises rank − weight × overlap with the looks
+// already chosen. Tier 1 allows at most ONE shared major garment between any two looks and keeps
+// quality within one failed criterion of the best look; later tiers relax only when the closet is small.
+function pickDiverse(scored, { fixedId, n = 3 } = {}) {
+  if (!scored.length) return [];
+  const bestRule = Math.max(...scored.map((o) => o.rule));
+  const tiers = [{ max: 1, minRule: bestRule - 17 }, { max: 2, minRule: bestRule - 17 }, { max: 3, minRule: 0 }, { max: 4, minRule: 0 }];
+  for (const tier of tiers) {
+    const chosen = [scored[0]];
+    while (chosen.length < n) {
+      let best = null; let bestVal = -Infinity;
+      for (const o of scored) {
+        if (chosen.includes(o) || o.rule < tier.minRule) continue;
+        if (chosen.some((c) => sharedMajor(o.pieces, c.pieces, fixedId) > tier.max)) continue;
+        if (chosen.some((c) => c.pieces.length === o.pieces.length && c.pieces.every((p) => o.pieces.includes(p)))) continue;
+        const overlap = chosen.reduce((t, c) => t + weightedOverlap(o.pieces, c.pieces, fixedId), 0);
+        const newShape = chosen.every((c) => silhouette(c.pieces) !== silhouette(o.pieces)) ? 3 : 0;
+        const val = o.rank - DIVERSITY_WEIGHT * overlap + newShape;
+        if (val > bestVal) { bestVal = val; best = o; }
+      }
+      if (!best) break;
+      chosen.push(best);
+    }
+    if (chosen.length === n || tier.max === 4) return chosen;
+  }
+  return [scored[0]];
+}
+
 // ---------- the pipeline ----------
 function recommend(pieces, opts) {
   const level = levelOf(opts.occasion, opts.level);
@@ -267,19 +316,7 @@ function recommend(pieces, opts) {
     // a finished look (with a bag or accessory) ranks a little higher than the same look without one
     .map((o) => { const crit = criteria(o, ctx); return { pieces: o, crit, rule: ruleScore(crit), rank: ruleScore(crit) + o.reduce((t, p) => t + rank(p), 0) + (o.some(isAccent) ? 2 : 0) }; })
     .sort((a, b) => b.rank - a.rank || a.pieces.map((p) => p.name).join().localeCompare(b.pieces.map((p) => p.name).join()) || a.pieces.map((p) => p.id).join().localeCompare(b.pieces.map((p) => p.id).join()));
-  // Pick 3 different outfits: no two share more than 2 pieces when the closet allows (US-19).
-  // First try to also vary the bag / accessory between the three looks.
-  const chosen = [];
-  const accentOf = (o) => o.pieces.find(isAccent);
-  for (const [maxShared, varyAccent] of [[2, true], [2, false], [3, false], [4, false]]) {
-    for (const o of scored) {
-      if (chosen.length === 3) break;
-      if (chosen.includes(o)) continue;
-      if (varyAccent && accentOf(o) && chosen.some((c) => accentOf(c) === accentOf(o))) continue;
-      if (chosen.every((c) => c.pieces.filter((p) => o.pieces.includes(p)).length <= maxShared)) chosen.push(o);
-    }
-    if (chosen.length === 3) break;
-  }
+  const chosen = pickDiverse(scored, { fixedId: opts.fixedId });
   const names = lookNames(chosen.map((o) => o.pieces), ctx);
   const outfits = chosen.map((o, i) => ({
     itemIds: o.pieces.map((p) => p.id),
@@ -343,4 +380,4 @@ function explainMix(outfit, crit, b, { level, weather }) {
   return `${first}${bad.length ? `${first ? ' ' : ''}To improve: ${bad.join('; ')}.` : ' A strong, complete look.'}`.trim();
 }
 
-module.exports = { lookNames, why, explanationSentence, recommend, swap, check, filterPieces, combine, criteria, ruleScore, explain, mismatchSentence, makeRanker, breakdown, outfitTitle, explainMix, isWarm, HOT, COLD, NEUTRALS, SLOT_NAMES };
+module.exports = { pickDiverse, sharedMajor, weightedOverlap, MAJOR_CATS, lookNames, why, explanationSentence, recommend, swap, check, filterPieces, combine, criteria, ruleScore, explain, mismatchSentence, makeRanker, breakdown, outfitTitle, explainMix, isWarm, HOT, COLD, NEUTRALS, SLOT_NAMES };

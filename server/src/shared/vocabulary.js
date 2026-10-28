@@ -23,6 +23,11 @@ const CATEGORIES = ['Top', 'Dress', 'Bottom', 'Layer', 'Shoes', 'Bag', 'Extra'];
 // US-13: why a piece left the closet. Each reason has a defined effect (shopping/deletionPolicy.js):
 // Torn / damaged and Became too small → replacement on the shopping list; No longer my style → learned, never re-suggested.
 const DELETE_REASONS = ['Torn / damaged', 'No longer my style', 'Became too small', 'Other'];
+// v1.5: a piece the user marked to donate / give / sell leaves with one of these reasons once they confirm
+// it has gone. Intentional exits: never a replacement on the shopping list.
+const REHOME_METHODS = { donate: 'Donated', give: 'Given away', sell: 'Sold / rehomed' };
+const EXIT_REASONS = [...DELETE_REASONS, ...Object.values(REHOME_METHODS)];
+const CURRENCIES = ['EGP', 'USD', 'EUR', 'GBP', 'SAR', 'AED'];
 
 const FABRICS = ['Cotton', 'Linen', 'Wool', 'Denim', 'Silk', 'Polyester', 'Leather', 'Knit', 'Other'];
 
@@ -44,4 +49,4 @@ const OCCASION_TEMPLATES = [
   { key: 'interview', label: 'Interview', occasion: 'Interview', level: 3, style: 'Classic', weather: 'indoor', icon: 'briefcase' },
 ];
 
-module.exports = { DRESS_CODES, OCCASIONS, STYLES, COLOURS, CATEGORIES, DELETE_REASONS, FABRICS, SEASONS, STATUSES, OCCASION_TEMPLATES };
+module.exports = { REHOME_METHODS, EXIT_REASONS, CURRENCIES, DRESS_CODES, OCCASIONS, STYLES, COLOURS, CATEGORIES, DELETE_REASONS, FABRICS, SEASONS, STATUSES, OCCASION_TEMPLATES };

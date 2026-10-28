@@ -14,6 +14,7 @@ const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
 const { OCCASIONS, DRESS_CODES } = require('../../shared/vocabulary');
 const engine = require('../recommendation/engine');
+const { tripCapsule } = require('../intelligence/insights');
 
 const UUID = /^[0-9a-f-]{36}$/i;
 const MAX_DAYS = 14;
@@ -38,6 +39,16 @@ function planTrip(pieces, { days, prefs, hiddenIds = [] }) {
     plan.push({ ...d, outfit: { itemIds: best.itemIds, title: best.title, ruleScore: best.ruleScore, compatibility: best.compatibility, reasons: best.reasons.slice(0, 3) } });
   }
   const items = [...packed.keys()].map((id) => available.find((p) => p.id === id));
+  const warnings = tripWarnings(days, items);
+  return {
+    days: plan, itemIds: items.map((p) => p.id), items,
+    counts: { pieces: items.length, outfits: plan.filter((d) => d.outfit).length, days: days.length, missing: missing.length },
+    missing, warnings,
+    reuse: items.filter((p) => packed.get(p.id) > 1).map((p) => ({ id: p.id, name: p.name, outfits: packed.get(p.id) })),
+  };
+}
+
+function tripWarnings(days, items) {
   const warnings = [];
   const temps = days.filter((d) => d.weather).map((d) => d.weather.tempC);
   const rainy = days.filter((d) => d.weather && RAIN.test(d.weather.condition || ''));
@@ -46,12 +57,16 @@ function planTrip(pieces, { days, prefs, hiddenIds = [] }) {
   if (temps.length && Math.min(...temps) < engine.COLD && !hasLayer) warnings.push(`It drops to ${Math.min(...temps)} °C: pack a warm layer.`);
   if (temps.length && Math.max(...temps) >= engine.HOT) warnings.push(`Up to ${Math.max(...temps)} °C: light fabrics only.`);
   if (days.some((d) => d.weather && d.weather.source === 'estimate')) warnings.push('Live forecast not available for some days — this plan uses a seasonal estimate. Check again closer to the trip.');
-  return {
-    days: plan, itemIds: items.map((p) => p.id), items,
-    counts: { pieces: items.length, outfits: plan.filter((d) => d.outfit).length, days: days.length, missing: missing.length },
-    missing, warnings,
-    reuse: items.filter((p) => packed.get(p.id) > 1).map((p) => ({ id: p.id, name: p.name, outfits: packed.get(p.id) })),
-  };
+  return warnings;
+}
+
+// v1.5 Trip capsule: minimum useful pieces → maximum outfits, within the luggage limit.
+function planCapsule(pieces, { days, prefs, hiddenIds = [], carryOn = false, laundryAvailable = false, exclude = [] }) {
+  const cap = tripCapsule(pieces.filter((p) => !hiddenIds.includes(p.id)), days, { prefs, carryOn, laundryAvailable, exclude });
+  const warnings = tripWarnings(days, cap.items);
+  if (!cap.fitsLimit) warnings.push(`This does not fit a ${cap.luggage}: ${cap.counts.clothing} clothing pieces and ${cap.counts.shoes} pairs of shoes.`);
+  return { ...cap, counts: { ...cap.counts, missing: cap.missing.length }, warnings,
+    summary: `${cap.counts.clothing} clothing piece${cap.counts.clothing === 1 ? '' : 's'}, ${cap.counts.shoes} pair${cap.counts.shoes === 1 ? '' : 's'} of shoes and ${cap.counts.extras} accessor${cap.counts.extras === 1 ? 'y' : 'ies'} → ${cap.counts.combinations} possible outfit${cap.counts.combinations === 1 ? '' : 's'}.` };
 }
 
 function tripApi(r) {
@@ -75,14 +90,14 @@ function packingService({ db, wardrobe, profile, weather, planner, availability,
       if ((new Date(input.endDate) - new Date(input.startDate)) / 86400000 + 1 > MAX_DAYS) throw errors.validation([{ field: 'endDate', message: `A trip can be at most ${MAX_DAYS} days` }]);
       const [pieces, prefs, hiddenIds] = await Promise.all([wardrobe().allPieces(userId), profile.preferences(userId), outfits ? outfits().hiddenIds(userId) : []]);
       const d = await days(userId, input);
-      return { ...input, ...planTrip(pieces, { days: d, prefs, hiddenIds }) };
+      return { ...input, ...planCapsule(pieces, { days: d, prefs, hiddenIds, carryOn: Boolean(input.carryOn), laundryAvailable: Boolean(input.laundryAvailable), exclude: input.exclude || [] }) };
     },
     async save(userId, input) {
       const p = await this.plan(userId, input);
       const { rows } = await db.query(
         `INSERT INTO packing.trips (user_id, destination, start_date, end_date, trip_type, activities, item_ids, plan)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-        [userId, input.destination, input.startDate, input.endDate, input.tripType, input.activities || [], p.itemIds, { days: p.days.map((x) => ({ date: x.date, occasion: x.occasion, event: x.event, weather: x.weather, outfit: x.outfit })), warnings: p.warnings, missing: p.missing, counts: p.counts }],
+        [userId, input.destination, input.startDate, input.endDate, input.tripType, input.activities || [], p.itemIds, { days: p.days.map((x) => ({ date: x.date, occasion: x.occasion, event: x.event, weather: x.weather, outfit: x.outfit })), warnings: p.warnings, missing: p.missing, counts: p.counts, luggage: p.luggage, summary: p.summary, carryOn: Boolean(input.carryOn), laundryAvailable: Boolean(input.laundryAvailable) }],
       );
       return tripApi(rows[0]);
     },
@@ -137,19 +152,22 @@ const tripSchema = {
   endDate: { type: 'date', required: true, label: 'Last day' },
   tripType: { type: 'enum', values: Object.keys(OCCASIONS), required: true, label: 'Trip type' },
   activities: { type: 'enumArray', values: Object.keys(OCCASIONS), max: 6 },
+  carryOn: { type: 'bool' },
+  laundryAvailable: { type: 'bool' },
 };
+const withExclude = (req) => ({ ...req.valid, exclude: Array.isArray(req.body.exclude) ? req.body.exclude.filter((x) => typeof x === 'string' && UUID.test(x)).slice(0, 30) : [] });
 
 function registerPacking(deps) {
   const service = packingService(deps);
   const r = express.Router();
   const h = (fn) => async (req, res, next) => { try { await fn(req, res); } catch (e) { next(e); } };
-  r.post('/plan', v.body(tripSchema), h(async (req, res) => res.json(await service.plan(req.user.id, req.valid))));
+  r.post('/plan', v.body(tripSchema), h(async (req, res) => res.json(await service.plan(req.user.id, withExclude(req)))));
   r.get('/trips', h(async (req, res) => res.json({ trips: await service.trips(req.user.id) })));
-  r.post('/trips', v.body(tripSchema), h(async (req, res) => res.status(201).json(await service.save(req.user.id, req.valid))));
+  r.post('/trips', v.body(tripSchema), h(async (req, res) => res.status(201).json(await service.save(req.user.id, withExclude(req)))));
   r.post('/trips/:id/pack', h(async (req, res) => res.json(await service.pack(req.user.id, req.params.id))));
   r.post('/trips/:id/unpack', h(async (req, res) => res.json(await service.unpack(req.user.id, req.params.id))));
   r.delete('/trips/:id', h(async (req, res) => { await service.remove(req.user.id, req.params.id); res.status(204).end(); }));
   return { service, routes: r };
 }
 
-module.exports = { registerPacking, planTrip };
+module.exports = { registerPacking, planTrip, planCapsule };

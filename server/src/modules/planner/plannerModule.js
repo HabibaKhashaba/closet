@@ -53,7 +53,8 @@ function toApi(row) {
   const d = row.event_date instanceof Date
     ? `${row.event_date.getFullYear()}-${String(row.event_date.getMonth() + 1).padStart(2, '0')}-${String(row.event_date.getDate()).padStart(2, '0')}`
     : String(row.event_date).slice(0, 10);
-  return { id: row.id, title: row.title, date: d, time: String(row.event_time).slice(0, 5), occasion: row.occasion, dressCode: row.dress_code, plannedOutfitId: row.planned_outfit_id || null };
+  return { id: row.id, title: row.title, date: d, time: String(row.event_time).slice(0, 5), occasion: row.occasion, dressCode: row.dress_code, plannedOutfitId: row.planned_outfit_id || null,
+    plannedWeather: row.planned_temp_c === null || row.planned_temp_c === undefined ? null : { tempC: row.planned_temp_c, condition: row.planned_condition || null } };
 }
 
 function plannerRepository(db) {
@@ -97,8 +98,10 @@ function plannerRepository(db) {
       );
       return rows;
     },
-    async setPlanned(userId, id, outfitId) {
-      await db.query('UPDATE planner.events SET planned_outfit_id = $3 WHERE id = $1 AND user_id = $2', [id, userId, outfitId]);
+    // The forecast at planning time is kept, so the weather monitor can tell when it changed materially.
+    async setPlanned(userId, id, outfitId, weather = null) {
+      await db.query('UPDATE planner.events SET planned_outfit_id = $3, planned_temp_c = $4, planned_condition = $5 WHERE id = $1 AND user_id = $2',
+        [id, userId, outfitId, weather ? weather.tempC : null, weather ? String(weather.condition || '').slice(0, 40) || null : null]);
     },
     async remove(userId, id) {
       if (!/^[0-9a-f-]{36}$/i.test(id)) return false;
@@ -147,7 +150,9 @@ function plannerService({ repo, rec, outfits, wardrobe, availability }) {
       if (!row) throw errors.notFound('Event');
       const e = toApi(row);
       const saved = await outfits().savePlanned(userId, { ...outfit, occasion: e.occasion });
-      await repo.setPlanned(userId, id, saved.id);
+      const today = new Date().toISOString().slice(0, 10);
+      const w = rec && e.date >= today ? await rec().weather(userId, e.date).catch(() => null) : null;
+      await repo.setPlanned(userId, id, saved.id, w);
       return (await enrich(userId, [await repo.get(userId, id)]))[0];
     },
     async unplan(userId, id) {

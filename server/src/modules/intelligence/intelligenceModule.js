@@ -14,6 +14,8 @@ const { errors } = require('../../shared/errors');
 const { wardrobeHealth } = require('./health');
 const { detectPatterns, previousOf } = require('./learning');
 const { BASICS } = require('../shopping/shoppingModule');
+const { proactiveService, proactiveRoutes } = require('./proactive');
+const { explainHealth } = require('./insights');
 
 const UUID = /^[0-9a-f-]{36}$/i;
 const KEY = /^[a-z0-9:-]{3,80}$/;
@@ -28,7 +30,8 @@ function intelligenceService({ db, wardrobe, outfits, profile, planner, rec, act
   async function health(userId) {
     const [pieces, worn, gaps] = await Promise.all([wardrobe().allPieces(userId), outfits().wornIds(userId, 30), wardrobe().gaps(userId)]);
     const missingBasics = BASICS.filter((b) => !pieces.some(b.has)).map((b) => b.title);
-    return wardrobeHealth({ pieces, worn30: new Set(worn), gaps, missingBasics, basicsTotal: BASICS.length });
+    const h = wardrobeHealth({ pieces: pieces.filter((p) => !p.rehome), worn30: new Set(worn), gaps, missingBasics, basicsTotal: BASICS.length });
+    return { ...h, explain: explainHealth(h) };
   }
 
   async function decisions(userId) {
@@ -132,6 +135,10 @@ function intelligenceService({ db, wardrobe, outfits, profile, planner, rec, act
     },
     async notifications(userId) {
       const today = isoDay(Date.now());
+      const pro = this.proactive;
+      const [monitor, laundry, borrowed, seasonal, forgotten] = pro ? await Promise.all([
+        pro.monitor(userId), pro.laundryRisk(userId), pro.borrowed(userId), pro.seasonal(userId), pro.forgotten(userId),
+      ]) : [{ alerts: [] }, { warnings: [] }, { overdue: [] }, {}, {}];
       const [rem, conf, insights, readRows, trips, recent] = await Promise.all([
         planner().reminders(userId), conflicts(userId), outfits().insights(userId),
         db.query('SELECT key FROM intelligence.notifications_read WHERE user_id = $1', [userId]),
@@ -154,8 +161,18 @@ function intelligenceService({ db, wardrobe, outfits, profile, planner, rec, act
         if (!t.packed && t.startDate >= today && t.startDate <= addDays(today, 3)) add({ key: `pack:${t.id}`, kind: 'packing', priority: 4, title: 'Packing list incomplete', text: `Your ${t.destination} trip starts ${t.startDate === today ? 'today' : t.startDate === addDays(today, 1) ? 'tomorrow' : `on ${t.startDate}`} — ${t.itemIds.length} pieces are not marked as packed yet.`, link: '#/packing', date: t.startDate });
       }
       for (const a of recent.filter((x) => x.action === 'Wash done')) add({ key: `wash:${a.id}`, kind: 'wash', priority: 1, title: 'Wash done', text: `${a.detail || 'Your pieces'} returned to Available.`, link: '#/laundry', date: isoDay(a.at) });
-      const f = insights.forgotten[0];
-      if (f) add({ key: `forgotten:${f.id}:${today.slice(0, 7)}`, kind: 'forgotten', priority: 1, title: 'Forgotten in your closet', text: `You haven’t worn your ${pieceName(f)} in ${f.daysSince} days. Give it another chance?`, link: `#/outfits?piece=${f.id}`, itemId: f.id, date: today });
+      // v1.5 proactive notices — one Notification Center, stable keys (dedupe), snoozes respected.
+      const week = `${today.slice(0, 4)}-w${String(Math.ceil((((new Date(`${today}T12:00:00Z`) - new Date(`${today.slice(0, 4)}-01-01T12:00:00Z`)) / 86400000) + 1) / 7)).padStart(2, '0')}`;
+      for (const a of monitor.alerts.filter((x) => x.kind === 'weather')) add({ key: a.key, kind: 'weather-change', type: 'WEATHER_CHANGE', priority: a.event.date <= addDays(today, 1) ? 5 : 4, title: 'Weather changed for a planned outfit', text: a.message, link: '#/planner', date: a.event.date, action: a.itemId ? { label: 'Adjust outfit', eventId: a.eventId, itemId: a.itemId } : null });
+      for (const w of laundry.warnings) add({ key: w.key, kind: 'laundry-risk', type: 'LAUNDRY_WARNING', priority: 3, title: 'Laundry may affect your plans', text: w.message, link: '#/laundry', date: w.date, action: { label: 'Open laundry', link: '#/laundry' } });
+      for (const b of borrowed.overdue) add({ key: `borrow:${b.id}:${today}`, kind: 'borrow', type: 'BORROW_RETURN', priority: 3, title: 'A lent piece is overdue', text: b.message, link: `#/closet/${b.id}`, date: today, action: { label: 'Mark returned', itemId: b.id } });
+      if (seasonal.headline) add({ key: `season:${seasonal.season}:${today.slice(0, 7)}`, kind: 'seasonal', type: 'SEASONAL_ROTATION', priority: 1, title: 'Seasonal rotation', text: seasonal.headline, link: '#/analytics#seasonal', date: today, action: { label: 'Review', link: '#/analytics#seasonal' } });
+      const f = forgotten.top || null;
+      if (f) add({ key: `donate:${f.id}:${week}`, kind: 'forgotten', type: 'FORGOTTEN_DONATION', priority: 1, title: 'Still love it?', text: f.message, link: '#/analytics#forgotten', itemId: f.id, date: today, action: { label: 'Style it', link: `#/outfits?piece=${f.id}` } });
+      else if (insights.forgotten[0]) { const g = insights.forgotten[0]; add({ key: `forgotten:${g.id}:${today.slice(0, 7)}`, kind: 'forgotten', priority: 1, title: 'Forgotten in your closet', text: `You haven’t worn your ${pieceName(g)} in ${g.daysSince} days. Give it another chance?`, link: `#/outfits?piece=${g.id}`, itemId: g.id, date: today }); }
+      const ignored = pro ? await pro.snoozeMap(userId, 'notice') : new Map();
+      for (let i = list.length - 1; i >= 0; i -= 1) if (ignored.has(list[i].key)) list.splice(i, 1);
+      for (const n of list) { n.level = n.priority >= 5 ? 'HIGH' : n.priority >= 3 ? 'MEDIUM' : 'LOW'; n.type = n.type || ({ conflict: 'AVAILABILITY_CONFLICT', plan: 'PLAN_REMINDER', due: 'BORROW_RETURN', laundry: 'LAUNDRY_DAY', weather: 'WEATHER_ALERT', packing: 'PACKING', wash: 'WASH_DONE', forgotten: 'FORGOTTEN_PIECE' })[n.kind] || 'NOTICE'; }
       list.sort((a, b) => Number(a.read) - Number(b.read) || b.priority - a.priority || String(a.date).localeCompare(String(b.date)));
       let highlighted = 0;
       for (const n of list) n.highlight = !n.read && highlighted++ < PUSH_LIMIT;
@@ -170,7 +187,9 @@ function intelligenceService({ db, wardrobe, outfits, profile, planner, rec, act
 
 function registerIntelligence(deps) {
   const service = intelligenceService(deps);
+  service.proactive = proactiveService({ ...deps, intelligence: service });
   const r = express.Router();
+  r.use(proactiveRoutes(service.proactive));
   r.get('/health', async (req, res, next) => { try { res.json(await service.health(req.user.id)); } catch (e) { next(e); } });
   r.get('/learned', async (req, res, next) => { try { res.json(await service.learned(req.user.id)); } catch (e) { next(e); } });
   r.post('/learned/:key', v.body({ decision: { type: 'enum', values: ['confirm', 'dismiss'], required: true, label: 'Decision' } }), async (req, res, next) => {

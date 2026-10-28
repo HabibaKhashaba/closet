@@ -12,7 +12,12 @@ const EFFECTS = {
   'Became too small': { replacement: true, learn: false, effect: 'A replacement in the next size is added to your shopping list.' },
   'No longer my style': { replacement: false, learn: true, effect: 'Closet will not suggest it again and learns from it.' },
   Other: { replacement: false, learn: false, effect: 'Closet keeps the reason only.' },
+  // v1.5 intentional exits (the user chose to pass the piece on): history kept, no replacement.
+  Donated: { replacement: false, learn: false, effect: 'Thank you for passing it on. Closet keeps it in your history and adds no replacement.' },
+  'Given away': { replacement: false, learn: false, effect: 'Closet keeps it in your history and adds no replacement.' },
+  'Sold / rehomed': { replacement: false, learn: false, effect: 'Closet keeps it in your history and adds no replacement.' },
 };
+const PASSED_ON = ['Donated', 'Given away', 'Sold / rehomed'];
 
 const effectOf = (reason) => EFFECTS[reason] || EFFECTS.Other;
 const pieceTitle = (d) => d.name || `${d.colour} ${NOUN[d.category]}`;
@@ -41,4 +46,4 @@ function letGoStyles(deletions, min = 2) {
   return Object.entries(counts).filter(([, n]) => n >= min).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([style, count]) => ({ style, count }));
 }
 
-module.exports = { EFFECTS, effectOf, replacementFor, isAvoided, avoided, letGoStyles, pieceTitle };
+module.exports = { PASSED_ON, EFFECTS, effectOf, replacementFor, isAvoided, avoided, letGoStyles, pieceTitle };

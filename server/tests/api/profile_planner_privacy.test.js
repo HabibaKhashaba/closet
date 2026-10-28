@@ -19,7 +19,7 @@ describe('Style quiz and profile (US-02, US-03, US-04)', () => {
     const answers = { styles: ['Chic', 'Minimal'], colours: ['Black', 'Beige'], occasions: ['University', 'Work'], dressCode: 3, modest: true, city: 'Cairo' };
     const res = await request(app).put('/api/v1/profile/quiz').set(auth(user.token)).send(answers);
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ...answers, quizCompleted: true, displayName: null, laundryDays: 2, laundryAutoReturn: true, laundryWeekday: null, repeatDays: 3, reminders: true, reminderHour: 20, avoidStyles: [] });
+    expect(res.body).toEqual({ ...answers, quizCompleted: true, displayName: null, laundryDays: 2, laundryAutoReturn: true, laundryWeekday: null, repeatDays: 3, reminders: true, reminderHour: 20, allowRepeats: false, avoidStyles: [] }); // v1.5 adds allowRepeats
   });
   test('API-P03 the quiz can be skipped (empty answers) and is not shown again', async () => {
     const res = await request(app).put('/api/v1/profile/quiz').set(auth(user.token)).send({});

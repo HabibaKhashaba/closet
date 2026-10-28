@@ -50,12 +50,13 @@ function createApp(deps = {}) {
   const packing = registerPacking({ db: pool, wardrobe: () => wardrobe.service, profile: profile.service, weather, planner: () => planner.service, availability: availability.service, outfits: () => outfits.service });
   const intelligence = registerIntelligence({
     db: pool, wardrobe: () => wardrobe.service, outfits: () => outfits.service, profile: profile.service, planner: () => planner.service,
-    rec: () => rec.service, activity: () => activity.service, packing: () => packing.service,
+    rec: () => rec.service, activity: () => activity.service, packing: () => packing.service, availability: availability.service,
   });
   const privacy = registerPrivacy({ bus, identity });
   const assistant = registerAssistant({
     db: pool, parser: deps.parser || llmAdapter(), rec: () => rec.service, outfits: () => outfits.service,
     wardrobe: () => wardrobe.service, availability: availability.service, planner: () => planner.service, shopping: () => shopping.service,
+    proactive: () => intelligence.service.proactive, intelligence: () => intelligence.service, packing: () => packing.service, profile: profile.service,
   });
 
   // API Gateway

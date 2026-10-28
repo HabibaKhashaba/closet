@@ -17,8 +17,27 @@ function checkIds(ids, min, max) {
   return ids;
 }
 
+// One saved look per set of pieces (Milestone 2 fix D-10): Save then Favourite, or Favourite then Save,
+// must reach the SAME record. Identity = user + the set of item ids (order does not matter).
+const outfitKey = (ids) => [...ids].sort().join('|');
+// What a repeated save does to the record that already exists: Save never removes a favourite;
+// Favourite marks it; the newer score/reasons are kept only when the record had none.
+function mergeSave(existing, o) {
+  return { favorite: existing.favorite || Boolean(o.favorite), ruleScore: existing.rule_score ?? o.ruleScore ?? null, reasons: existing.reasons && existing.reasons.length ? existing.reasons : (o.reasons || []) };
+}
+
 function outfitsRepository(db) {
   return {
+    async findSame(userId, ids) {
+      const { rows } = await db.query(
+        "SELECT * FROM outfits.outfits WHERE user_id = $1 AND source <> 'planned' AND item_ids @> $2::uuid[] AND item_ids <@ $2::uuid[] ORDER BY created_at LIMIT 1", [userId, ids],
+      );
+      return rows[0] || null;
+    },
+    async updateSaved(userId, id, m) {
+      const { rows } = await db.query('UPDATE outfits.outfits SET favorite = $3, rule_score = $4, reasons = $5 WHERE id = $1 AND user_id = $2 RETURNING *', [id, userId, m.favorite, m.ruleScore, m.reasons]);
+      return rows[0];
+    },
     async save(userId, o) {
       const { rows } = await db.query(
         `INSERT INTO outfits.outfits (user_id, item_ids, occasion, style, rule_score, reasons, source, favorite)
@@ -49,8 +68,8 @@ function outfitsRepository(db) {
       return rowCount === 1;
     },
     async wear(userId, ids, day, rating, ctx = {}) {
-      const { rows } = await db.query('INSERT INTO outfits.wears (user_id, item_ids, worn_on, rating, occasion, temp_c, conditions) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-        [userId, ids, day, rating || null, ctx.occasion || null, ctx.tempC ?? null, ctx.condition || null]);
+      const { rows } = await db.query('INSERT INTO outfits.wears (user_id, item_ids, worn_on, rating, occasion, temp_c, conditions, event_title, note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
+        [userId, ids, day, rating || null, ctx.occasion || null, ctx.tempC ?? null, ctx.condition || null, ctx.eventTitle || null, ctx.note || null]);
       return rows[0].id;
     },
     async rate(userId, wearId, rating) {
@@ -93,7 +112,7 @@ function outfitsRepository(db) {
     // Outfit history (US-91): every "Wear this", newest first, with occasion, rating and weather.
     async history(userId, { from, to, occasion, minRating }) {
       const { rows } = await db.query(
-        `SELECT id, item_ids, worn_on, rating, occasion, temp_c, conditions FROM outfits.wears
+        `SELECT id, item_ids, worn_on, rating, occasion, temp_c, conditions, event_title, note FROM outfits.wears
           WHERE user_id = $1 AND ($2::date IS NULL OR worn_on >= $2) AND ($3::date IS NULL OR worn_on <= $3)
             AND ($4::text IS NULL OR occasion = $4) AND ($5::int IS NULL OR rating >= $5)
           ORDER BY worn_on DESC, id DESC LIMIT 200`, [userId, from || null, to || null, occasion || null, minRating || null],
@@ -127,7 +146,12 @@ function outfitsService({ repo, wardrobe, bus }) {
     REJECT_REASONS,
     async save(userId, o) {
       await ownAll(userId, o.itemIds);
-      return (await withPieces(userId, [await repo.save(userId, o)]))[0];
+      const same = await repo.findSame(userId, o.itemIds);
+      if (same) {
+        const row = await repo.updateSaved(userId, same.id, mergeSave(same, o));
+        return { ...(await withPieces(userId, [row]))[0], existing: true };
+      }
+      return { ...(await withPieces(userId, [await repo.save(userId, o)]))[0], existing: false };
     },
     async savePlanned(userId, o) {
       await ownAll(userId, o.itemIds);
@@ -187,7 +211,7 @@ function outfitsService({ repo, wardrobe, bus }) {
       const byId = new Map(all.map((p) => [p.id, p]));
       const iso = (d) => (d instanceof Date ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : String(d).slice(0, 10));
       const wears = rows.map((r) => ({
-        id: Number(r.id), date: iso(r.worn_on), rating: r.rating, occasion: r.occasion,
+        id: Number(r.id), date: iso(r.worn_on), rating: r.rating, occasion: r.occasion, eventTitle: r.event_title || null, note: r.note || null,
         weather: r.temp_c === null ? null : { tempC: r.temp_c, condition: r.conditions },
         pieces: r.item_ids.map((id) => byId.get(id)).filter(Boolean),
       }));
@@ -231,7 +255,8 @@ function outfitsRoutes({ outfits }) {
     try {
       const itemIds = checkIds(req.body.itemIds, 2, 4);
       const reasons = Array.isArray(req.body.reasons) ? req.body.reasons.filter((x) => typeof x === 'string').slice(0, 6).map((x) => x.slice(0, 200)) : [];
-      res.status(201).json(await outfits.save(req.user.id, { ...req.valid, itemIds, reasons }));
+      const saved = await outfits.save(req.user.id, { ...req.valid, itemIds, reasons });
+      res.status(saved.existing ? 200 : 201).json(saved);
     } catch (e) { next(e); }
   });
   r.patch('/:id', v.body({ favorite: { type: 'bool', required: true } }), async (req, res, next) => {
@@ -240,7 +265,7 @@ function outfitsRoutes({ outfits }) {
   r.delete('/:id', async (req, res, next) => {
     try { await outfits.remove(req.user.id, req.params.id); res.status(204).end(); } catch (e) { next(e); }
   });
-  r.post('/wear', v.body({ rating: { type: 'int', min: 1, max: 5 }, occasion: { type: 'string', max: 30 }, tempC: { type: 'int', min: -30, max: 55 }, condition: { type: 'string', max: 40 } }), async (req, res, next) => {
+  r.post('/wear', v.body({ rating: { type: 'int', min: 1, max: 5 }, occasion: { type: 'string', max: 30 }, tempC: { type: 'int', min: -30, max: 55 }, condition: { type: 'string', max: 40 }, eventTitle: { type: 'string', max: 80 }, note: { type: 'string', max: 120 } }), async (req, res, next) => {
     try {
       const { rating, ...ctx } = req.valid;
       res.status(201).json(await outfits.wear(req.user.id, checkIds(req.body.itemIds, 2, 4), rating, ctx));
@@ -274,4 +299,4 @@ function registerOutfits({ db, bus, wardrobe }) {
   return { service, routes: outfitsRoutes({ outfits: service }) };
 }
 
-module.exports = { registerOutfits, REJECT_REASONS, checkIds };
+module.exports = { registerOutfits, REJECT_REASONS, checkIds, outfitKey, mergeSave };

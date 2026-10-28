@@ -6,6 +6,7 @@ const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
 const { OCCASIONS, STYLES } = require('../../shared/vocabulary');
 const engine = require('./engine');
+const { memorySignals } = require('../intelligence/insights');
 const { checkIds } = require('../outfits/outfitsModule');
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
@@ -46,6 +47,11 @@ function recommendationService({ wardrobe, profile, outfits, weather }) {
       const ctx = await context(userId, { date, tempC });
       if (fixedId && !ctx.pieces.some((p) => p.id === fixedId)) throw errors.notFound('Piece');
       const fixed = fixedId && ctx.pieces.find((p) => p.id === fixedId);
+      // Outfit memory: highly rated looks for this occasion at a similar temperature (one bounded signal).
+      if (outfits().history) {
+        const m = memorySignals((await outfits().history(userId, { minRating: 4 })).wears, { occasion, tempC: ctx.weather.tempC });
+        ctx.signals.memoryBoost = m.boost; ctx.signals.memorySource = m.source;
+      }
       const result = engine.recommend(ctx.pieces, {
         occasion, style, level, fixedId, prefs: ctx.prefs, weather: ctx.weather, hiddenIds: ctx.hiddenIds, today: ctx.today, signals: ctx.signals,
         rejectedLooks: await outfits().rejectedLooks(userId),
