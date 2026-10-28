@@ -1,3 +1,8 @@
+/* Local copies of Lora and Inter (SIL OFL, see public/fonts/FONTS.md) — the app looks the same offline. */
+@font-face { font-family: 'Lora'; font-style: normal; font-weight: 400 700; font-display: swap; src: url(/fonts/Lora-Variable.ttf) format('truetype'); }
+@font-face { font-family: 'Lora'; font-style: italic; font-weight: 400 700; font-display: swap; src: url(/fonts/Lora-Italic-Variable.ttf) format('truetype'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 300 500; font-display: swap; src: url(/fonts/Inter-Regular.otf) format('opentype'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600 800; font-display: swap; src: url(/fonts/Inter-SemiBold.otf) format('opentype'); }
 /* Closet · design system v1.2 — cream, charcoal, dusty rose. Editorial, calm, rounded. */
 :root {
   --bg: #f6f1ec;

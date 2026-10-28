@@ -259,7 +259,7 @@ const explained = (pieces, crit, ctx) => { const w = why(pieces, crit, ctx); ret
 
 // ---------- 5. diversity-aware selection (US-19, Milestone 2 fix) ----------
 // Three looks must read as three styling directions, not one look with a different accessory.
-// Major garments (top, dress, bottom, layer, shoes) weigh 1; a bag or accessory weighs 0.3.
+// Major garments (top, dress, bottom, layer, shoes) weigh 1; a bag or accessory weighs 0.5.
 // The piece the user asked to style (fixedId) is in every look by design and is not counted.
 const MAJOR_CATS = ['Top', 'Dress', 'Bottom', 'Layer', 'Shoes'];
 const isMajor = (p) => MAJOR_CATS.includes(p.category);
@@ -268,7 +268,7 @@ function sharedMajor(a, b, fixedId) {
   return a.filter((p) => isMajor(p) && p.id !== fixedId && b.some((q) => q.id === p.id)).length;
 }
 function weightedOverlap(a, b, fixedId) {
-  return a.filter((p) => p.id !== fixedId && b.some((q) => q.id === p.id)).reduce((t, p) => t + (isMajor(p) ? 1 : 0.3), 0);
+  return a.filter((p) => p.id !== fixedId && b.some((q) => q.id === p.id)).reduce((t, p) => t + (isMajor(p) ? 1 : 0.5), 0);
 }
 const silhouette = (o) => (o.some((p) => p.category === 'Dress') ? 'dress' : 'separates');
 // Greedy: the best look first, then the look that maximises rank − weight × overlap with the looks

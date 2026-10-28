@@ -170,7 +170,7 @@ function intelligenceService({ db, repo: givenRepo, wardrobe, outfits, profile, 
       for (const r of rem.reminders) {
         if (r.kind === 'conflict') continue; // covered above, with a replacement
         if (r.kind === 'plan') add({ key: `plan:${r.eventId}`, kind: 'plan', priority: 4, title: r.date === addDays(today, 1) ? 'Your event is tomorrow' : 'Upcoming event', text: `${r.text.replace(/\.$/, '')} — no outfit selected yet.`, link: '#/planner', date: r.date });
-        if (r.kind === 'due') add({ key: `due:${r.itemId}:${r.date}`, kind: 'due', priority: 3, title: 'Borrowed piece due', text: r.text, link: `#/closet/${r.itemId}`, date: r.date });
+        if (r.kind === 'due' && !borrowed.overdue.some((b) => b.id === r.itemId)) add({ key: `due:${r.itemId}:${r.date}`, kind: 'due', priority: 3, title: 'Borrowed piece due', text: r.text, link: `#/closet/${r.itemId}`, date: r.date });
         if (r.kind === 'laundry') add({ key: `laundry:${r.date}`, kind: 'laundry', priority: 2, title: 'Laundry day tomorrow', text: r.text, link: '#/laundry', date: r.date });
       }
       for (const e of await planner().upcoming(userId, 3)) {

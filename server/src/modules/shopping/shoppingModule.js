@@ -86,7 +86,7 @@ const wantFor = (prefs, category, colour, level, styles) => {
   return { category, colour, styles: styles && styles.length ? styles : (prefs.styles || []), dressCodes: [...new Set([lvl, Math.max(1, lvl - 1), Math.min(5, lvl + 1)])] };
 };
 function listItem(r, pieces, prefs) {
-  const similar = r.colour ? similarOwned(pieces, wantFor(prefs, r.category, r.colour)) : [];
+  const similar = r.colour ? similarOwned(pieces, { ...wantFor(prefs, r.category, r.colour), name: r.title }) : [];
   return {
     id: r.id, title: r.title, category: r.category, colour: r.colour, source: r.source, sourceLabel: SOURCE_LABEL[r.source], reason: r.reason,
     replaces: r.replaces || null, tags: [SOURCE_LABEL[r.source], r.replaces && r.source !== 'replacement' ? 'Replacement' : null].filter(Boolean),
