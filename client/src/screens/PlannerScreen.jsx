@@ -80,7 +80,7 @@ export default function PlannerScreen({ query }) {
   }
   const conflictOf = (id) => (conf.data?.conflicts || []).find((c) => c.eventId === id);
   async function fix(c) {
-    try { const r = await api.fixConflict(c.eventId, c.itemId); toast(`Replaced the ${pieceName(r.replaced).toLowerCase()} with the ${pieceName(r.with).toLowerCase()}`); conf.reload(true); cal.reload(true); refresh(); } catch (x) { toast(x.message, true); }
+    try { const r = await api.fixConflict(c.eventId, c.itemId); toast(`Replaced the ${pieceName(r.replaced).toLowerCase()} with the ${pieceName(r.with).toLowerCase()}`); conf.reload(true); mon.reload(true); cal.reload(true); refresh(); } catch (x) { toast(x.message, true); }
   }
 
   const grid = useMemo(() => {
