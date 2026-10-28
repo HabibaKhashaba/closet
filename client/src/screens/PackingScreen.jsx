@@ -109,10 +109,10 @@ export default function PackingScreen() {
         <div className="stack lg">
           <section className="card pad-lg">
             <h3 style={{ marginBottom: 14 }}>Where are you going?</h3>
-            <label className="field"><span>Destination</span><input value={form.destination} maxLength={60} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></label>
+            <label className="field"><span>Destination</span><input aria-label="Destination" value={form.destination} maxLength={60} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></label>
             <div className="grid g2" style={{ gap: '0 12px' }}>
-              <label className="field"><span>First day</span><input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /></label>
-              <label className="field"><span>Last day</span><input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /></label>
+              <label className="field"><span>First day</span><input aria-label="First day" type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /></label>
+              <label className="field"><span>Last day</span><input aria-label="Last day" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /></label>
             </div>
             <div className="field"><span>Trip type</span><Chips options={['Travel', 'Work', 'Wedding', 'Everyday']} value={form.tripType} multiple={false} onChange={(v) => setForm({ ...form, tripType: v || form.tripType })} /></div>
             <div className="field"><span>Activities (one per day, in turn)</span><Chips options={Object.keys(vocab.OCCASIONS)} value={form.activities} onChange={(v) => setForm({ ...form, activities: v.slice(0, 6) })} /></div>

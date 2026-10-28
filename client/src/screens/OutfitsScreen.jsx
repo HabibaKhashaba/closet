@@ -31,7 +31,7 @@ function Rescue({ occasion, date }) {
   const [busy, setBusy] = useState(false);
   async function run() { setBusy(true); try { setR(await api.rescue({ occasion, ...(date && { date }) })); } catch (e) { toast(e.message, true); } finally { setBusy(false); } }
   return (
-    <section className="card pad rescue" aria-label="Nothing to wear">
+    <section className="card pad rescue" aria-label="Nothing to wear" style={{ marginTop: 18 }}>
       <div className="row between wrap">
         <div><div className="eyebrow">Nothing to wear?</div><p className="small muted" style={{ marginTop: 4 }}>For {occasion.toLowerCase()}{date ? ` on ${fmtDate(date)}` : ''}: Closet checks what’s Available, the forecast and the dress code before it ever suggests buying.</p></div>
         <button type="button" className="btn line" disabled={busy} onClick={run}><Icon name="wand" size={16} />{busy ? 'Checking…' : 'Rescue me'}</button>
@@ -39,7 +39,7 @@ function Rescue({ occasion, date }) {
       {r && (
         <div style={{ marginTop: 14 }}>
           <p className="small"><b>{r.solved ? 'Your closet can do this.' : 'A real gap.'}</b> {r.message}</p>
-          {r.solved && <div className="looks" style={{ marginTop: 12 }}>{r.outfits.map((o, i) => <OutfitCard key={o.itemIds.join()} outfit={o} index={i} occasion={occasion} date={`${r.levelName} · ${r.weather.tempC}°`} weather={r.weather} />)}</div>}
+          {r.solved && <div className="grid g3 looks" style={{ marginTop: 12, alignItems: 'stretch' }}>{r.outfits.map((o, i) => <OutfitCard key={o.itemIds.join()} outfit={o} index={i} occasion={occasion} date={`${r.levelName} · ${r.weather.tempC}°`} weather={r.weather} />)}</div>}
           {!r.solved && r.shopping && <a className="btn sm" href="#/shopping" style={{ marginTop: 10 }}><Icon name="bag" size={14} />See what would fill it</a>}
         </div>
       )}

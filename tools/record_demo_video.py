@@ -1,4 +1,4 @@
-# Records the backup demo video (build v1.5): the same 14 steps as the live demo (Demo_Preflight.md), on the real app, with a visible
+# Records the backup demo video (build v1.5): the same 13 steps as the live demo (Demo_Preflight.md, build v1.6), on the real app, with a visible
 # cursor that moves smoothly to every click and short captions. Full-screen page only (no browser bar).
 #   TRYON_PHOTO=avatar CLOSET_URL=http://localhost:4000 python3 tools/record_demo_video.py   (stylised avatar, no photo)
 #   TRYON_PHOTO=/path/photo.jpg [TRYON_NOTE="…"] …   (a full-body photo of a team member who agreed to it)
@@ -46,83 +46,97 @@ with sync_playwright() as p:
     def nav(name):                   # use the sidebar, like a person would
         nocap(); click(f'nav a:has-text("{name}")'); wait(1.1)
 
+    import datetime
+    day = lambda n: (datetime.datetime.now(datetime.timezone.utc).date() + datetime.timedelta(days=n)).isoformat()  # the app's day (UTC)
+    def go(path, sec=1.0): nocap(); pg.goto(f'{B}#{path}'); wait(sec)
+    def open_piece(name):
+        nav('Closet'); click(f'.piece-card:has-text("{name}")'); pg.wait_for_selector('text=Availability'); wait(.5)
+    def ask(q, sec=2.4):
+        type_in('.chat-input input', q); click('.chat-input button'); wait(sec)
+    def scroll_to(sel, sec=.6):  # bring it to the upper middle of the screen, clear of the caption
+        pg.locator(sel).first.evaluate("e => e.scrollIntoView({ block: 'center' })"); wait(sec)
+
     pg.goto(B); pg.wait_for_selector('input[type=email]')
     pg.fill('input[type=email]', 'demo@closet.app'); pg.fill('input[type=password]', 'Closet2026!'); pg.click('form button.btn.lg')
     pg.wait_for_selector('.today-card .look'); wait(1.2)
-    card('Closet — live demo', 'CSCE 3701 · Milestone 2 · backup recording', 2.6)
-    # 1 Home
-    move(700, 420); cap('Home — today’s look, the weather, what’s coming up', 2.6)
-    pg.locator('.noticed').scroll_into_view_if_needed(); wait(.6); cap('Closet noticed — at most two proactive notices, each with a reason and one action', 3.2)
-    # 2 Closet → Navy blazer → laundry
-    nav('Closet'); cap('Sprint 1 · the closet — one status on every piece', 1.8)
-    click('.piece-card:has-text("Navy blazer")'); pg.wait_for_selector('text=Availability'); wait(.6)
+    card('Closet — live demo', 'CSCE 3701 · Milestone 2 · build v1.6 · backup recording', 2.6)
+    # 1 HOME — wardrobe status, weather, proactive notices
+    move(700, 420); cap('Home — today’s look, the weather (30 °C, seasonal estimate) and what’s coming up', 3)
+    scroll_to('.noticed'); cap('Closet noticed — at most two notices, each with a reason and one action', 3)
+    scroll_to('.status-list'); cap('Wardrobe status — every count opens the place where it is managed', 3)
+    # 2 LAUNDRY
+    open_piece('Navy blazer'); cap('One garment lifecycle — one status on every piece', 1.8)
     click('button:has-text("In laundry")'); pg.wait_for_selector('.status.Laundry'); cap('The navy blazer goes to the laundry', 1.8)
-    # 3 Laundry → Wash done
-    nav('Laundry'); pg.wait_for_selector('.basket-item:has-text("Navy blazer")'); cap('It is in the basket', 1.6)
-    click('button:has-text("Wash done")'); pg.wait_for_selector('text=Available again.'); wait(.8); cap('Wash done — every piece is Available again', 2)
-    # 4 Style me → University → three looks
-    nav('Style me'); pg.wait_for_selector('.occ:has-text("University")')
-    click('.occ:has-text("University")'); wait(.4); click('button:has-text("Generate 3 looks")')
+    nav('Care'); pg.wait_for_selector('.basket-item:has-text("Navy blazer")'); cap('Care → Laundry: it is in the basket', 1.8)
+    click('button:has-text("Wash done")'); pg.wait_for_selector('text=Available again.'); wait(.8); cap('Wash done — Available again', 1.8)
+    # 3 REPAIRS & ALTERATIONS
+    open_piece('Black blazer'); click('button:has-text("More actions")'); wait(.4); cap('More actions → Repair / Alter', 1.6)
+    click('.menu button:has-text("Repair / Alter")'); wait(.5); click('.reason-card:has-text("Needs alteration")')
+    type_in('input[aria-label="Reason"]', 'Sleeves too long'); wait(.3); click('.modal button:has-text("Save")'); pg.wait_for_selector('.status.Needs-alteration'); cap('Needs alteration — sleeves too long', 1.8)
+    click('button:has-text("Send to tailor")'); wait(.4); type_in('input[aria-label="Tailor"]', 'Hany Tailoring'); pg.fill('input[aria-label="Expected return"]', day(0)); wait(.4)
+    click('.modal button:has-text("Send to tailor")'); pg.wait_for_selector('.status.At-tailor'); cap('Sent to the tailor, expected back today', 1.8)
+    go('/care/repairs'); pg.wait_for_selector('section[aria-label="At tailor"]'); cap('Care → Repairs & alterations: AT TAILOR · “should be ready today”', 3)
+    nav('Style me · 3 looks'); click('.occ:has-text("Work")'); wait(.3); click('button:has-text("Generate 3 looks")'); pg.wait_for_selector('text=LOOK 03'); wait(1.4)
+    cap('Style me → Work: three looks — the black blazer is not in any of them', 3)
+    go('/care/repairs'); pg.wait_for_selector('section[aria-label="At tailor"]'); click('section[aria-label="At tailor"] button:has-text("Mark collected")'); wait(1.2)
+    cap('Mark collected — Available again, back in your outfits', 2.2)
+    # 4 BORROW & LEND
+    open_piece('Black blazer'); click('button:has-text("More actions")'); wait(.3); click('.menu button:has-text("Lend item")'); wait(.4)
+    type_in('input[aria-label="Person"]', 'Nour'); pg.fill('input[aria-label="Expected return"]', day(5)); wait(.4); click('.modal button:has-text("Lend item")'); pg.wait_for_selector('.status.Borrowed')
+    cap('Lent to Nour — due in five days', 1.8)
+    nav('Borrow & lend'); pg.wait_for_selector('.care-row:has-text("Black blazer")'); cap('Borrow & lend: who has what, since when, overdue — the rose wrap dress is 4+ days late', 3.2)
+    nav('Closet'); scroll_to('.piece-card:has-text("Black blazer")'); cap('Still in the closet, marked Borrowed — left out of outfits and plans', 2.4)
+    nav('Borrow & lend'); click('.care-row:has-text("Black blazer") button:has-text("Mark returned")'); wait(1); cap('Mark returned — Available, and the loan stays in the history', 2.4)
+    # 5 STYLE ME — three genuinely different looks, change one piece
+    nav('Style me · 3 looks'); click('.occ:has-text("University")'); wait(.4); click('button:has-text("Generate 3 looks")')
     pg.wait_for_selector('text=LOOK 03'); wait(1.6); move(960, 520)
-    cap('Three complete looks — each with its own name, match %, the weather and one reason', 3.6)
-    # 5 Change one piece
-    click(pg.locator('.looks .flip').first.locator('.look-piece img').first); pg.wait_for_selector('.tray-opt'); cap('Change one piece — real alternatives, each with its new match %', 2.6)
-    click('.tray-opt'); wait(1.6); cap('Only that piece changes; the score moves', 2.2)
-    # 6 Try on
+    cap('Three complete looks, three different directions — any two share at most one major garment', 3.6)
+    click(pg.locator('.looks .flip').first.locator('.look-piece img').first); pg.wait_for_selector('.tray-opt'); cap('Change one piece — real alternatives, each with its new match %', 2.4)
+    click('.tray-opt'); wait(1.6); cap('Only that piece changes; the score moves', 2)
+    # 6 TRY ON
     click(pg.locator('.looks .flip').first.locator('button:has-text("Try on")')); pg.wait_for_selector('text=See this look on you'); wait(.8)
     if AVATAR:
-        cap('Try it on — with your own photo, or the stylised avatar', 2.2)
         click('button:has-text("Use the stylised avatar instead")'); pg.wait_for_selector('.mirror-glass svg'); wait(1.4)
-        cap('Virtual Try-On Preview — a simulated overlay, here on the stylised avatar (no photo)', 3.4)
+        cap('Virtual Try-On Preview — a simulated overlay, here on the stylised avatar (no photo)', 3.2)
     else:
         pg.set_input_files('input[aria-label="Choose my photo"]', PHOTO); pg.wait_for_selector('.on-photo .worn'); wait(1.6)
-        cap(('Virtual Try-On Preview — a simulated overlay. ' + NOTE) if NOTE else 'Virtual Try-On Preview — a simulated overlay; the photo never leaves the browser', 3.6)
-    click('.stage button[aria-label="Next look"]'); wait(1.8)
-    click('.fitting-card button:has-text("Favourite")'); wait(.6); cap('Flip between the three looks · Favourite', 1.8)
-    # 7 Forgotten piece
-    nav('Home'); pg.locator('.still').scroll_into_view_if_needed(); wait(.6)
-    cap('Still love it? — the denim jacket has not been worn for 104 days', 2.4)
-    click('.still a:has-text("Style it")'); pg.wait_for_selector('text=LOOK 03'); wait(1.6)
-    cap('Style it — three looks built around the denim jacket, every one contains it', 3)
-    # 7b … or let it go: Donate → Ready to donate → Mark as donated (nothing is added to the shopping bag)
-    nav('Closet'); click('.piece-card:has-text("Denim jacket")'); pg.wait_for_selector('text=Availability'); wait(.5)
-    click('button.link:has-text("donate it")'); pg.wait_for_selector('text=Donate this item?'); cap('Or let it go — donate, give to someone, or sell', 2.4)
-    click('.reason-card:has-text("Donate")'); pg.wait_for_selector('.modal button:has-text("Mark as donated")'); cap('Ready to donate — it stays yours, but leaves your outfits', 2.4)
-    click('.modal button:has-text("Mark as donated")'); wait(1.2); cap('Donated — history kept, and no replacement is suggested', 2.4)
-    # 8 Mix & Match → weak piece → Suggest a fix
-    nav('Mix & Match'); click('.chip:has-text("Work")') if pg.locator('.chip:has-text("Work")').count() else None
-    click('button:has-text("Start from a suggested look")'); pg.wait_for_selector('.verdict-card .meters'); wait(1)
-    cap('Mix & Match — a strong Work look', 1.8)
-    click('button[aria-label="Choose Top or dress"]'); wait(.5); click('.picker button:has-text("Red cropped tee")'); wait(1.6)
-    cap('A red cropped tee for Work — the score drops, and Closet says why', 2.6)
-    click('button:has-text("Suggest a fix")'); pg.wait_for_selector('.fix-delta', timeout=20000); wait(1.4)
-    cap('Suggest a fix — one piece replaced, the score rises again', 2.8)
-    # 9 Delete a torn piece → replacement in the bag
-    nav('Closet'); click('.piece-card:has-text("Silk scarf")'); pg.wait_for_selector('text=Availability'); wait(.5)
-    click('button:has-text("Remove")'); pg.wait_for_selector('.reason-card'); cap('Deleting asks why — each reason says what happens next', 2.2)
-    click('.reason-card:has-text("Torn / damaged")'); wait(.5); click('.modal button:has-text("Remove piece")')
-    pg.wait_for_selector('.bag-item:has-text("Silk scarf")'); wait(.8)
-    cap('Torn → a replacement goes into the shopping bag. “No longer my style” is never replaced.', 3.2)
-    # 10 Ask Closet → bag
-    nav('Ask Closet'); pg.wait_for_selector('.chat-input input')
-    for q in ['Do I need beige trousers?', 'Add this to my shopping list']:
-        type_in('.chat-input input', q); click('.chat-input button'); wait(2.2)
-    cap('Ask Closet: you already own 2 similar — added to the bag, with Undo', 2.4)
-    for q in ['Is my blazer clean?', 'Who has my rose wrap dress?']:
-        type_in('.chat-input input', q); click('.chat-input button'); wait(2.2)
-    cap('Questions read your real wardrobe — and never change it', 2.6)
-    nav('Shopping bag'); pg.wait_for_selector('.bag-item'); cap('Every item says where it came from: Added by Ask Closet · Replacement', 2.8)
-    # 11 Planner: the weather changed since the outfit was planned → Adjust outfit
+        cap(('Virtual Try-On Preview — a simulated overlay. ' + NOTE) if NOTE else 'Virtual Try-On Preview — a simulated overlay; the photo never leaves the browser', 3.4)
+    # 7 DONATION
+    nav('Home'); scroll_to('.still'); cap('Still love it? — the denim jacket has not been worn for 104 days', 2.4)
+    click('.still a:has-text("Style it")'); pg.wait_for_selector('text=LOOK 03'); wait(1.4); cap('Style it — three looks, every one with the denim jacket', 2.6)
+    nav('Home'); scroll_to('.still'); click(pg.locator('.still button:has-text("Donate")').first); pg.wait_for_selector('text=Donate this item?')
+    cap('Or donate it to someone who may need it', 2); click('.reason-card:has-text("Donate")'); pg.wait_for_selector('.modal button:has-text("Mark as donated")'); cap('Ready to donate — it waits under Donation', 2.2)
+    pg.keyboard.press('Escape'); nav('Planner'); wait(.6)
+    nav('Donation'); pg.wait_for_selector('.care-row:has-text("Denim jacket")'); cap('Donation: still there after navigating away — Mark as donated when it has left', 2.8)
+    click('.care-row:has-text("Denim jacket") button:has-text("Mark as donated")'); wait(1.2); cap('Donated — archived, wear history kept', 2)
+    nav('Shopping bag'); pg.wait_for_selector('.bag-item'); cap('Shopping bag: no replacement for the jacket', 2.4)
+    # 8 PACKING
+    nav('Packing'); pg.wait_for_selector('input[aria-label="Destination"]'); pg.fill('input[aria-label="Destination"]', ''); type_in('input[aria-label="Destination"]', 'Alexandria')
+    pg.fill('input[aria-label="First day"]', day(2)); pg.fill('input[aria-label="Last day"]', day(3)); wait(.4)
+    click('button:has-text("Plan my suitcase")'); pg.wait_for_selector('button:has-text("Add to packing list")', timeout=20000); wait(1); cap('A carry-on capsule for two days — pieces reused on purpose', 2.8)
+    click('button:has-text("Add to packing list")'); pg.wait_for_selector('button:has-text("Mark as packed")'); wait(.6)
+    click('button:has-text("Mark as packed")'); wait(1.2); cap('Mark as packed — every piece is now Packed', 2.2)
+    nav('Closet'); wait(.6); cap('…and shows as Packed in the closet', 2)
+    # 9 SHOPPING — purchase simulation
+    nav('Shopping bag'); scroll_to('input[aria-label="What is it"]')
+    pg.select_option('select[aria-label="Category"]', 'Shoes'); pg.select_option('select[aria-label="Colour"]', 'White'); pg.fill('input[aria-label="What is it"]', ''); type_in('input[aria-label="What is it"]', 'loafers')
+    click('button:has-text("Check my closet")'); wait(1.6); scroll_to('.impact-blocks'); cap('White loafers: new combinations, similar owned, gap, occasions → a useful purchase (simulated)', 3.4)
+    scroll_to('input[aria-label="What is it"]'); pg.select_option('select[aria-label="Category"]', 'Top'); pg.select_option('select[aria-label="Colour"]', 'Black'); pg.fill('input[aria-label="What is it"]', ''); type_in('input[aria-label="What is it"]', 'fitted top')
+    click('button:has-text("Check my closet")'); wait(1.6); scroll_to('.impact-blocks'); cap('A black fitted top: you already own a similar one — lower value. Nothing was added', 3.4)
+    # 10 PLANNER
     nav('Planner'); pg.wait_for_selector('.conflict'); wait(.6); cap('The forecast changed: 24 °C → 30 °C — the planned blazer may be too warm', 3)
-    click('.conflict button:has-text("Adjust outfit")'); wait(1.6); cap('Adjust outfit — only the blazer changes', 2.4)
-    # 12 Learning → flip → Confirm → Undo
-    nav('Analytics'); pg.locator('#learned').scroll_into_view_if_needed(); wait(.8)
-    cap('Closet has learned — the cards start closed', 1.8)
-    click('#learned .learn-front'); wait(1); cap('Evidence and confidence — nothing changes until you confirm', 2.4)
-    click('#learned .learn-back button:has-text("Confirm")'); wait(1); cap('Confirmed …', 1.4)
-    click('#learned details summary'); wait(.5); click('#learned button:has-text("Undo")'); wait(.9); cap('… and Undo restores it exactly', 1.8)
-    # 13 Home reflects the changes
-    nav('Home'); pg.wait_for_selector('.today-card .look'); wait(.8); cap('Back on Home — every change is stored', 2.6)
+    click('.conflict button:has-text("Adjust outfit")'); wait(1.6); cap('Adjust outfit — only the blazer changes', 2.2)
+    # 11 ANALYTICS
+    nav('Analytics & insights'); wait(.8); scroll_to('text=What lowers it'); cap('Wardrobe Health — explained: what raises it, what lowers it', 3)
+    scroll_to('text=Cost per wear'); cap('Cost per wear — only confirmed wears count', 2.6)
+    scroll_to('input[aria-label="Search outfit memory"]'); type_in('input[aria-label="Search outfit memory"]', 'Salma'); click('button:has-text("Find")'); wait(1.2)
+    cap('Outfit memory — Salma’s birthday, 27 °C, ★★★★★ · Wear again · Create a variation', 3.2)
+    # 12 ASK CLOSET — real state
+    nav('Ask Closet'); pg.wait_for_selector('.chat-input input')
+    for q in ['What needs repair?', 'Who has my rose wrap dress?', 'What clothes are ready to donate?']: ask(q)
+    cap('Ask Closet reads the current wardrobe — repairs, loans, donations', 3)
+    # 13 HOME
+    nav('Home'); pg.wait_for_selector('.today-card .look'); wait(.8); scroll_to('.status-list'); cap('Back on Home — every change is stored and shows everywhere', 3)
     nocap(); card('closet.', 'Your wardrobe · your style · your context — one intelligent system', 3)
     ctx.close(); b.close()
 print('done — convert the .webm in', OUT, 'to Closet_Demo_FINAL.mp4 with ffmpeg')

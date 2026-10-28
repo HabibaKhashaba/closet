@@ -164,7 +164,7 @@ function shoppingService({ db, repo: givenRepo, wardrobe, profile }) {
       const want = { ...wantFor(prefs, category, colour, level, styles), season, name };
       const lvl = level || prefs.dressCode || 1;
       const levelsFor = want.dressCodes;
-      const similar = similarOwned(pieces, want);
+      const similar = similarOwned(pieces.filter(isOwned), want);
       const r = outfitsWith(pieces, hypothetical(category, colour, levelsFor, prefs.styles), { level: lvl, prefs });
       const disliked = deletions.find((d) => d.reason === 'No longer my style' && d.category === category && d.colour === colour);
       let verdict; let advice;
@@ -282,6 +282,7 @@ function registerShopping(deps) {
     level: { type: 'int', min: 1, max: 5 },
     styles: { type: 'enumArray', values: STYLES, max: 4 },
     season: { type: 'enum', values: SEASONS },
+    name: { type: 'string', max: 40 }, // v1.6: the kind of piece ("loafers") so the check and the simulation agree
   }), async (req, res, next) => {
     try { res.json(await service.check(req.user.id, req.valid)); } catch (e) { next(e); }
   });
