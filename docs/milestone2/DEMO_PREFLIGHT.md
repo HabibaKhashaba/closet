@@ -8,7 +8,7 @@ The expected values below come from `npm run demo:check` and the recorded walkth
 ```bash
 # PostgreSQL running, then from the repo root:
 npm run seed                                   # demo@closet.app / Closet2026!  (31 pieces)
-WEATHER_MODE=estimate npm start                # (re)start the server AFTER seeding
+npm --prefix server start                       # (re)start the server AFTER seeding
 npm --prefix server run demo:check -- --save   # on the presentation day only: saves TODAY's looks as the reference
 npm run seed && npm run demo:check             # fresh seed again → must end with "Ready: every demo check passed."
 ```
@@ -17,7 +17,10 @@ npm run seed && npm run demo:check             # fresh seed again → must end w
   The accessory in a look rotates with the date, because the ranking uses how many days ago each piece was last worn.
   A reference saved on another day therefore fails only the last check (“same looks … as the saved run”).
 - **Restart the server for every rehearsal.** Sign-in is limited to 30 attempts per 15 minutes (security feature).
-- `WEATHER_MODE=estimate` makes the weather repeatable (30 °C, labelled “Typical for the season”). The planned presentation was saved at 24 °C, so the Planner shows the weather-change alert.
+- **Weather — choose one, in `server/.env`, before seeding** (the seed and the server read the same setting):
+  - **Live (no `WEATHER_MODE` line):** the real Cairo forecast from Open-Meteo. The seed plans the presentation 6 °C below tomorrow’s **real** forecast, so the Planner alert quotes true numbers (e.g. “31 °C instead of 25 °C”). If tomorrow is under 24 °C there is no warm-weather alert, because it would not be true; skip that step. Looks, the seasonal-rotation card and the 30 °C values below change with the weather. Needs internet; without it the app falls back to the estimate and labels it.
+  - **Estimate (`WEATHER_MODE=estimate`):** repeatable, 30 °C labelled “estimate”, exactly the values in the table below (CI uses this).
+  - `npm run demo:check` passes in both modes; in live mode it lists the weather-dependent items as notes (•) instead of failing them.
 - If `demo:check` prints a ✗, the line says what to fix. Do not present until it passes.
 
 ## 2. Browser (1 min)
@@ -32,7 +35,7 @@ Aim for 5–7 minutes. **Bold** = the moment to pause on.
 
 | # | Step | Expected |
 |---|---|---|
-| 1 | **Home** | Today’s look, 30 °C (estimate), Closet noticed (≤ 2 notices), **Wardrobe status** with clickable counts: 3 in laundry, 1 borrowed (rose wrap dress, overdue), 1 packed, 1 needs repair (camel cardigan) |
+| 1 | **Home** | Today’s look, the weather (live forecast, or 30 °C labelled estimate), Closet noticed (≤ 2 notices), **Wardrobe status** with clickable counts: 3 in laundry, 1 borrowed (rose wrap dress, overdue), 1 packed, 1 needs repair (camel cardigan) |
 | 2 | Closet → Navy blazer → **In laundry** → Care → Laundry → **Wash done** | It appears in the basket, then Available again |
 | 3 | Black blazer → More actions → **Repair / Alter** → Needs alteration “Sleeves too long” → **Send to tailor** (Hany Tailoring, back today) → Care → Repairs & alterations → Style me → Work → **Mark collected** | AT TAILOR “should be ready today”; the black blazer is in **none** of the three Work looks; after collecting it is Available |
 | 4 | Black blazer → **Lend item** → Nour, due in 5 days → Borrow & lend → **Mark returned** | Borrowed everywhere; the rose wrap dress shows as overdue; after return the loan stays in History |
@@ -41,7 +44,7 @@ Aim for 5–7 minutes. **Bold** = the moment to pause on.
 | 7 | Home → Still love it? (**denim jacket · 104 days**) → Style it → **Donate** → Donation → navigate away → **Mark as donated** | Three looks with the jacket; Ready to donate waits under Donation; after Mark as donated it is gone, history kept, **no replacement** in the Shopping bag |
 | 8 | **Packing** → Alexandria, 2 days, carry-on → **Mark as packed** | A capsule that reuses pieces; every piece shows Packed in the Closet |
 | 9 | **Shopping → Do I need this?** Shoes · White · “loafers”, then Top · Black · “fitted top” | White loafers → **Good buy** (five blocks: new combinations, similar owned, gap, occasions, recommendation); black fitted top → **Skip**, you already own a similar one; nothing is added |
-| 10 | **Planner** → weather alert → **Adjust outfit** | “24 °C → 30 °C … the planned blazer may be too warm” → only the blazer changes |
+| 10 | **Planner** → weather alert → **Adjust outfit** | “It’s now expected to be X °C instead of X−6 °C … the planned navy blazer may be too warm” (estimate: 30 instead of 24) → only the blazer changes. Live and under 24 °C: no alert, skip |
 | 11 | **Analytics** → Wardrobe Health, Cost per wear, Outfit memory “Salma” | Health raising / lowering; only confirmed wears count; Salma’s birthday with Wear again · Create a variation |
 | 12 | **Ask Closet**: “What needs repair?” · “Who has my rose wrap dress?” · “What clothes are ready to donate?” | “Camel cardigan needs a repair: loose button” · “with Nour for 12 days (expected back Sat 24 Oct)” · “Nothing is waiting to be donated” |
 | 13 | **Home** | Reflects every change (30 pieces: the denim jacket was donated) |
@@ -51,7 +54,7 @@ Aim for 5–7 minutes. **Bold** = the moment to pause on.
 ## 4. Rules for what we say
 - Try-On is a **simulated preview**, not generated imagery.
 - Ask Closet uses the **keyword parser** (35 whitelisted functions); the language-model adapter is optional and off in the demo.
-- Weather is the **seasonal estimate** in the demo.
+- Weather: say which mode you use. Live = the real Open-Meteo forecast; estimate = a labelled seasonal estimate for a repeatable demo.
 - Closet is not connected to charities or tailors: Donation and Care keep the closet accurate; nothing is sent anywhere.
 - Deployment: “Render blueprint configured; the local demo is the verified presentation path.”
 

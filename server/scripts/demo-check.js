@@ -11,6 +11,9 @@ const EXPECTED = path.join(__dirname, 'demo-expected.json');
 const SAVE = process.argv.includes('--save');
 let failed = 0;
 const ok = (cond, what, detail = '') => { console.log(`${cond ? '  ✓' : '  ✗'} ${what}${detail ? ` — ${detail}` : ''}`); if (!cond) failed += 1; return cond; };
+// Live weather (no WEATHER_MODE): items that depend on the real forecast are reported, not failed.
+const note = (what) => console.log(`  • ${what}`);
+let LIVE = false;
 
 async function call(token, method, url, body, form) {
   const r = await fetch(B + url, { method, headers: { ...(token && { Authorization: `Bearer ${token}` }), ...(body && !form && { 'Content-Type': 'application/json' }) }, body: form || (body && JSON.stringify(body)) });
@@ -62,7 +65,9 @@ async function call(token, method, url, body, form) {
     shared = Math.max(shared, a.filter((x) => b2.includes(x)).length);
   }
   ok(shared <= 1, 'the three looks are different styling directions (≤ 1 shared major garment)', `max shared: ${shared}`);
-  ok(rec.weather.source === 'estimate', 'weather is the seasonal estimate (start the server with WEATHER_MODE=estimate for a repeatable demo)', `${rec.weather.tempC} °C · ${rec.weather.source}`);
+  LIVE = rec.weather.source !== 'estimate';
+  if (LIVE) note(`weather: LIVE forecast — ${rec.weather.tempC} °C · ${rec.weather.source}. Weather-dependent values below can differ from the preflight; set WEATHER_MODE=estimate for the repeatable demo.`);
+  else ok(true, 'weather is the seasonal estimate (repeatable demo)', `${rec.weather.tempC} °C · estimate`);
   const first = rec.outfits[0];
   const sw = (await api('POST', '/recommendations/swap', { itemIds: first.itemIds, slot: 0, occasion: 'University' })).data;
   ok((sw.options || []).length === 3, 'clicking the top of LOOK 01 offers three alternatives', (sw.options || []).map((o) => `${o.piece.name} ${o.outfit.compatibility}%`).join(', '));
@@ -99,11 +104,14 @@ async function call(token, method, url, body, form) {
   const f2 = (await api('GET', '/intelligence/forgotten')).data;
   ok(f2.top && f2.top.piece.name === 'Denim jacket' && f2.top.days === 104, '“Still love it?” → Denim jacket, 104 days', f2.top ? `${f2.top.piece.name} · ${f2.top.days} days` : 'none');
   const mon = (await api('GET', '/intelligence/monitor')).data.alerts;
-  ok(mon.some((a) => a.kind === 'weather' && /navy blazer/.test(a.message)), 'Planner monitor: tomorrow’s planned blazer is too warm (24 → 30 °C)', mon.map((a) => a.kind).join(', '));
+  const wx = mon.find((a) => a.kind === 'weather' && /navy blazer/.test(a.message));
+  if (LIVE && !wx) note('Planner: no weather alert for the presentation — tomorrow’s real forecast is under 24 °C, so a “too warm” alert would not be true (re-seed on a warm day to show it).');
+  else ok(Boolean(wx), 'Planner monitor: the planned navy blazer is too warm for the new forecast', wx ? wx.message.replace(/^.*?(It’s now expected[^.]*)\..*$/, '$1') : mon.map((a) => a.kind).join(', '));
   const bor = (await api('GET', '/intelligence/borrowed')).data;
   ok(bor.overdue.some((x) => x.borrowedBy === 'Nour'), 'Borrow tracker: the rose wrap dress is overdue (with Nour)');
   const sea = (await api('GET', '/intelligence/seasonal')).data;
-  ok(sea.pack.length >= 1, 'Seasonal rotation suggests cold-weather pieces at 30 °C (nothing moves until you confirm)', sea.pack.map((p) => p.name).join(', '));
+  if (LIVE && !sea.pack.length) note(`Seasonal rotation: nothing to store at ${sea.tempC} °C (it suggests storing cold-weather pieces only when it is hot)`);
+  else ok(sea.pack.length >= 1, `Seasonal rotation suggests cold-weather pieces at ${sea.tempC} °C (nothing moves until you confirm)`, sea.pack.map((p) => p.name).join(', '));
   const learned = (await api('GET', '/intelligence/learned')).data;
   const pats = learned.patterns || learned.learned || learned;
   ok(Array.isArray(pats) && pats.length >= 3, 'Closet has learned shows patterns with evidence', Array.isArray(pats) ? pats.map((p) => p.key).join(', ') : '');
@@ -133,11 +141,12 @@ async function call(token, method, url, body, form) {
   // ---------- same result as last time? ----------
   // The looks rotate by calendar day (ranking uses days since each piece was worn), so the reference is per UTC day.
   const today = new Date().toISOString().slice(0, 10);
-  const snapshot = { date: today, looks, fixed: fx.outfits.map((o) => o.title), mix: [good.compatibility, weak.compatibility, best && best.compatibility], tray: (sw.options || []).map((o) => o.piece.name), ask: fns.map((r) => r.function) };
+  const snapshot = { date: today, weather: `${rec.weather.source} ${rec.weather.tempC}`, looks, fixed: fx.outfits.map((o) => o.title), mix: [good.compatibility, weak.compatibility, best && best.compatibility], tray: (sw.options || []).map((o) => o.piece.name), ask: fns.map((r) => r.function) };
   if (SAVE) { fs.writeFileSync(EXPECTED, JSON.stringify(snapshot, null, 2)); console.log(`  • saved the expected demo results for ${today} to ${path.basename(EXPECTED)}`); }
   else if (fs.existsSync(EXPECTED)) {
-    const { date: savedOn, ...saved } = JSON.parse(fs.readFileSync(EXPECTED, 'utf8')); const { date: _d, ...now } = snapshot;
-    if (savedOn && savedOn !== today) console.log(`  • same-as-saved check skipped: the reference is from ${savedOn}, today is ${today} (looks rotate daily). Run with --save on the presentation day.`);
+    const { date: savedOn, weather: savedWx, ...saved } = JSON.parse(fs.readFileSync(EXPECTED, 'utf8')); const { date: _d, weather: nowWx, ...now } = snapshot;
+    if (savedWx && savedWx !== nowWx) console.log(`  • same-as-saved check skipped: the reference was saved with weather “${savedWx}”, now “${nowWx}”. Run with --save after the weather setting you will present with.`);
+    else if (savedOn && savedOn !== today) console.log(`  • same-as-saved check skipped: the reference is from ${savedOn}, today is ${today} (looks rotate daily). Run with --save on the presentation day.`);
     else ok(JSON.stringify(saved) === JSON.stringify(now), 'the demo gives the same looks, tray and scores as the saved run');
   }
   console.log(failed ? `\n${failed} check(s) failed — fix them before presenting.` : '\nReady: every demo check passed.');

@@ -2,15 +2,30 @@
 // (same validation, photo storage and events as a user). Wear history is back-dated with SQL
 // so that forgotten pieces, utilization and "recycle time" have something to show.
 // Usage: npm run seed   →  demo@closet.app / Closet2026!   (admin: admin@closet.app / Closet2026!)
-// Demo data must be the same on every machine: planned outfits store the forecast of their day, so the
-// seed always uses the seasonal estimate, never a live forecast (defect D-27, first real CI run).
-process.env.WEATHER_MODE = 'estimate';
+// Weather: the seed uses the same WEATHER_MODE as the server (both read server/.env), so planned outfits
+// store the same kind of forecast the server compares them with (defect D-27: CI seeded live, served estimate).
+//  - WEATHER_MODE=estimate → repeatable demo: the seasonal estimate everywhere (CI uses this).
+//  - no WEATHER_MODE      → real forecast from Open-Meteo everywhere; if the service is unreachable the
+//                            app falls back to the estimate and labels it.
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const { createApp } = require('../app');
 const { migrate } = require('./migrate');
 const { pool } = require('./pool');
+
+const { weatherAdapter } = require('../modules/recommendation/weatherAdapter');
+
+// The presentation is "planned last week" at a cooler forecast, so the Planner shows the weather-change alert.
+// Estimate mode: the fixed 24 °C from seedData. Live mode: 6 °C below the REAL forecast for that day, so the
+// alert quotes true numbers; on a day under 24 °C no warm-weather alert would be honest, so none is planted.
+async function plannedSnapshot(e) {
+  if (!e.plannedWeather) return null;
+  if (process.env.WEATHER_MODE === 'estimate') return e.plannedWeather;
+  const w = await weatherAdapter().forDate('Cairo', e.date);
+  if (w.source === 'estimate') return e.plannedWeather;   // service unreachable → same as estimate mode
+  return w.tempC >= 24 ? { tempC: w.tempC - 6, condition: e.plannedWeather.condition } : null;
+}
 
 const EMAIL = 'demo@closet.app';
 const ADMIN = 'admin@closet.app';
@@ -82,7 +97,8 @@ async function main() {
     for (const e of EVENTS) {
       const ev = await call('POST', '/events', { title: e.title, date: e.date, time: e.time, occasion: e.occasion }, token);
       if (e.plan) await call('PUT', `/events/${ev.id}/outfit`, { itemIds: e.plan.map((f) => ids[f]), ruleScore: 100, reasons: e.reasons }, token);
-      if (e.plannedWeather) await pool.query('UPDATE planner.events SET planned_temp_c = $2, planned_condition = $3 WHERE id = $1', [ev.id, e.plannedWeather.tempC, e.plannedWeather.condition]);
+      const planned = await plannedSnapshot(e);
+      if (planned) await pool.query('UPDATE planner.events SET planned_temp_c = $2, planned_condition = $3 WHERE id = $1', [ev.id, planned.tempC, planned.condition]);
     }
     // Rejected looks with reasons, back-dated, so "Closet has learned" has real evidence.
     for (const [d, files, reason] of REJECTS) {
