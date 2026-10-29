@@ -92,6 +92,7 @@ jobs:
           path: |
             e2e-shots/
             e2e-stateful/
+            e2e-lifecycle/
             e2e-result.txt
 
   # The offline demo (one HTML file, no server) must behave like the live app: same stateful journey.
@@ -117,4 +118,5 @@ jobs:
           path: |
             Closet_Demo.html
             offline-shots/
+            offline-lifecycle/
             offline-result.txt

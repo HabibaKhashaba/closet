@@ -1,4 +1,5 @@
 {
+  "date": "2026-10-29",
   "looks": [
     {
       "name": "Campus Stripes",
@@ -6,9 +7,9 @@
         "Breton striped top",
         "Cream pleated skirt",
         "Black loafers",
-        "Gold hoop earrings"
+        "Tortoise sunglasses"
       ],
-      "match": 99
+      "match": 98
     },
     {
       "name": "Clean Oxford",
@@ -26,9 +27,9 @@
         "Breton striped top",
         "Black midi skirt",
         "White sneakers",
-        "Gold hoop earrings"
+        "Tan leather tote"
       ],
-      "match": 99
+      "match": 98
     }
   ],
   "fixed": [
