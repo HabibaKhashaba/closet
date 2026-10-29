@@ -62,6 +62,7 @@ jobs:
           --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       NODE_ENV: development
+      WEATHER_MODE: estimate
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/closet
       JWT_SECRET: ci-secret
       PHOTO_URL_SECRET: ci-photo-secret
