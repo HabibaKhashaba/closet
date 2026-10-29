@@ -23,7 +23,7 @@ const KEY = /^[a-z0-9:-]{3,80}$/;
 const isoDay = (d) => new Date(d).toISOString().slice(0, 10);
 const addDays = (day, n) => isoDay(new Date(`${day}T12:00:00Z`).getTime() + n * 86400000);
 const pieceName = (p) => (p.name || `${p.colour} ${p.category}`).toLowerCase();
-const { WHERE } = require('../../shared/lifecycle'); // one wording for every state (v1.6)
+const { WHERE, isAre, onDay } = require('../../shared/lifecycle'); // one wording for every state (v1.6)
 const RAIN = /rain|shower|drizzle|thunder/i;
 const PUSH_LIMIT = 3; // NFR-13: at most 3 highlighted notices a day
 
@@ -82,7 +82,7 @@ function intelligenceService({ db, repo: givenRepo, wardrobe, outfits, profile, 
         out.push({
           key: `conflict:${e.id}:${p.id}`, kind: 'unavailable', eventId: e.id, event: { title: e.title, date: e.date, time: e.time, occasion: e.occasion },
           itemId: p.id, piece: p, status: p.status, expectedBack: p.expectedBack || null,
-          message: `Your ${pieceName(p)} is ${WHERE[p.status]}${p.expectedBack ? ` until ${p.expectedBack}` : ''}. It is part of the outfit for “${e.title}”. Choose a replacement?`,
+          message: `Your ${pieceName(p)} ${isAre(pieceName(p))} ${WHERE[p.status]}${p.expectedBack ? ` until ${onDay(p.expectedBack)}` : ''}. It is part of the outfit for “${e.title}”. Choose a replacement?`,
         });
       }
     }

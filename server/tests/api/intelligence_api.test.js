@@ -117,7 +117,7 @@ describe('Conflict detection (US-79)', () => {
     await api('patch', `/items/${P.loafers.id}/status`).send({ status: 'Packed', until: day(4), note: 'Alex' });
     const n = (await api('get', '/notifications')).body;
     const c = n.notifications.find((x) => x.kind === 'conflict');
-    expect(c.text).toMatch(/black loafers is packed until/);
+    expect(c.text).toMatch(/black loafers are packed until (Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d{1,2} [A-Z][a-z]{2}\./);
     expect(c.highlight).toBe(true);
   });
 });

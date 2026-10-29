@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="960" viewBox="0 0 1600 960" font-family="Inter, Helvetica, Arial, sans-serif">
+<defs><marker id="arr" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#2a2626"/></marker><marker id="open" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10" fill="none" stroke="#2a2626" stroke-width="1.5"/></marker><marker id="tri" markerWidth="16" markerHeight="14" refX="15" refY="7" orient="auto"><path d="M0,0 L15,7 L0,14 z" fill="#fff" stroke="#2a2626" stroke-width="1.4"/></marker><marker id="dia" markerWidth="18" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1,6 L9,1 L17,6 L9,11 z" fill="#2a2626"/></marker><marker id="arrR" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#9c5f5b"/></marker></defs>
+<rect width="1600" height="960" fill="#fffdfb"/>
+<text x="40" y="52" font-family="Lora, Georgia, serif" font-size="30" fill="#2a2626">State machine · one garment lifecycle (v1.6)</text>
+<text x="40" y="80" font-size="15" fill="#7d736f">Exactly one of 9 states per piece, 21 allowed moves (shared/lifecycle.js). Every status change goes through Availability.setStatus, which also opens / closes loans and care jobs.</text>
+<rect x="595" y="438" width="210" height="64" rx="32" fill="#e4f0e8" stroke="#4f8a66" stroke-width="2" opacity="1"/>
+<text x="700" y="476.3" text-anchor="middle" font-size="18" font-weight="700" fill="#2a2626" font-family="Lora, Georgia, serif">Available</text>
+<rect x="595" y="158" width="210" height="64" rx="32" fill="#e5ecf3" stroke="#3e5d80" stroke-width="2" opacity="1"/>
+<text x="700" y="196.3" text-anchor="middle" font-size="18" font-weight="700" fill="#2a2626" font-family="Lora, Georgia, serif">Laundry</text>
+<rect x="975" y="268" width="210" height="64" rx="32" fill="#f8ecdc" stroke="#b77a33" stroke-width="2" opacity="1"/>
+<text x="1080" y="306.3" text-anchor="middle" font-size="18" font-weight="700" fill="#2a2626" font-family="Lora, Georgia, serif">Borrowed</text>
+<rect x="975" y="578" width="210" height="64" rx="32" fill="#eee7f2" stroke="#7a5a9c" stroke-width="2" opacity="1"/>
+<text x="1080" y="616.3" text-anchor="middle" font-size="18" font-weight="700" fill="#2a2626" font-family="Lora, Georgia, serif">Packed</text>
+<rect x="975" y="818" width="210" height="64" rx="32" fill="#efeae6" stroke="#8f857c" stroke-width="2" opacity="1"/>
+<text x="1080" y="856.3" text-anchor="middle" font-size="18" font-weight="700" fill="#2a2626" font-family="Lora, Georgia, serif">Unavailable</text>
+<rect x="285" y="438" width="210" height="64" rx="32" fill="#f7e3e1" stroke="#b55450" stroke-width="2" opacity="1"/>
+<text x="390" y="476.3" text-anchor="middle" font-size="18" font-weight="700" fill="#2a2626" font-family="Lora, Georgia, serif">Needs repair</text>
+<rect x="285" y="728" width="210" height="64" rx="32" fill="#f7e3e1" stroke="#b55450" stroke-width="2" opacity="1"/>
+<text x="390" y="766.3" text-anchor="middle" font-size="18" font-weight="700" fill="#2a2626" font-family="Lora, Georgia, serif">Needs alteration</text>
+<rect x="35" y="583" width="210" height="64" rx="32" fill="#fbeede" stroke="#a86a2c" stroke-width="2" opacity="1"/>
+<text x="140" y="621.3" text-anchor="middle" font-size="18" font-weight="700" fill="#2a2626" font-family="Lora, Georgia, serif">At tailor</text>
+<rect x="595" y="728" width="210" height="64" rx="32" fill="#f3ecf6" stroke="#8a5aa0" stroke-width="2" opacity="1"/>
+<text x="700" y="766.3" text-anchor="middle" font-size="18" font-weight="700" fill="#2a2626" font-family="Lora, Georgia, serif">Ready to donate</text>
+<line x1="707.0" y1="429.6" x2="707.0" y2="230.4" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="693.0" y1="230.4" x2="693.0" y2="429.6" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="714.7" y="291.0" width="90.6" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="760" y="304.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">In laundry ↑</text>
+<rect x="598.0" y="291.0" width="83.9" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="640" y="304.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Wash done ↓</text>
+<line x1="785.8" y1="439.3" x2="999.9" y2="343.5" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="994.2" y1="330.7" x2="780.1" y2="426.5" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="868.2" y="397.9" width="70.5" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="903.4028627639601" y="411.1" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Lend item</text>
+<rect x="827.9" y="354.1" width="97.4" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="876.5971372360399" y="367.3" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Mark returned</text>
+<line x1="795.8" y1="512.8" x2="979.3" y2="580.4" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="984.2" y1="567.2" x2="800.7" y2="499.6" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="806.9" y="553.5" width="144.4" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="879.1216079735093" y="566.7" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Pack (trip / season)</text>
+<rect x="832.0" y="508.5" width="137.7" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="900.8783920264907" y="521.7" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Unpack · Bring back</text>
+<line x1="738.5" y1="518.3" x2="1031.7" y2="811.5" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="1041.5" y1="801.7" x2="748.3" y2="508.5" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="840.4" y="668.0" width="43.6" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="862.2294372515229" y="681.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Ready</text>
+<rect x="875.8" y="634.0" width="83.9" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="917.7705627484771" y="647.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Unavailable</text>
+<line x1="585.7" y1="463.0" x2="504.3" y2="463.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="504.3" y1="477.0" x2="585.7" y2="477.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="493.0" y="437.0" width="104.1" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="545.0" y="450.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Repair / Alter</text>
+<rect x="496.3" y="485.0" width="97.4" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="545.0" y="498.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Fixed at home</text>
+<line x1="651.7" y1="505.6" x2="428.7" y2="714.2" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="438.3" y1="724.4" x2="661.3" y2="515.8" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="466.5" y="588.5" width="104.1" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="518.5234297972845" y="601.7" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Repair / Alter</text>
+<rect x="522.8" y="623.5" width="97.4" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="571.4765702027155" y="636.7" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Fixed at home</text>
+<line x1="693.0" y1="510.7" x2="693.0" y2="719.3" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<line x1="707.0" y1="719.3" x2="707.0" y2="510.7" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="598.8" y="606.0" width="50.3" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="624.0" y="619.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Donate</text>
+<rect x="720.6" y="606.0" width="110.8" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="776.0" y="619.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Cancel donation</text>
+<path d="M1080 268 V170 H808" fill="none" stroke="#2a2626" stroke-width="1.5" marker-end="url(#arr)"/>
+<path d="M1185 610 H1250 V150 H808" fill="none" stroke="#2a2626" stroke-width="1.5" marker-end="url(#arr)"/>
+<rect x="803.8" y="141.0" width="312.4" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="960" y="154.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">came back dirty (Borrowed / Packed → Laundry)</text>
+<line x1="327.3" y1="506.4" x2="202.7" y2="578.6" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="173.0" y="519.5" width="104.1" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="225.0" y="532.7" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Send to tailor</text>
+<line x1="327.3" y1="723.6" x2="202.7" y2="651.4" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="169.0" y="692.5" width="104.1" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="221.0" y="705.7" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Send to tailor</text>
+<path d="M140 583 V330 H630 V436" fill="none" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="254.0" y="321.0" width="272.1" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="390" y="334.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Mark collected  (At tailor → Available)</text>
+<line x1="504.3" y1="760.0" x2="585.7" y2="760.0" stroke="#2a2626" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<rect x="519.8" y="735.0" width="50.3" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="545.0" y="748.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Donate</text>
+<text x="545" y="816.0" text-anchor="middle" font-size="11.5" font-weight="normal" fill="#7d736f">Needs repair → Ready to donate is allowed too</text>
+<circle cx="700" cy="905" r="11" fill="none" stroke="#2a2626" stroke-width="2"/><circle cx="700" cy="905" r="6" fill="#2a2626"/>
+<line x1="700.0" y1="794.0" x2="700.0" y2="890.0" stroke="#2a2626" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="727.6" y="843.0" width="184.7" height="18.0" rx="4" fill="#fffdfb"/>
+<text x="820" y="856.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#2a2626">Mark as donated → archived</text>
+<rect x="1290" y="300" width="290" height="390" rx="14" fill="#fbf8f5" stroke="#b9a99d" stroke-width="1.2" opacity="1"/>
+<text x="1306" y="330.4" text-anchor="start" font-size="12.5" font-weight="700" fill="#9c5f5b">WHAT EACH STATE MEANS</text>
+<text x="1306" y="356.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">Only Available is wearable</text>
+<text x="1306" y="379.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">   (Style me, plans, trips).</text>
+<text x="1306" y="402.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">Care screen: Laundry, Needs repair,</text>
+<text x="1306" y="425.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">   Needs alteration, At tailor.</text>
+<text x="1306" y="448.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">Borrowed: an open loan</text>
+<text x="1306" y="471.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">   (person, lent, due).</text>
+<text x="1306" y="494.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">At tailor: an open care job (tailor,</text>
+<text x="1306" y="517.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">   sent, expected back, cost) →</text>
+<text x="1306" y="540.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">   reminder on the day.</text>
+<text x="1306" y="563.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">Ready to donate: still owned, left</text>
+<text x="1306" y="586.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">   out of outfits, duplicates, gaps.</text>
+<text x="1306" y="609.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">Donated is not a state: archived</text>
+<text x="1306" y="632.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">   with reason Donated, history kept,</text>
+<text x="1306" y="655.4" text-anchor="start" font-size="12.5" font-weight="normal" fill="#2a2626">   no replacement (BR-12).</text>
+<text x="1435" y="734.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">81 ordered pairs tested (ST-01 – ST-06):</text>
+<text x="1435" y="754.2" text-anchor="middle" font-size="12" font-weight="normal" fill="#7d736f">21 valid, 60 rejected with 409.</text>
+</svg>

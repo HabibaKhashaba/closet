@@ -30,6 +30,13 @@ describe('LF lifecycle helpers', () => {
     expect(ins.forgottenCandidates(pieces, { today: NOW, tempC: 12 }).some((c) => c.id === 'camel_cardigan')).toBe(false);
     expect(pieces.find((p) => p.id === 'rose_wrap_dress').loan).toMatchObject({ person: 'Nour' });
   });
+  test('LF-06 message wording (D-23): plural garments take “are”, dates read as a day, never as ISO', () => {
+    expect(['black loafers', 'light-wash jeans', 'brown ankle boots'].map(L.isAre)).toEqual(['are', 'are', 'are']);
+    expect(['navy blazer', 'rose wrap dress', 'silk scarf'].map(L.isAre)).toEqual(['is', 'is', 'is']);
+    expect(L.onDay('2026-11-02')).toBe('Mon 2 Nov');
+    expect(L.onDay('2026-10-24T00:00:00.000Z')).toBe('Sat 24 Oct');
+    expect(L.onDay(null)).toBe('');
+  });
 });
 
 describe('LF-10 v1.6 Ask Closet prompts route to the function that owns the question', () => {

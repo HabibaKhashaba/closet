@@ -1,0 +1,51 @@
+{
+ "looks": [
+  [
+   "Campus Stripes",
+   [
+    "Breton striped top",
+    "Cream pleated skirt",
+    "White sneakers",
+    "Tortoise sunglasses"
+   ]
+  ],
+  [
+   "Relaxed Linen",
+   [
+    "Sage linen shirt",
+    "Beige wide-leg trousers",
+    "White sneakers",
+    "Tortoise sunglasses"
+   ]
+  ],
+  [
+   "Soft Midi",
+   [
+    "Breton striped top",
+    "Black midi skirt",
+    "Black loafers",
+    "Gold hoop earrings"
+   ]
+  ]
+ ],
+ "tray": [
+  "Sage linen shirt",
+  "Blue Oxford shirt",
+  "Red cropped tee"
+ ],
+ "forgotten": [
+  "Campus Denim",
+  "Clean Oxford",
+  "Classic Top"
+ ],
+ "mix": [
+  98,
+  82,
+  98,
+  "82% → 98% · red cropped tee → ivory silk blouse"
+ ],
+ "ask": [
+  "Probably not. You already own 2 similar beige bottoms. Style what you have first.\nSIMILAR PIECES YOU OWN\nBeige wide-leg trousers · 93% similar\nBlack tailored trousers · 73% similar\n→ Smart Shopping · do I need it? · understood by keyword parser",
+  "Added “Beige trousers” to your shopping list. You already own 2 similar pieces — have a look before you buy.\nSIMILAR PIECES YOU OWN\nBeige wide-leg trousers · 93% similar\nBlack tailored trousers · 73% similar\nBeige trousers · Added by Ask Closet\nOpen your shopping bag →\nUndo\n→ Smart Shopping · shopping list · understood by keyword parser"
+ ]
+}

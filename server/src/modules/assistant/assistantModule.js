@@ -22,7 +22,7 @@ function matchPieces(pieces, q) {
   const named = base.filter((p) => String(p.name || '').toLowerCase().includes(stem));
   return named.length ? named : base;
 }
-const { WHERE: WHERE_STATE, LABEL } = require('../../shared/lifecycle');
+const { WHERE: WHERE_STATE, LABEL, onDay } = require('../../shared/lifecycle');
 const WHERE = { ...WHERE_STATE, Available: 'Available — clean and at home' };
 const SCOPE = 'I can help with your wardrobe, outfits, laundry, shopping, weather and planner.';
 
@@ -204,10 +204,10 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
         return { reply: `Your ${lower(p)} isn’t at the tailor — it is ${WHERE_STATE[p.status]}.${why}`, pieces: [p], context: { pieceId: p.id } };
       }
       let extra = '';
-      if (p.status === 'Borrowed') extra = `${p.statusNote ? ` (with ${p.statusNote})` : ''}${p.expectedBack ? `, expected back ${p.expectedBack}` : ''}`;
+      if (p.status === 'Borrowed') extra = `${p.statusNote ? ` (with ${p.statusNote})` : ''}${p.expectedBack ? `, expected back ${onDay(p.expectedBack)}` : ''}`;
       else if (p.status === 'At tailor') extra = `${p.care && p.care.tailor ? ` (${p.care.tailor})` : ''}${p.care ? ` for ${p.care.kind === 'alteration' ? 'an alteration' : 'a repair'}: ${p.care.reason.toLowerCase()}` : ''}${p.expectedBack ? `. Expected back ${p.expectedBack}` : ''}`;
       else if (p.care) extra = ` (${p.care.reason.toLowerCase()})`;
-      else if (p.status !== 'Available' && p.expectedBack) extra = `, expected back ${p.expectedBack}`;
+      else if (p.status !== 'Available' && p.expectedBack) extra = `, expected back ${onDay(p.expectedBack)}`;
       return { reply: `Your ${lower(p)} is ${WHERE[p.status]}${extra}.`, pieces: [p], context: { pieceId: p.id } };
     },
     async laundry_list(userId) {
@@ -285,7 +285,7 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
       const lines = [
         ...c.needsRepair.map((p) => `${label(p)} needs a repair: ${p.care ? p.care.reason.toLowerCase() : 'no reason given'}`),
         ...c.needsAlteration.map((p) => `${label(p)} needs an alteration: ${p.care ? p.care.reason.toLowerCase() : 'no reason given'}`),
-        ...c.atTailor.map((p) => `${label(p)} is at the tailor${p.care && p.care.tailor ? ` (${p.care.tailor})` : ''}, expected back ${p.statusUntil}${p.due ? ' — ready to collect' : ''}`),
+        ...c.atTailor.map((p) => `${label(p)} is at the tailor${p.care && p.care.tailor ? ` (${p.care.tailor})` : ''}, expected back ${onDay(p.statusUntil)}${p.due ? ' — ready to collect' : ''}`),
       ];
       if (!lines.length) return { reply: `Nothing needs repair or alteration, and nothing is at the tailor.${c.laundry ? ` ${c.laundry} piece${c.laundry === 1 ? ' is' : 's are'} in the laundry.` : ''}` };
       return { reply: `• ${lines.join('\n• ')}`, pieces: [...c.needsRepair, ...c.needsAlteration, ...c.atTailor], piecesTitle: 'In Care' };
@@ -299,7 +299,7 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
       const due = a.date || addDays(isoDay(Date.now()), 7);
       await availability.lend(userId, p.id, { person: a.person, dueOn: due });
       const undoId = await logAction(userId, 'lend_piece', { type: 'lend', itemId: p.id });
-      return { reply: `Done: your ${lower(p)} is lent to ${a.person}, due back ${due}. It won’t appear in outfits until it’s back.`, pieces: [{ ...p, status: 'Borrowed' }], undoId, context: { pieceId: p.id } };
+      return { reply: `Done: your ${lower(p)} is lent to ${a.person}, due back ${onDay(due)}. It won’t appear in outfits until it’s back.`, pieces: [{ ...p, status: 'Borrowed' }], undoId, context: { pieceId: p.id } };
     },
     async unpacked(userId) {
       const trips = packing ? await packing().trips(userId) : [];

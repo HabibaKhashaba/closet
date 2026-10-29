@@ -1,0 +1,24 @@
+{
+ "target": "live app",
+ "repair": [
+  "Your black blazer is at the tailor (Hany Tailoring) for an alteration: sleeves too long. Expected back 2026-10-29.\nAt tailor\nBlack blazer\n→ Availability · status · understood by keyword parser",
+  "• Camel cardigan needs a repair: loose button\n• Black blazer is at the tailor (Hany Tailoring), expected back Thu 29 Oct — ready to collect\nIN CARE\nNeeds repair\nCamel cardigan\nAt tailor\nBlack blazer\n→ care_list · understood by keyword parser"
+ ],
+ "lend": "Your black blazer has been with Nour for 0 days.\nBorrowed\nBlack blazer\n→ Borrow tracker · understood by keyword parser",
+ "packing": {
+  "pieces": 5,
+  "ask": "Everything for Alexandria is packed (5 pieces).→ unpacked · understood by keyword parser"
+ },
+ "purchase": {
+  "useful": [
+   "Useful purchase",
+   50
+  ],
+  "duplicate": [
+   "Optional",
+   24,
+   1
+  ]
+ },
+ "weather": "It’s now expected to be 30 °C instead of 24 °C — 6 °C warmer. Your planned navy blazer may be too warm."
+}

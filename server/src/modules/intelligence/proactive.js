@@ -22,7 +22,7 @@ const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
 const { OCCASIONS } = require('../../shared/vocabulary');
 const { PASSED_ON } = require('../../shared/deletionPolicy');
-const { isLeaving, isOwned, WHERE } = require('../../shared/lifecycle');
+const { isLeaving, isOwned, WHERE, isAre, onDay } = require('../../shared/lifecycle');
 const ins = require('./insights');
 
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -106,7 +106,7 @@ function proactiveService({ repo, wardrobe, outfits, profile, planner, rec, avai
       const alerts = [];
       for (const c of (await intelligence.conflicts(userId)).conflicts.filter((x) => x.kind === 'unavailable')) {
         alerts.push({ key: `availability:${c.eventId}:${c.itemId}`, kind: 'availability', eventId: c.eventId, event: c.event, itemId: c.itemId, piece: c.piece, status: c.status,
-          message: `Your ${label(c.piece)} is ${WHERE[c.status] || 'not available'}${c.expectedBack ? ` until ${c.expectedBack}` : ''}, but it’s part of the outfit for “${c.event.title}”.`,
+          message: `Your ${label(c.piece)} ${isAre(label(c.piece))} ${WHERE[c.status] || 'not available'}${c.expectedBack ? ` until ${onDay(c.expectedBack)}` : ''}, but it’s part of the outfit for “${c.event.title}”.`,
           actions: c.status === 'Laundry' ? ['Replace item', 'Wash first', 'Ignore'] : ['Replace item', 'Ignore'], replacement: c.replacement ? { id: c.replacement.piece.id, name: c.replacement.piece.name } : null });
       }
       for (const e of events) {
@@ -140,7 +140,7 @@ function proactiveService({ repo, wardrobe, outfits, profile, planner, rec, avai
         const days = since ? Math.round((new Date(`${t}T12:00:00Z`) - new Date(`${since}T12:00:00Z`)) / 86400000) : null;
         const overdue = Boolean(p.statusUntil && p.statusUntil < t);
         return { id: p.id, piece: p, borrowedBy: p.statusNote || null, since, expected: p.statusUntil, days, overdue, remindLater: later.get(p.id) || null,
-          message: `Your ${label(p)} has been with ${p.statusNote || 'someone'} for ${days} day${days === 1 ? '' : 's'}${overdue ? ` (expected back ${p.statusUntil})` : ''}.` };
+          message: `Your ${label(p)} has been with ${p.statusNote || 'someone'} for ${days} day${days === 1 ? '' : 's'}${overdue ? ` (expected back ${onDay(p.statusUntil)})` : ''}.` };
       });
       return { borrowed: list, overdue: list.filter((x) => x.overdue && !x.remindLater) };
     },

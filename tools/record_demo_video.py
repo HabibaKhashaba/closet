@@ -120,7 +120,7 @@ with sync_playwright() as p:
     # 9 SHOPPING — purchase simulation
     nav('Shopping bag'); scroll_to('input[aria-label="What is it"]')
     pg.select_option('select[aria-label="Category"]', 'Shoes'); pg.select_option('select[aria-label="Colour"]', 'White'); pg.fill('input[aria-label="What is it"]', ''); type_in('input[aria-label="What is it"]', 'loafers')
-    click('button:has-text("Check my closet")'); wait(1.6); scroll_to('.impact-blocks'); cap('White loafers: new combinations, similar owned, gap, occasions → a useful purchase (simulated)', 3.4)
+    click('button:has-text("Check my closet")'); wait(1.6); scroll_to('.impact-blocks'); cap('White loafers: new combinations, similar owned, gap, occasions → a useful purchase (simulated)', 3.4); nocap()
     scroll_to('input[aria-label="What is it"]'); pg.select_option('select[aria-label="Category"]', 'Top'); pg.select_option('select[aria-label="Colour"]', 'Black'); pg.fill('input[aria-label="What is it"]', ''); type_in('input[aria-label="What is it"]', 'fitted top')
     click('button:has-text("Check my closet")'); wait(1.6); scroll_to('.impact-blocks'); cap('A black fitted top: you already own a similar one — lower value. Nothing was added', 3.4)
     # 10 PLANNER

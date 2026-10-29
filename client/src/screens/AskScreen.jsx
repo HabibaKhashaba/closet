@@ -110,7 +110,7 @@ export default function AskScreen({ query }) {
           </section>
           <section className="card pad tint-lilac">
             <div className="eyebrow" style={{ marginBottom: 8 }}>How it works</div>
-            <p className="small">The <b>language model</b> only picks one of 31 Closet functions and fills in its details. It never sees your photos or the database, and it can’t invent pieces.</p>
+            <p className="small">The <b>language model</b> only picks one of 35 Closet functions and fills in its details. It never sees your photos or the database, and it can’t invent pieces.</p>
             <p className="small" style={{ marginTop: 8 }}>Now answering: <b>{model === 'anthropic' || model === 'openai' ? `${model} model` : 'keyword parser'}</b>{model && model !== 'anthropic' && model !== 'openai' ? ' (no API key set — same functions, simpler understanding).' : '.'}</p>
           </section>
           <SprintNote n={3} />

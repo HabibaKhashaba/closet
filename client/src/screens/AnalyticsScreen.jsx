@@ -130,7 +130,7 @@ function StillLove() {
       )}
       <div className="notice info small" style={{ marginTop: 16 }}><Icon name="heart" size={16} />
         <span>{pending.length ? <><b>{pending.length} piece{pending.length === 1 ? ' is' : 's are'} ready to donate.</b> </> : ''}{f.data?.stats.donated ? `${f.data.stats.donated} donated so far. ` : ''}Everything waiting to be donated is under <a className="link" href="#/donation">Donation</a>.</span></div>
-      {donate && <DonateFlow piece={donate} onClose={() => { setDonate(null); f.reload(true); }} onChanged={() => f.reload(true)} />}
+      {donate && <DonateFlow piece={donate} onClose={() => { setDonate(null); f.reload(true); }}  />}
     </section>
   );
 }

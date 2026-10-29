@@ -1,0 +1,61 @@
+{
+ "target": "live app",
+ "max_shared_major_garments": 1,
+ "ask": [
+  [
+   "What should I wear to university tomorrow?",
+   "Here are 3 Casual outfits for university on 2026-10-30 (30 °C, estimated). Say “change the shoes” to swap one piece.\nCampus Stripes\nUniversity\n98% match\nTry on\n"
+  ],
+  [
+   "Is my navy blazer clean?",
+   "Your navy blazer is Available — clean and at home.\nNavy blazer\n→ Availability · status · understood by keyword parser"
+  ],
+  [
+   "Put the navy blazer in the wash.",
+   "Done: your navy blazer is now Laundry. It won’t appear in outfits until it’s back.\nIn laundry\nNavy blazer\nUndo\n→ Availability · understood by keyword parser"
+  ],
+  [
+   "Is my navy blazer clean?",
+   "Your navy blazer is in the laundry, expected back Sat 31 Oct.\nIn laundry\nNavy blazer\n→ Availability · status · understood by keyword parser"
+  ],
+  [
+   "Laundry is done.",
+   "Wash done: 1 piece is Available again.\nUndo\n→ Availability · wash done · understood by keyword parser"
+  ],
+  [
+   "Do I need beige trousers?",
+   "Probably not. You already own 2 similar beige bottoms. Style what you have first.\nSIMILAR PIECES YOU OWN\nBeige wide-leg trousers · 93% similar\nBlack tailored tr"
+  ],
+  [
+   "Add this to my shopping list.",
+   "Added “Beige trousers” to your shopping list. You already own 2 similar pieces — have a look before you buy.\nSIMILAR PIECES YOU OWN\nBeige wide-leg trousers · 93"
+  ],
+  [
+   "Who has my rose wrap dress?",
+   "Your rose wrap dress has been with Nour for 12 days (expected back Sat 24 Oct).\nBorrowed\nRose wrap dress\n→ Borrow tracker · understood by keyword parser"
+  ],
+  [
+   "What has the best cost per wear?",
+   "Best value so far:\n• White fitted tee: EGP 28.13 per wear (450 ÷ 16 wears)\n• Light-wash jeans: EGP 72.22 per wear (1,300 ÷ 18 wears)\n• White sneakers: EGP 100 p"
+  ],
+  [
+   "Is tomorrow’s outfit still okay for the weather?",
+   "It’s now expected to be 30 °C instead of 24 °C — 6 °C warmer. Your planned navy blazer may be too warm.\nOpen the Planner to adjust\n→ Planned-outfit monitor · un"
+  ],
+  [
+   "Pack me for 5 days in Paris with a carry-on",
+   "Paris, 5 days, carry-on: 6 clothing pieces, 2 pairs of shoes and 1 accessory → 12 possible outfits. Pieces worn more than once: black ribbed top, beige wide-leg"
+  ],
+  [
+   "Tell me a joke",
+   "I can help with your wardrobe, outfits, laundry, shopping, weather and planner. Try one of these:\nWhat should I wear to university tomorrow?\nIs my blazer clean?"
+  ]
+ ],
+ "mix": [
+  98,
+  82,
+  98
+ ],
+ "weather_adjust": "It’s now expected to be 30 °C instead of 24 °C — 6 °C warmer. Your planned navy blazer may be too warm.",
+ "capsule": "2 clothing pieces, 1 pair of shoes and 1 accessory → 2 possible outfits."
+}

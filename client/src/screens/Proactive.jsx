@@ -81,7 +81,9 @@ export function StillLoveIt({ candidate, onChanged, compact }) {
           <div className="row end" style={{ marginTop: 16 }}><button type="button" className="btn" onClick={() => doKeep(null)}>Just keep it</button></div>
         </Modal>
       )}
-      {donate && <DonateFlow piece={p} onClose={() => setDonate(false)} onChanged={() => onChanged && onChanged()} />}
+      {/* Refresh the card only when the dialog closes: refreshing on Ready to donate would replace this
+          candidate and unmount the open dialog before the user sees Mark as donated (defect D-22). */}
+      {donate && <DonateFlow piece={p} onClose={() => { setDonate(false); onChanged && onChanged(); }} />}
     </section>
   );
 }

@@ -56,4 +56,10 @@ const needsCare = (p) => ['Needs repair', 'Needs alteration'].includes(statusOf(
 // Comes back by itself on a date (planner: not a conflict if it is back in time)?
 const returnsOnDate = (p) => ['Laundry', 'Borrowed', 'Packed', 'At tailor', 'Unavailable'].includes(statusOf(p));
 
-module.exports = { LIFECYCLE, ALLOWED, GROUP, LABEL, WHERE, CARE_KIND, NEEDS, canMove, statusOf, isWearable, isLeaving, isOwned, inCare, needsCare, returnsOnDate };
+// Wording helpers for messages (defect D-23): "Your black loafers ARE packed until Mon 2 Nov", never "is … 2026-11-02".
+const isAre = (name) => (/[^s]s$/i.test(String(name || '').trim()) ? 'are' : 'is');
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const onDay = (iso) => { if (!iso) return ''; const d = new Date(`${String(iso).slice(0, 10)}T00:00:00Z`); return Number.isNaN(+d) ? String(iso) : `${WD[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]}`; };
+
+module.exports = { isAre, onDay, LIFECYCLE, ALLOWED, GROUP, LABEL, WHERE, CARE_KIND, NEEDS, canMove, statusOf, isWearable, isLeaving, isOwned, inCare, needsCare, returnsOnDate };

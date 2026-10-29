@@ -1,0 +1,141 @@
+=== fresh seed 1
+Closet demo preflight → http://localhost:4000/api/v1
+  ✓ server is up
+  ✓ demo user demo@closet.app signs in
+  ✓ the seeded closet has 31 pieces — 31
+  ✓ piece “Navy blazer” exists
+  ✓ piece “Silk scarf” exists
+  ✓ piece “Denim jacket” exists
+  ✓ piece “Red cropped tee” exists
+  ✓ piece “Beige wide-leg trousers” exists
+  ✓ piece “Breton striped top” exists
+  ✓ piece “Ivory silk blouse” exists
+  ✓ Navy blazer is Available (Act 2 moves it to the laundry) — Available
+  ✓ Silk scarf is Available (Act 6 deletes it)
+  ✓ Black blazer is Available (Acts 3–4: alteration at the tailor, then lent to Nour) — Available
+  ✓ Care: the camel cardigan needs a repair (loose button); nothing at the tailor — Camel cardigan · Loose button
+  ✓ Borrow & lend: the rose wrap dress is with Nour and overdue — Rose wrap dress · 5 days overdue
+  ✓ Donation: nothing is waiting yet (Act 7 adds the denim jacket)
+  ✓ three pieces wait in the laundry basket — Light-wash jeans, Black ribbed top, White fitted tee
+  ✓ Denim jacket is a forgotten piece (Act 4) — Brown ankle boots, Cream knit sweater, Denim jacket, Silk scarf, Cream pleated skirt, Blush satin cami
+  ✓ no learned preference is confirmed yet (Act 8 confirms and undoes one)
+  ✓ Style me → University gives exactly three looks
+  ✓ the three looks have three different names — Campus Stripes · Clean Oxford · Relaxed Midi
+  ✓ the three looks are different styling directions (≤ 1 shared major garment) — max shared: 1
+  ✓ weather is the seasonal estimate (start the server with WEATHER_MODE=estimate for a repeatable demo) — 30 °C · estimate
+  ✓ clicking the top of LOOK 01 offers three alternatives — Blue Oxford shirt 97%, Sage linen shirt 97%, Red cropped tee 88%
+  ✓ Another chance → three looks, every one with the denim jacket
+  ✓ Mix & Match: the red cropped tee lowers the Work look — 98% → 82%
+  ✓ Suggest a fix replaces the tee and raises the score — 82% → 98%
+  ✓ the shopping bag already holds replacements from earlier deletions — Black ballet flats, Black straight jeans · next size
+  ✓ no silk-scarf replacement yet (Act 6 adds it)
+  ✓ Ask Closet answers “Do I need beige trousers?” — buy_check · Probably not. You already own 2 similar beige bottoms. Style what you …
+  ✓ Ask Closet: 10 different questions → 10 different functions — recommend, availability, donate_candidates, borrowed, laundry_risk, memory, health, plan_check, trip_pack, help
+  ✓ Ask Closet: 10 different answers, none about beige trousers
+  ✓ “Still love it?” → Denim jacket, 104 days — Denim jacket · 104 days
+  ✓ Planner monitor: tomorrow’s planned blazer is too warm (24 → 30 °C) — weather
+  ✓ Borrow tracker: the rose wrap dress is overdue (with Nour)
+  ✓ Seasonal rotation suggests cold-weather pieces at 30 °C (nothing moves until you confirm) — Brown ankle boots, Cream knit sweater
+  ✓ Closet has learned shows patterns with evidence — let-go-streetwear, less-formal, style-elegant, neutral-brown
+  ✓ a throwaway account for the deletion check
+  ✓ “No longer my style” creates no replacement
+  ✓ “Torn / damaged” puts a replacement in the bag
+  ✓ Save then Favourite keeps ONE look, and it is in Favourites
+  ✓ the throwaway account is deleted again
+  ✓ the demo gives the same looks, tray and scores as the saved run
+
+Ready: every demo check passed.
+=== fresh seed 2
+Closet demo preflight → http://localhost:4000/api/v1
+  ✓ server is up
+  ✓ demo user demo@closet.app signs in
+  ✓ the seeded closet has 31 pieces — 31
+  ✓ piece “Navy blazer” exists
+  ✓ piece “Silk scarf” exists
+  ✓ piece “Denim jacket” exists
+  ✓ piece “Red cropped tee” exists
+  ✓ piece “Beige wide-leg trousers” exists
+  ✓ piece “Breton striped top” exists
+  ✓ piece “Ivory silk blouse” exists
+  ✓ Navy blazer is Available (Act 2 moves it to the laundry) — Available
+  ✓ Silk scarf is Available (Act 6 deletes it)
+  ✓ Black blazer is Available (Acts 3–4: alteration at the tailor, then lent to Nour) — Available
+  ✓ Care: the camel cardigan needs a repair (loose button); nothing at the tailor — Camel cardigan · Loose button
+  ✓ Borrow & lend: the rose wrap dress is with Nour and overdue — Rose wrap dress · 5 days overdue
+  ✓ Donation: nothing is waiting yet (Act 7 adds the denim jacket)
+  ✓ three pieces wait in the laundry basket — Light-wash jeans, Black ribbed top, White fitted tee
+  ✓ Denim jacket is a forgotten piece (Act 4) — Brown ankle boots, Cream knit sweater, Denim jacket, Silk scarf, Cream pleated skirt, Blush satin cami
+  ✓ no learned preference is confirmed yet (Act 8 confirms and undoes one)
+  ✓ Style me → University gives exactly three looks
+  ✓ the three looks have three different names — Campus Stripes · Clean Oxford · Relaxed Midi
+  ✓ the three looks are different styling directions (≤ 1 shared major garment) — max shared: 1
+  ✓ weather is the seasonal estimate (start the server with WEATHER_MODE=estimate for a repeatable demo) — 30 °C · estimate
+  ✓ clicking the top of LOOK 01 offers three alternatives — Blue Oxford shirt 97%, Sage linen shirt 97%, Red cropped tee 88%
+  ✓ Another chance → three looks, every one with the denim jacket
+  ✓ Mix & Match: the red cropped tee lowers the Work look — 98% → 82%
+  ✓ Suggest a fix replaces the tee and raises the score — 82% → 98%
+  ✓ the shopping bag already holds replacements from earlier deletions — Black ballet flats, Black straight jeans · next size
+  ✓ no silk-scarf replacement yet (Act 6 adds it)
+  ✓ Ask Closet answers “Do I need beige trousers?” — buy_check · Probably not. You already own 2 similar beige bottoms. Style what you …
+  ✓ Ask Closet: 10 different questions → 10 different functions — recommend, availability, donate_candidates, borrowed, laundry_risk, memory, health, plan_check, trip_pack, help
+  ✓ Ask Closet: 10 different answers, none about beige trousers
+  ✓ “Still love it?” → Denim jacket, 104 days — Denim jacket · 104 days
+  ✓ Planner monitor: tomorrow’s planned blazer is too warm (24 → 30 °C) — weather
+  ✓ Borrow tracker: the rose wrap dress is overdue (with Nour)
+  ✓ Seasonal rotation suggests cold-weather pieces at 30 °C (nothing moves until you confirm) — Brown ankle boots, Cream knit sweater
+  ✓ Closet has learned shows patterns with evidence — let-go-streetwear, less-formal, style-elegant, neutral-brown
+  ✓ a throwaway account for the deletion check
+  ✓ “No longer my style” creates no replacement
+  ✓ “Torn / damaged” puts a replacement in the bag
+  ✓ Save then Favourite keeps ONE look, and it is in Favourites
+  ✓ the throwaway account is deleted again
+  ✓ the demo gives the same looks, tray and scores as the saved run
+
+Ready: every demo check passed.
+=== fresh seed 3
+Closet demo preflight → http://localhost:4000/api/v1
+  ✓ server is up
+  ✓ demo user demo@closet.app signs in
+  ✓ the seeded closet has 31 pieces — 31
+  ✓ piece “Navy blazer” exists
+  ✓ piece “Silk scarf” exists
+  ✓ piece “Denim jacket” exists
+  ✓ piece “Red cropped tee” exists
+  ✓ piece “Beige wide-leg trousers” exists
+  ✓ piece “Breton striped top” exists
+  ✓ piece “Ivory silk blouse” exists
+  ✓ Navy blazer is Available (Act 2 moves it to the laundry) — Available
+  ✓ Silk scarf is Available (Act 6 deletes it)
+  ✓ Black blazer is Available (Acts 3–4: alteration at the tailor, then lent to Nour) — Available
+  ✓ Care: the camel cardigan needs a repair (loose button); nothing at the tailor — Camel cardigan · Loose button
+  ✓ Borrow & lend: the rose wrap dress is with Nour and overdue — Rose wrap dress · 5 days overdue
+  ✓ Donation: nothing is waiting yet (Act 7 adds the denim jacket)
+  ✓ three pieces wait in the laundry basket — Light-wash jeans, Black ribbed top, White fitted tee
+  ✓ Denim jacket is a forgotten piece (Act 4) — Brown ankle boots, Cream knit sweater, Denim jacket, Silk scarf, Cream pleated skirt, Blush satin cami
+  ✓ no learned preference is confirmed yet (Act 8 confirms and undoes one)
+  ✓ Style me → University gives exactly three looks
+  ✓ the three looks have three different names — Campus Stripes · Clean Oxford · Relaxed Midi
+  ✓ the three looks are different styling directions (≤ 1 shared major garment) — max shared: 1
+  ✓ weather is the seasonal estimate (start the server with WEATHER_MODE=estimate for a repeatable demo) — 30 °C · estimate
+  ✓ clicking the top of LOOK 01 offers three alternatives — Blue Oxford shirt 97%, Sage linen shirt 97%, Red cropped tee 88%
+  ✓ Another chance → three looks, every one with the denim jacket
+  ✓ Mix & Match: the red cropped tee lowers the Work look — 98% → 82%
+  ✓ Suggest a fix replaces the tee and raises the score — 82% → 98%
+  ✓ the shopping bag already holds replacements from earlier deletions — Black ballet flats, Black straight jeans · next size
+  ✓ no silk-scarf replacement yet (Act 6 adds it)
+  ✓ Ask Closet answers “Do I need beige trousers?” — buy_check · Probably not. You already own 2 similar beige bottoms. Style what you …
+  ✓ Ask Closet: 10 different questions → 10 different functions — recommend, availability, donate_candidates, borrowed, laundry_risk, memory, health, plan_check, trip_pack, help
+  ✓ Ask Closet: 10 different answers, none about beige trousers
+  ✓ “Still love it?” → Denim jacket, 104 days — Denim jacket · 104 days
+  ✓ Planner monitor: tomorrow’s planned blazer is too warm (24 → 30 °C) — weather
+  ✓ Borrow tracker: the rose wrap dress is overdue (with Nour)
+  ✓ Seasonal rotation suggests cold-weather pieces at 30 °C (nothing moves until you confirm) — Brown ankle boots, Cream knit sweater
+  ✓ Closet has learned shows patterns with evidence — let-go-streetwear, less-formal, style-elegant, neutral-brown
+  ✓ a throwaway account for the deletion check
+  ✓ “No longer my style” creates no replacement
+  ✓ “Torn / damaged” puts a replacement in the bag
+  ✓ Save then Favourite keeps ONE look, and it is in Favourites
+  ✓ the throwaway account is deleted again
+  ✓ the demo gives the same looks, tray and scores as the saved run
+
+Ready: every demo check passed.

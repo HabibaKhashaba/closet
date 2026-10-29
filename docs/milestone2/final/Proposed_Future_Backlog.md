@@ -240,6 +240,77 @@ Acceptance criteria:
 
 Priority Medium · 3 points · depends on — · NFR-18
 
+### US-112 — One status I can trust
+
+As a user, I want every piece to show exactly one state that every screen agrees on, and a summary on Home, so that I know what I can wear.
+
+Acceptance criteria:
+- Nine states, 21 allowed moves; others → 409
+- Only Available appears in outfits, plans and trips
+- Home Wardrobe status counts open the place where each state is managed
+
+Priority High · 3 points · depends on US-13, US-15 · FR-102, FR-107 · added in v1.6 (revision 5)
+
+### US-113 — Repairs, alterations and the tailor
+
+As a user, I want to record that a piece needs a repair or an alteration, send it to a tailor and be reminded when it should be ready, so that it comes back into my outfits.
+
+Acceptance criteria:
+- Reason required; optional notes
+- Tailor, sent, expected back, cost
+- Left out of outfits while away
+- Reminder on the expected day; Remind me later
+- Mark collected → Available, history kept
+
+Priority High · 5 points · depends on US-112 · FR-103, FR-104 · added in v1.6 (revision 5)
+
+### US-114 — Borrow & lend
+
+As a user, I want to record who borrowed a piece and when it is due, so that I get it back.
+
+Acceptance criteria:
+- Person required; lent and due dates
+- Overdue first
+- Mark returned → Available; history kept
+- Planner conflict for a lent planned piece
+
+Priority Medium · 3 points · depends on US-112, US-101 · FR-105 · added in v1.6 (revision 5)
+
+### US-115 — Donate a piece
+
+As a user, I want to set aside pieces to donate and confirm when they have left, so that my closet stays accurate and nothing is re-bought.
+
+Acceptance criteria:
+- Donate only (no give / sell)
+- Ready to donate stays in the closet, out of outfits
+- Mark as donated: archived, history kept, no replacement
+- Cancel donation restores it
+- Analytics shows the donated count
+
+Priority Medium · 3 points · depends on US-95 · FR-106 · added in v1.6 (revision 5)
+
+### US-116 — See the intelligence features in the app
+
+As a user, I want the repeat insight, outfit memory, multi-day plan, gap confidence and rescue to be buttons in the app, not only answers in Ask Closet.
+
+Acceptance criteria:
+- Each has a visible entry point
+- Same rules as the API
+- Nothing changes without a click
+
+Priority Medium · 5 points · depends on US-97 – US-107 · FR-109, FR-110, FR-113 · added in v1.6 (revision 5)
+
+### US-117 — Ask Closet about care, loans and donations
+
+As a user, I want to ask what needs repair, who has my blazer, what is ready to donate and what I haven’t packed.
+
+Acceptance criteria:
+- 35 functions
+- Questions read state only
+- Lend from a sentence (person + date)
+
+Priority Medium · 2 points · depends on US-110 · FR-111, FR-112 · added in v1.6 (revision 5)
+
 ## Not built (ideas only)
 
 - Learn the thresholds (90 days unworn, 5 °C weather change) from each user’s own behaviour instead of fixed constants.
