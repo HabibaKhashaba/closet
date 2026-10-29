@@ -9,6 +9,25 @@ Closet is an AI-powered wardrobe assistant. You photograph each piece once; Clos
 
 **Jira:** https://aucegypt-team-r73i3oon.atlassian.net/jira/software/projects/SCRUM/boards/1
 
+## Team roles
+
+| Member | Role |
+| --- | --- |
+| Habiba | Requirements and user research |
+| Salma | Frontend |
+| Bashar | Recommendation engine and AI · UML use case diagram |
+| Karim | Backend and database |
+| Youssef | Testing, integration and deployment · UML component diagram |
+
+## How we work
+
+- `main` is always deployable; work happens on feature branches named `US-xx-short-name`.
+- Every change goes through a pull request reviewed by a teammate; tests run on every pull request (`.github/workflows/ci.yml`).
+- Commit messages and branches reference the Jira story (e.g. `US-19`), so Jira links them automatically.
+- The requirements and design documents are updated at every sprint review, with tracked changes.
+
+Milestone 1 deliverables (requirements and architecture PDF, UML diagrams, clickable prototype, Jira backlog import) are in `docs/milestone1/`.
+
 ## Sprint 1 – “A working closet” (done)
 
 | Story | What you can do |
