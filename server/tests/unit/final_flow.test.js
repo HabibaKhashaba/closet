@@ -1,13 +1,13 @@
 // Unit tests (final pass): editorial look names, Style-this-piece with a warm layer, the wider
 // replace tray, and where the photo try-on preview places each kind of piece.
 const engine = require('../../src/modules/recommendation/engine');
-
+ 
 let n = 0;
 const piece = (category, colour, extra = {}) => ({
   id: `00000000-0000-0000-0000-${String(++n).padStart(12, '0')}`,
   category, colour, fabric: 'Cotton', season: 'All seasons', styles: ['Classic'], dressCodes: [1, 2], modest: true, status: 'Available', wearCount: 1, lastWornAt: new Date(Date.now() - 10 * 86400000), ...extra,
 });
-
+ 
 describe('Final pass — recommendation details', () => {
   test('RE-30 three looks that share pieces still get three different names', () => {
     const t = piece('Top', 'Navy', { name: 'Breton striped top' }); const b1 = piece('Bottom', 'Beige', { name: 'Beige wide-leg trousers' });
@@ -55,10 +55,22 @@ describe('Final pass — recommendation details', () => {
     expect(r.options[1].outfit.ruleScore).toBeLessThan(r.options[0].outfit.ruleScore);
   });
 });
-
+ 
 describe('Final pass — photo try-on preview placement (client/src/photoTryOn.js)', () => {
-  let region;
-  beforeAll(async () => { ({ region } = await import('../../../client/src/photoTryOn.js')); });
+  // photoTryOn.js is a browser ES module. Jest runs tests as CommonJS and refuses import() of an ES
+  // module without --experimental-vm-modules (defect D-26, first real CI run), so the real module is
+  // loaded natively in a child Node process and only region()'s results come back as JSON.
+  const { execFileSync } = require('child_process');
+  const { pathToFileURL } = require('url');
+  const file = pathToFileURL(require('path').join(__dirname, '../../../client/src/photoTryOn.js')).href;
+  const CASES = [{ category: 'Top' }, { category: 'Bottom' }, { category: 'Shoes' }, { category: 'Layer' },
+    { category: 'Extra', name: 'Tortoise sunglasses' }, { category: 'Bag', name: 'Structured black bag' }];
+  let results;
+  beforeAll(() => {
+    const script = `import { region } from ${JSON.stringify(file)}; console.log(JSON.stringify(${JSON.stringify(CASES)}.map(region)));`;
+    results = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8' }));
+  });
+  const region = (p) => results[CASES.findIndex((c) => c.category === p.category && (c.name || '') === (p.name || ''))];
   test('TO-01 body order: top above bottom above shoes; shoes at the feet', () => {
     const top = region({ category: 'Top' }); const bottom = region({ category: 'Bottom' }); const shoes = region({ category: 'Shoes' });
     expect(top.top).toBeLessThan(bottom.top); expect(bottom.top).toBeLessThan(shoes.top); expect(shoes.top).toBeGreaterThan(0.85);
@@ -72,3 +84,4 @@ describe('Final pass — photo try-on preview placement (client/src/photoTryOn.j
     expect(region({ category: 'Bag', name: 'Structured black bag' }).cx).toBeGreaterThan(0.7);
   });
 });
+ 
