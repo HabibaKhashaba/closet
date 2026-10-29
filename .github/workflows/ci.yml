@@ -85,7 +85,7 @@ jobs:
       - run: set -o pipefail; npm run seed && SHOTS=e2e-stateful/ python e2e/stateful_journey.py | tee -a e2e-result.txt
       - run: set -o pipefail; npm run seed && SHOTS=e2e-lifecycle/ python e2e/lifecycle_journey.py | tee -a e2e-result.txt
         working-directory: .
-      - run: set -o pipefail; node server/scripts/demo-check.js | tee -a e2e-result.txt
+      - run: set -o pipefail; npm run seed && node server/scripts/demo-check.js | tee -a e2e-result.txt
       - if: always()
         uses: actions/upload-artifact@v4
         with:
