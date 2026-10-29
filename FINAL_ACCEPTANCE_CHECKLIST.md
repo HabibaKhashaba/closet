@@ -3,7 +3,7 @@
 A box is checked only when the **user-facing behaviour** was observed in a run (test, browser journey or recorded video) on 29 Oct 2026 — never because code or documentation exists.
 Evidence: `docs/milestone2/evidence/v16/` (test run, coverage, per-file counts, journey logs and screenshots, demo checks, defect log).
 
-Environment caveat for every row: tests ran on compatibility shims for npm packages that could not be installed here (see Limitations).
+Rows were first verified in a sandbox with compatibility shims, then confirmed with the real packages in GitHub Actions ([CI #5](https://github.com/HabibaKhashaba/closet/actions/runs/40905244684), all four jobs green; history in `docs/milestone2/evidence/v16/ci_runs.md`).
 
 ## Lifecycle and care
 - [x] One authoritative lifecycle: 9 states, 21 moves, everything else 409 — ST-01 – ST-06 (81 pairs), LF-01 – LF-04
@@ -57,9 +57,9 @@ Environment caveat for every row: tests ran on compatibility shims for npm packa
 - [x] 599 / 599 tests (unit + API on real PostgreSQL 16), coverage 97.53 % lines · 83.64 % branches · 90.84 % functions
 - [x] Live journeys: demo 58 steps, stateful 15, lifecycle 12 — 0 browser errors
 - [x] SRS v1.3, SDD v1.3 (D24 – D26), Test Plan and Report v1.3, Traceability v1.6, API table v1.6, defect log D-18 – D-25, preflight for the 13 steps
-- [ ] `npm test` with the real packages — **not run** (npm registry blocked here)
-- [ ] Vite production build — **not run** (esbuild used here)
-- [ ] GitHub Actions — **configured, not executed** for v1.6
+- [x] Real `npm test` (Jest 29) on GitHub Actions: 599 / 599. First run 596 / 599, defect D-26, fixed.
+- [x] Real Vite production build — CI client job green
+- [x] GitHub Actions executed: CI #1 – #4 found D-26 – D-28; CI #5 all four jobs green (tests, Vite build, 3 live journeys + demo check, offline demo)
 - [ ] Interactive PowerPoint deck playback — **not tested** here; deck figures not updated to v1.6
 - [ ] Jira — proposed stories US-112 – US-117 **not in Jira**; no screenshots
 - [ ] Deployment — Render blueprint configured; the local demo is the verified presentation path

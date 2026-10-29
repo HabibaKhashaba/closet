@@ -2,9 +2,9 @@
 // (same validation, photo storage and events as a user). Wear history is back-dated with SQL
 // so that forgotten pieces, utilization and "recycle time" have something to show.
 // Usage: npm run seed   →  demo@closet.app / Closet2026!   (admin: admin@closet.app / Closet2026!)
-   // Demo data must be the same on every machine: planned outfits store the forecast of their day, so the
-   // seed always uses the seasonal estimate, never a live forecast (defect D-27, first real CI run).
-   process.env.WEATHER_MODE = 'estimate';
+// Demo data must be the same on every machine: planned outfits store the forecast of their day, so the
+// seed always uses the seasonal estimate, never a live forecast (defect D-27, first real CI run).
+process.env.WEATHER_MODE = 'estimate';
 const fs = require('fs');
 const path = require('path');
 const http = require('http');

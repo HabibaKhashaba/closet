@@ -107,7 +107,15 @@ def tpr():
 <div><div class="big">{E["unit"]} · {E["api"]}</div><span>unit · API (real PostgreSQL 16)</span></div>
 <div><div class="big">{E["lines"]} %</div><span>line coverage · branches {E["branches"]} % · functions {E["functions"]} %</span></div>
 <div><div class="big">{E["demo_ok"]}/{E["demo_runs"]}</div><span>demo checks on fresh seeds</span></div></div>'''
-    html += '<h2>R5.2 How the tests were run (honest)</h2><p class="note"><b>Environment limitation.</b> The npm registry was blocked in the environment used for this pass, so the real Jest, Supertest, Express, pg and Vite packages could <b>not</b> be installed. The suites ran under <code>node:test</code> with small compatibility shims for those packages, against a real PostgreSQL 16, and the web app was bundled with esbuild instead of Vite. <code>npm test</code> on a normal machine is the authoritative run. The GitHub Actions workflow is <b>configured, not executed</b> for this build.</p>'
+    html += '<h2>R5.2 How the tests were run</h2><p>Two environments, in this order. <b>(1) Sandbox:</b> the npm registry was blocked, so the suites ran under <code>node:test</code> with small compatibility shims for Jest, Supertest, Express and pg, against a real PostgreSQL 16; the web app was bundled with esbuild. The per-file counts, coverage and journey results in R5.1, R5.3 and R5.4 are from that run. <b>(2) GitHub Actions, real packages:</b> Jest 29, Supertest, Express, pg, Vite 7 and React 19 on Ubuntu runners with a PostgreSQL 16 service. The first runs found three problems the shims hid (D-26 – D-28, R5.3a). <b>CI #5: all four jobs green, 599 / 599 under real Jest.</b></p>'
+    ci = [
+      ['<a href="https://github.com/HabibaKhashaba/closet/actions/runs/40896887495">CI #1</a>', 'Failure', 'server: 596 passed, 3 failed (TO-01 – TO-03 could not import() a browser ES module in real Jest)', 'D-26'],
+      ['<a href="https://github.com/HabibaKhashaba/closet/actions/runs/40899146697">CI #2</a>', 'Failure', 'server green (599 / 599); e2e: an extra Planner weather alert, because the seed stored a live forecast', 'D-27'],
+      ['<a href="https://github.com/HabibaKhashaba/closet/actions/runs/40902206778">CI #3</a>', 'Failure', 'three browser journeys pass; the final demo check ran without a re-seed', 'D-28'],
+      ['<a href="https://github.com/HabibaKhashaba/closet/actions/runs/40902620249">CI #4</a>', 'Failure', 'same final step', 'D-28'],
+      ['<a href="https://github.com/HabibaKhashaba/closet/actions/runs/40905244684">CI #5</a>', '<span class="tag ok">Success</span>', 'all four jobs green: server tests, Vite build, 3 live journeys + demo check, offline demo (6 min 8 s)', '—']]
+    html += '<h3>R5.3a GitHub Actions runs (29 Oct 2026)</h3>' + table(['Run', 'Result', 'What it showed', 'Defect'], ci)
+    html += '<p class="small">Coverage under real Jest is in the CI <code>coverage-report</code> artifact; the percentages above are from the sandbox run. Full history: <code>evidence/v16/ci_runs.md</code>.</p>'
     html += '<h2>R5.3 Per test file</h2>' + table(['File', 'Executed', 'Passed', 'Failed'], [[f'<code>{r[0]}</code>', r[1], r[2], r[3]] for r in E['rows']])
     html += '<h2 class="pb">R5.4 Browser journeys (Playwright, Chromium)</h2>' + table(['Journey', 'Target', 'Result'], [
         ['demo_journey.py (presentation flow)', 'live app', e['demo_live']], ['stateful_journey.py', 'live app', e['stateful_live']], ['lifecycle_journey.py (care, lend, donate, pack, purchase, planner)', 'live app', e['lifecycle_live']],
@@ -125,7 +133,7 @@ def tpr():
     defects = [l for l in (EV / 'defects_v16.md').read_text().splitlines() if re.match(r'\| D-(1[89]|2\d) ', l)]
     html += '<h2 class="pb">R5.7 Defects found in this pass</h2>' + table(['ID', 'Found by', 'Severity', 'Feature', 'Description', 'Fix', 'Status'], [l.strip('|').split(' | ') for l in defects])
     html += '''<h2>R5.8 Not verified</h2><ul>
-<li>The real npm packages, Vite build and GitHub Actions run (see R5.2).</li><li>The interactive PowerPoint deck’s playback.</li>
+<li>Real-Jest coverage percentages (in the CI artifact, not transcribed).</li><li>The interactive PowerPoint deck’s playback.</li>
 <li>Deployment: Render blueprint configured; the local demo is the verified presentation path.</li><li>Jira: proposed stories US-112 – US-117 are not in Jira; no screenshots were produced.</li></ul>'''
     html += '<p class="note">The superseded v1.2 report (build v1.5) follows as history.</p>'
     front = render(html, OUT / '_tpr5.pdf', 'Test Plan and Report · Closet · v1.3 (build v1.6)')
