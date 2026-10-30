@@ -128,7 +128,7 @@ export default function TryOnScreen({ query }) {
               )}
             </div>
             <div className="stage-floor" />
-            <span className="sim-chip" title="A simulated overlay of each piece’s photo on your photo — not a generative try-on. A photo-real provider is a planned adapter.">{photo && !avatar ? 'Virtual Try-On Preview · simulated on your photo' : avatar ? 'Stylised avatar · no photo' : 'Virtual Try-On Preview'}</span>
+            <span className="sim-chip" title="A simulated overlay of each piece’s photo on your photo — not a generative try-on. A photo-real provider is a planned adapter.">{photo && !avatar ? 'Virtual Try-On Preview · simulated on your photo' : avatar ? 'Stylised avatar · no photo' : 'Virtual Try-On Preview · simulated overlay'}</span>
             {looks.length > 1 && <>
               <button type="button" className="iconbtn nav-arrow" style={{ left: 18 }} onClick={() => setI((i + looks.length - 1) % looks.length)} aria-label="Previous look"><Icon name="back" /></button>
               <button type="button" className="iconbtn nav-arrow" style={{ right: 18 }} onClick={() => setI((i + 1) % looks.length)} aria-label="Next look"><Icon name="next" /></button>

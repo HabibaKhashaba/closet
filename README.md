@@ -9,15 +9,15 @@ Closet is an AI-powered wardrobe assistant. You photograph each piece once; Clos
 
 **Jira:** https://aucegypt-team-r73i3oon.atlassian.net/jira/software/projects/SCRUM/boards/1
 
-## Team roles
+## Team roles (Sprint 1, as recorded in Jira SCRUM-5 – SCRUM-38)
 
-| Member | Role |
+| Member | Role and Sprint 1 work |
 | --- | --- |
-| Habiba | Requirements and user research |
-| Salma | Frontend |
-| Bashar | Recommendation engine and AI · UML use case diagram |
-| Karim | Backend and database |
-| Youssef | Testing, integration and deployment · UML component diagram |
+| Habiba | Scrum Master · research and requirements · 8 of the 15 Sprint 1 stories (US-02, 03, 04, 15, 16, 46, 56, 64) · SRS / SDD / Test Plan & Report · test plan, unit / API / acceptance tests · retrospective · demo script and video · presentation |
+| Youssef | Code tasks: repo and CI, database and seed, security pipeline, validation, JWT and access control, UI screens · ER / class / sequence / state and component diagrams |
+| Bashar | UML use case model · US-08 add a piece by photo |
+| Karim | US-01 login and register · US-06 delete account · US-09 piece details |
+| Salma | US-11 review before saving · US-12 browse and filter · US-71 edit a piece later |
 
 ## How we work
 

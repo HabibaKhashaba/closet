@@ -6,21 +6,21 @@ Status: **PENDING USER ACTION.** This is what the real Jira sprint must show. No
 
 | Story | Summary | Owner | Points | Priority | Status | Acceptance criteria |
 | --- | --- | --- | --- | --- | --- | --- |
-| US-01 | Register and log in with email or Google | Karim (screens: Salma) | 8 | Highest | Done | Password ≥ 8 chars or Google; wrong password shows an error; no other user’s data is ever returned |
-| US-06 | Delete my account and all my photos and data | Karim (screens: Salma) | 2 | Highest | Done | Double confirmation; all data and photos deleted within 24 h |
-| US-08 | Add a piece by taking or uploading a photo | Karim (screens: Salma) | 8 | Highest | Done | JPG/PNG/HEIC ≤ 10 MB stored and shown as the piece’s image |
-| US-09 | Enter category, colour, fabric, season, size, style, dress code | Karim (screens: Salma) | 2 | Highest | Done | Values from 3.1; category, colour and ≥ 1 dress-code level required |
-| US-11 | Review and edit every detail before saving | Karim (screens: Salma) | 2 | Highest | Done | One review screen; the piece exists only after Save |
-| US-12 | Browse and filter my closet by category and status | Karim (screens: Salma) | 2 | Highest | Done | Filters combine; counts update |
-| US-71 | Edit a piece’s details later | Karim (screens: Salma) | 2 | Highest | Done | Changes appear in all outfits and filters |
-| US-15 | Put a piece in the laundry basket and take it out | Karim (screens: Salma) | 2 | Highest | Done | One tap each way; basket lists all Laundry pieces |
-| US-16 | Return everything with one “Wash done” tap | Karim (screens: Salma) | 2 | High | Done | All Laundry pieces become Available |
-| US-56 | Set a status per piece (5 statuses) | Karim (screens: Salma) | 2 | Highest | Done | Exactly one status, shown as a badge |
-| US-02 | Answer a short style quiz: styles, colours, occasions | Bashar (screens: Salma) | 2 | Highest | Done | ≤ 4 steps, skippable; answers change the first recommendation |
-| US-03 | Set my usual dress code and a modest preference | Bashar (screens: Salma) | 2 | Highest | Done | One of the 5 levels; with modest on, no non-modest piece appears anywhere |
-| US-04 | Set my city so outfits use my local weather | Bashar (screens: Salma) | 2 | Highest | Done | Forecast on Home is for that city |
-| US-46 | Add events by hand and see them in a calendar | Bashar (screens: Salma) | 8 | Highest | Done | Title, date, time and one occasion; month view |
-| US-64 | See closet gaps by category and dress code | Bashar (screens: Salma) | 2 | Medium | Done | Gap = ≤ 1 piece at a level the user dresses for |
+| US-01 | Register and log in with email or Google | Karim | 8 | Highest | Done | Password ≥ 8 chars or Google; wrong password shows an error; no other user’s data is ever returned |
+| US-06 | Delete my account and all my photos and data | Karim | 2 | Highest | Done | Double confirmation; all data and photos deleted within 24 h |
+| US-08 | Add a piece by taking or uploading a photo | Bashar | 8 | Highest | Done | JPG/PNG/HEIC ≤ 10 MB stored and shown as the piece’s image |
+| US-09 | Enter category, colour, fabric, season, size, style, dress code | Karim | 2 | Highest | Done | Values from 3.1; category, colour and ≥ 1 dress-code level required |
+| US-11 | Review and edit every detail before saving | Salma | 2 | Highest | Done | One review screen; the piece exists only after Save |
+| US-12 | Browse and filter my closet by category and status | Salma | 2 | Highest | Done | Filters combine; counts update |
+| US-71 | Edit a piece’s details later | Salma | 2 | Highest | Done | Changes appear in all outfits and filters |
+| US-15 | Put a piece in the laundry basket and take it out | Habiba | 2 | Highest | Done | One tap each way; basket lists all Laundry pieces |
+| US-16 | Return everything with one “Wash done” tap | Habiba | 2 | High | Done | All Laundry pieces become Available |
+| US-56 | Set a status per piece (5 statuses) | Habiba | 2 | Highest | Done | Exactly one status, shown as a badge |
+| US-02 | Answer a short style quiz: styles, colours, occasions | Habiba | 2 | Highest | Done | ≤ 4 steps, skippable; answers change the first recommendation |
+| US-03 | Set my usual dress code and a modest preference | Habiba | 2 | Highest | Done | One of the 5 levels; with modest on, no non-modest piece appears anywhere |
+| US-04 | Set my city so outfits use my local weather | Habiba | 2 | Highest | Done | Forecast on Home is for that city |
+| US-46 | Add events by hand and see them in a calendar | Habiba | 8 | Highest | Done | Title, date, time and one occasion; month view |
+| US-64 | See closet gaps by category and dress code | Habiba | 2 | Medium | Done | Gap = ≤ 1 piece at a level the user dresses for |
 
 **US-61** “Hide a piece for 7 days without it being a dislike” → Sprint 2, with the comment: “Moved at Sprint 1 planning: it hides a piece from recommendations, which are built in Sprint 2 (dependency).”
 
