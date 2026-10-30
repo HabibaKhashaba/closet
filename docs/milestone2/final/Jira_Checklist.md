@@ -15,11 +15,11 @@ Status: **PENDING USER ACTION.** This is what the real Jira sprint must show. No
 | US-71 | Edit a piece’s details later | Salma | 2 | Highest | Done | Changes appear in all outfits and filters |
 | US-15 | Put a piece in the laundry basket and take it out | Habiba | 2 | Highest | Done | One tap each way; basket lists all Laundry pieces |
 | US-16 | Return everything with one “Wash done” tap | Habiba | 2 | High | Done | All Laundry pieces become Available |
-| US-56 | Set a status per piece (5 statuses) | Habiba | 2 | Highest | Done | Exactly one status, shown as a badge |
-| US-02 | Answer a short style quiz: styles, colours, occasions | Habiba | 2 | Highest | Done | ≤ 4 steps, skippable; answers change the first recommendation |
-| US-03 | Set my usual dress code and a modest preference | Habiba | 2 | Highest | Done | One of the 5 levels; with modest on, no non-modest piece appears anywhere |
+| US-56 | Set a status per piece (5 statuses) | Salma | 2 | Highest | Done | Exactly one status, shown as a badge |
+| US-02 | Answer a short style quiz: styles, colours, occasions | Bashar | 2 | Highest | Done | ≤ 4 steps, skippable; answers change the first recommendation |
+| US-03 | Set my usual dress code and a modest preference | Bashar | 2 | Highest | Done | One of the 5 levels; with modest on, no non-modest piece appears anywhere |
 | US-04 | Set my city so outfits use my local weather | Habiba | 2 | Highest | Done | Forecast on Home is for that city |
-| US-46 | Add events by hand and see them in a calendar | Habiba | 8 | Highest | Done | Title, date, time and one occasion; month view |
+| US-46 | Add events by hand and see them in a calendar | Karim | 8 | Highest | Done | Title, date, time and one occasion; month view |
 | US-64 | See closet gaps by category and dress code | Habiba | 2 | Medium | Done | Gap = ≤ 1 piece at a level the user dresses for |
 
 **US-61** “Hide a piece for 7 days without it being a dislike” → Sprint 2, with the comment: “Moved at Sprint 1 planning: it hides a piece from recommendations, which are built in Sprint 2 (dependency).”
@@ -49,3 +49,13 @@ Nothing below has been done in Jira by us; each line is an action for the team.
 | “Evidence from Jira” | 3 | Burndown / Sprint report, exactly as Jira shows it |
 
 Until they are pasted, the frames say **“Screenshot pending — real Jira capture”**. Do not replace them with a drawing.
+
+
+## Review preparation (after Sprint 1, in progress)
+
+| Jira | Task | Owner | Status |
+| --- | --- | --- | --- |
+| SCRUM-65 | T-21 Check SDD diagrams against the code; present Station 3 (System) | Bashar | In progress |
+| SCRUM-66 | T-22 Run the demo preflight; drive the live demo | Karim | In progress |
+| SCRUM-67 | T-23 PowerPoint playback check; manual re-test of US-11, US-12, US-71 | Salma | In progress |
+| SCRUM-64 | US-118 Realistic AI virtual try-on (proposed, 8 points) | — | To Do |

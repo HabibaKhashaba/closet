@@ -58,21 +58,21 @@ US-56,Story,US-56 Set a status per piece (5 statuses),"As a user, I want to set 
 
 Acceptance criteria: Exactly one status, shown as a badge
 
-Use case: UC-06 · MoSCoW: Must · Release: S1",Highest,Must,owner-habiba,Sprint1,E3,Closet Sprint 1,2,Done
+Use case: UC-06 · MoSCoW: Must · Release: S1",Highest,Must,owner-salma,Sprint1,E3,Closet Sprint 1,2,Done
 US-02,Story,"US-02 Answer a short style quiz: styles, colours, occasions","As a user, I want to answer a short style quiz: styles, colours, occasions.
 
 Acceptance criteria: ≤ 4 steps, skippable; answers change the first recommendation
 
 Use case: UC-02 · MoSCoW: Must · Release: S1
 
-Sprint 1 scope: quiz answers are saved to the profile. ""Answers change the first recommendation"" is verified in Sprint 2 with US-19.",Highest,Must,owner-habiba,Sprint1,E1,Closet Sprint 1,2,Done
+Sprint 1 scope: quiz answers are saved to the profile. ""Answers change the first recommendation"" is verified in Sprint 2 with US-19.",Highest,Must,owner-bashar,Sprint1,E1,Closet Sprint 1,2,Done
 US-03,Story,US-03 Set my usual dress code and a modest preference,"As a user, I want to set my usual dress code and a modest preference.
 
 Acceptance criteria: One of the 5 levels; with modest on, no non-modest piece appears anywhere
 
 Use case: UC-02 · MoSCoW: Must · Release: S1
 
-Sprint 1 scope: dress code and modest preference saved; each piece stores a modest flag. Filtering outfits by them is verified in Sprint 2 with US-21.",Highest,Must,owner-habiba,Sprint1,E1,Closet Sprint 1,2,Done
+Sprint 1 scope: dress code and modest preference saved; each piece stores a modest flag. Filtering outfits by them is verified in Sprint 2 with US-21.",Highest,Must,owner-bashar,Sprint1,E1,Closet Sprint 1,2,Done
 US-04,Story,US-04 Set my city so outfits use my local weather,"As a user, I want to set my city so outfits use my local weather.
 
 Acceptance criteria: Forecast on Home is for that city
@@ -84,7 +84,7 @@ US-46,Story,US-46 Add events by hand and see them in a calendar,"As a user, I wa
 
 Acceptance criteria: Title, date, time and one occasion; month view
 
-Use case: UC-10 · MoSCoW: Must · Release: S1",Highest,Must,owner-habiba,Sprint1,E9,Closet Sprint 1,8,Done
+Use case: UC-10 · MoSCoW: Must · Release: S1",Highest,Must,owner-karim,Sprint1,E9,Closet Sprint 1,8,Done
 US-64,Story,US-64 See closet gaps by category and dress code,"As a user, I want to see closet gaps by category and dress code.
 
 Acceptance criteria: Gap = ≤ 1 piece at a level the user dresses for
@@ -99,19 +99,19 @@ Use case: UC-09 · MoSCoW: Should · Release: S1
 Moved from Sprint 1 to Sprint 2 (v1.1): it hides a piece from recommendations, which are built in Sprint 2.",High,Should,Committed,UC-09,E7,Closet Sprint 2,2,To Do
 T-01,Task,T-01 Set up repo structure and CI: tests run on every pull request,Set up repo structure and CI: tests run on every pull request.,High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
 T-02,Task,"T-02 Deploy web app, API and database to a shared live link","Deploy web app, API and database to a shared live link. render.yaml written in Sprint 1; live deployment in Sprint 2 week 1.",High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,In Progress
-T-03,Task,"T-03 Database schema, migrations and demo seed data","Database schema, migrations and demo seed data.",High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
-T-04,Task,"T-04 Security pipeline: HTTPS only, CORS, security headers, rate limit","Security pipeline: HTTPS only, CORS, security headers, rate limit.",High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
+T-03,Task,"T-03 Database schema, migrations and demo seed data","Database schema, migrations and demo seed data.",High,Sprint1,owner-karim,Task,,Closet Sprint 1,,Done
+T-04,Task,"T-04 Security pipeline: HTTPS only, CORS, security headers, rate limit","Security pipeline: HTTPS only, CORS, security headers, rate limit.",High,Sprint1,owner-karim,Task,,Closet Sprint 1,,Done
 T-05,Task,T-05 Request validation with safe error messages,Request validation with safe error messages.,High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
 T-06,Task,"T-06 Authentication middleware (JWT) and access control (own data only, user/admin role)","Authentication middleware (JWT) and access control (own data only, user/admin role).",High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
 T-07,Task,"T-07 UI: login, register, style quiz, profile settings, delete account","UI: login, register, style quiz, profile settings, delete account.",High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
 T-08,Task,"T-08 UI: add piece, review screen, closet grid with filters, edit piece","UI: add piece, review screen, closet grid with filters, edit piece.",High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
 T-09,Task,"T-09 UI: status menu, laundry basket, Wash done","UI: status menu, laundry basket, Wash done.",High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
-T-10,Task,"T-10 UI: calendar month view, closet gaps","UI: calendar month view, closet gaps.",High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
-T-11,Task,"T-11 Lower-level design: ER, class, sequence and state diagrams, API table","Lower-level design: ER, class, sequence and state diagrams, API table.",High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
+T-10,Task,"T-10 UI: calendar month view, closet gaps","UI: calendar month view, closet gaps.",High,Sprint1,owner-bashar,Task,,Closet Sprint 1,,Done
+T-11,Task,"T-11 Lower-level design: ER, class, sequence and state diagrams, API table","Lower-level design: ER, class, sequence and state diagrams, API table.",High,Sprint1,owner-bashar,Task,,Closet Sprint 1,,Done
 T-12,Task,T-12 Use case model v1.1: add Admin actor (M1 feedback),Use case model v1.1: add Admin actor (M1 feedback).,High,Sprint1,owner-bashar,Task,,Closet Sprint 1,,Done
-T-13,Task,T-13 Component diagram v1.1: authentication and security (M1 feedback),Component diagram v1.1: authentication and security (M1 feedback).,High,Sprint1,owner-youssef,Task,,Closet Sprint 1,,Done
-T-14,Task,"T-14 Test plan and black-box test cases (EP, BVA, state transition)","Test plan and black-box test cases (EP, BVA, state transition).",High,Sprint1,owner-habiba,Task,,Closet Sprint 1,,Done
-T-15,Task,T-15 Unit and API tests with coverage report,Unit and API tests with coverage report.,High,Sprint1,owner-habiba,Task,,Closet Sprint 1,,Done
+T-13,Task,T-13 Component diagram v1.1: authentication and security (M1 feedback),Component diagram v1.1: authentication and security (M1 feedback).,High,Sprint1,owner-bashar,Task,,Closet Sprint 1,,Done
+T-14,Task,"T-14 Test plan and black-box test cases (EP, BVA, state transition)","Test plan and black-box test cases (EP, BVA, state transition).",High,Sprint1,owner-salma,Task,,Closet Sprint 1,,Done
+T-15,Task,T-15 Unit and API tests with coverage report,Unit and API tests with coverage report.,High,Sprint1,owner-salma,Task,,Closet Sprint 1,,Done
 T-16,Task,T-16 Acceptance tests from story acceptance criteria,Acceptance tests from story acceptance criteria.,High,Sprint1,owner-habiba,Task,,Closet Sprint 1,,Done
 T-17,Task,T-17 Requirements and design documents v1.1 with change log,Requirements and design documents v1.1 with change log.,High,Sprint1,owner-habiba,Task,,Closet Sprint 1,,Done
 T-18,Task,T-18 Sprint 1 retrospective,Sprint 1 retrospective.,High,Sprint1,owner-habiba,Task,,Closet Sprint 1,,Done
@@ -249,3 +249,7 @@ US-36,Story,"US-36 Keep a shopping list, also from Ask Closet","As a user, I wan
 
 Revision 2: sources Ask Closet, replacement, gap, suggestion; labels; similar-owned warning (FR-61, FR-74). Built early as a labelled preview with tests; accepted at its own sprint review. Not Sprint 1 work.",Medium,Should,Committed,UC-07,E6,Closet Sprint 3,,In Progress
 T-20,Task,T-20 Sprint review presentation (interactive deck),,Medium,Sprint1,owner-habiba,Task,,Closet Sprint 1,,Done
+T-21,Task,"T-21 Bashar: check SDD diagrams against the code + present Station 3",,Medium,milestone2,owner-bashar,Task,,,,In Progress
+T-22,Task,"T-22 Karim: run the demo preflight + drive the live demo",,Medium,milestone2,owner-karim,Task,,,,In Progress
+T-23,Task,"T-23 Salma: PowerPoint playback check + manual re-test of US-11/12/71",,Medium,milestone2,owner-salma,Task,,,,In Progress
+US-118,Story,"US-118 Realistic AI virtual try-on","Proposed. Current try-on is a simulated overlay.",Medium,proposed,try-on,,,,8,To Do

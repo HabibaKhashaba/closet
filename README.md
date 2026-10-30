@@ -13,11 +13,11 @@ Closet is an AI-powered wardrobe assistant. You photograph each piece once; Clos
 
 | Member | Role and Sprint 1 work |
 | --- | --- |
-| Habiba | Scrum Master · research and requirements · 8 of the 15 Sprint 1 stories (US-02, 03, 04, 15, 16, 46, 56, 64) · SRS / SDD / Test Plan & Report · test plan, unit / API / acceptance tests · retrospective · demo script and video · presentation |
-| Youssef | Code tasks: repo and CI, database and seed, security pipeline, validation, JWT and access control, UI screens · ER / class / sequence / state and component diagrams |
-| Bashar | UML use case model · US-08 add a piece by photo |
-| Karim | US-01 login and register · US-06 delete account · US-09 piece details |
-| Salma | US-11 review before saving · US-12 browse and filter · US-71 edit a piece later |
+| Habiba | Scrum Master · research and requirements · 4 Sprint 1 stories (US-04, 15, 16, 64) · SRS / SDD / Test Plan & Report · acceptance tests · retrospective · demo script and video · presentation |
+| Youssef | Code tasks: repo and CI, validation, JWT and access control, UI screens (T-01, T-05 – T-09) · deployment (T-02, in progress) |
+| Bashar | 3 stories (US-02 style quiz, US-03 dress code and modest preference, US-08 add a piece by photo) · UI: calendar and closet gaps (T-10) · ER / class / sequence / state diagrams (T-11) · use case model (T-12) · component diagram (T-13) · review prep: SDD check, present the System station (SCRUM-65, in progress) |
+| Karim | 4 stories (US-01 login and register, US-06 delete account, US-09 piece details, US-46 events and calendar) · database schema, migrations and seed (T-03) · security pipeline (T-04) · review prep: demo preflight, drive the live demo (SCRUM-66, in progress) |
+| Salma | 4 stories (US-11 review before saving, US-12 browse and filter, US-56 status per piece, US-71 edit a piece later) · test plan and test cases (T-14) · unit and API tests with coverage (T-15) · review prep: PowerPoint check, manual re-test (SCRUM-67, in progress) |
 
 ## How we work
 
