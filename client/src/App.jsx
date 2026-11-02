@@ -1,7 +1,7 @@
 // Controller layer (MVC): routing, signed-in state and shared data. Screens are the views.
 import React, { useCallback, useEffect, useState } from 'react';
 import { api, session, whenSignedOut } from './api.js';
-import { AppContext, Icon, Spinner, useToast, WeatherPill, SPRINT, relDay } from './ui.jsx';
+import { AppContext, Icon, Spinner, useToast, WeatherPill, SPRINT, SHOW_SPRINTS, relDay } from './ui.jsx';
 import AuthScreen from './screens/AuthScreen.jsx';
 import QuizScreen from './screens/QuizScreen.jsx';
 import HomeScreen from './screens/HomeScreen.jsx';
@@ -157,7 +157,7 @@ export default function App() {
         {items.map(([path, icon, label, sprint]) => (
           <a key={path} href={`#${path}`} className={isOn(path) ? 'on' : ''} onClick={() => setMoreOpen(false)}>
             <Icon name={icon} size={18} />{label}
-            {path === '/care' && laundryCount > 0 ? <span className="count">{laundryCount}</span> : sprint && <span className={`dot ${SPRINT[sprint].cls}`} title={SPRINT[sprint].label} />}
+            {path === '/care' && laundryCount > 0 ? <span className="count">{laundryCount}</span> : SHOW_SPRINTS && sprint && <span className={`dot ${SPRINT[sprint].cls}`} title={SPRINT[sprint].label} />}
           </a>
         ))}
         {group === 'You' && user.role === 'admin' && (
