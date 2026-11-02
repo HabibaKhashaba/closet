@@ -23,7 +23,8 @@ function securityPipeline(app) {
     contentSecurityPolicy: {
       directives: {
         // blob: lets the web app preview a photo before it is uploaded (defect D-03).
-        'img-src': ["'self'", 'data:', 'blob:'],
+        // https://cdn.fashn.ai: AI try-on result images (US-118).
+        'img-src': ["'self'", 'data:', 'blob:', 'https://cdn.fashn.ai'],
         'script-src': ["'self'", 'https://accounts.google.com'],
         'frame-src': ['https://accounts.google.com'],
         'connect-src': ["'self'", 'https://accounts.google.com'],

@@ -24,4 +24,6 @@ module.exports = {
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',
   maxPhotoBytes: 10 * 1024 * 1024, // US-08: photos up to 10 MB
   lockout: { maxFailures: 5, minutes: 15 }, // NFR-04
+  // US-118 AI try-on (FASHN). Without FASHN_API_KEY the feature is off and the simulated preview is used.
+  tryOn: { dailyLimit: Number(process.env.TRYON_DAILY_LIMIT || 20) },
 };

@@ -25,6 +25,8 @@ const { registerAdmin } = require('./modules/admin/adminModule');
 const { registerIntelligence } = require('./modules/intelligence/intelligenceModule');
 const { registerPacking } = require('./modules/packing/packingModule');
 const { registerActivity } = require('./modules/activity/activityModule');
+const { registerTryOn } = require('./modules/tryon/tryonModule');
+const { fashnAdapter } = require('./modules/tryon/fashnAdapter');
 const { audit } = require('./gateway/audit');
 const vocabulary = require('./shared/vocabulary');
 const { ALLOWED: STATUS_TRANSITIONS } = require('./modules/availability/statusMachine');
@@ -63,11 +65,12 @@ function buildModules(deps = {}) {
     wardrobe: () => wardrobe.service, availability: availability.service, planner: () => planner.service, shopping: () => shopping.service,
     proactive: () => intelligence.service.proactive, intelligence: () => intelligence.service, packing: () => packing.service, profile: profile.service,
   });
-  return { bus, storage, identity, profile, availability, wardrobe, outfits, weather, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant };
+  const tryOn = registerTryOn({ wardrobe: () => wardrobe.service, storage, adapter: deps.tryOnAdapter || fashnAdapter() });
+  return { tryOn, bus, storage, identity, profile, availability, wardrobe, outfits, weather, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant };
 }
 
 function createApp(deps = {}) {
-  const { identity, profile, availability, wardrobe, outfits, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant } = buildModules(deps);
+  const { tryOn, identity, profile, availability, wardrobe, outfits, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant } = buildModules(deps);
 
   // API Gateway
   const app = express();
@@ -105,6 +108,7 @@ function createApp(deps = {}) {
   api.use('/notifications', intelligence.routes.notifications);
   api.use('/packing', packing.routes);
   api.use('/activity', activity.routes);
+  api.use('/tryon', tryOn.routes);          // US-118 AI try-on (photo-real provider; overlay is the fallback)
   api.use('/admin', admin.routes); // Access Control: requireRole('admin')
   api.use('/account', privacy.routes);
 

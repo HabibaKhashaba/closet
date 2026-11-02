@@ -65,6 +65,15 @@ export const api = {
   hide: (id) => call('POST', `/items/${id}/hide`),
   unhide: (id) => call('DELETE', `/items/${id}/hide`),
 
+  // US-118 AI try-on: the photo is sent to our server (with the user's consent), which calls the provider.
+  tryOnStatus: () => call('GET', '/tryon/status'),
+  tryOnAI: async (photoDataUrl, itemIds) => {
+    const form = new FormData();
+    form.append('photo', await (await fetch(photoDataUrl)).blob(), 'me.jpg');
+    form.append('itemIds', JSON.stringify(itemIds));
+    return call('POST', '/tryon', form, { form: true });
+  },
+
   laundry: () => call('GET', '/laundry'),
   washDone: () => call('POST', '/laundry/wash-done'),
 

@@ -109,6 +109,15 @@ The full checklist with the expected values is `docs/milestone2/DEMO_PREFLIGHT.m
 
 `bash tools/offline_demo/build.sh` builds `Closet_Demo.html`: the built web app plus the **real services and rules running on in-memory repositories** (same seed), in one file that opens with a double-click; state lasts for the browser session and the Reset badge restores the seed (`npm run demo:offline`). `tools/record_demo_video.py` records `Closet_Demo_FINAL.mp4` (the 13 demo steps, 5:33) from a fresh seed: `TRYON_PHOTO=avatar` uses the stylised avatar, or pass a consenting team member’s full-body photo. The recording is embedded in both presentation files.
 
+## AI virtual try-on (US-118)
+
+The dressing room has two modes:
+
+- **Simulated preview** (always available): each piece's photo is placed on the user's photo in the browser. Nothing is uploaded.
+- **Realistic AI try-on** (when a provider key is set): after the user agrees, the full-body photo and the look's pieces go to our server, which calls the [FASHN](https://fashn.ai) try-on API through the Try-On adapter (`server/src/modules/tryon/`). It dresses the person one garment at a time (a dress, or bottom then top, then a layer) and returns a realistic image labelled "AI-generated". Shoes, bags and extras are not supported by the provider and are listed as skipped. Closet does not store the photo.
+
+Setup: add `FASHN_API_KEY=...` to `server/.env` (never commit it), rebuild the client (`npm --prefix client run build`) and restart the server. Without a key the button is hidden and the simulated preview is used. Limits: 20 AI try-ons per user per day (`TRYON_DAILY_LIMIT`); provider errors or a 90 s timeout fall back to the simulated preview. Tests: `server/tests/unit/tryon.test.js` (TO-01 – TO-12, provider mocked).
+
 ## Deploy
 
 `render.yaml` is a Render blueprint: one web service (API + built web app) and one PostgreSQL database. On Render, choose **New → Blueprint**, pick this repository, and set `CLIENT_ORIGIN` to the service URL.
