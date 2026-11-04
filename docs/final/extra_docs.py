@@ -64,8 +64,14 @@ page('Closet_Test_Plan_and_Report_v2.0', 'Test Plan and Report · v2.0', body)
 # ---------------------------------------------------------------- Presentation script (10 minutes, 15 slides)
 from notes15 import S
 body = head('Presentation script', '15 slides · 10 minutes · Closet_M2_Presentation.pptx — the same text is in each slide’s speaker notes')
-body += tbl(['Speaker', 'Slides', 'Time', 'About'], [['Habiba', '1 – 5, 14 – 15', '≈ 3:50', 'opening, Sprint 1, Jira, feedback, next sprints, closing'], ['Karim', '6', '≈ 0:50', 'three looks'], ['Youssef', '7, 10 – 11', '≈ 2:10', 'Virtual Try-On, component diagram (with zoom)'], ['Bashar', '8 – 9', '≈ 1:10', 'use case diagram (with zoom)'], ['Salma', '12 – 13', '≈ 2:00', 'testing, retrospective']])
-body += '<p class="note"><b>Tips.</b> Click once per slide; the zooms on slides 9 and 11 happen by themselves when you click. Say the hand-over line at the end of your part. Questions: everyone answers on their own part (who did what is in the README).</p>'
+import collections
+words = lambda x: len(re.sub('<.*?>', '', x).split())
+part = collections.OrderedDict()
+for n, who, t, about, say in S:
+    d = part.setdefault(who.title(), {'slides': [], 'sec': 0, 'about': []}); d['slides'].append(str(n)); d['sec'] += words(say) / 140 * 60 + 3; d['about'].append(about)
+body += tbl(['Speaker', 'Slides', 'Speaking time', 'Topics'], [[w, ', '.join(d['slides']), f"≈ {int(d['sec'] // 60)}:{int(d['sec'] % 60):02d}", ' · '.join(d['about'])] for w, d in part.items()])
+body += f'<p class="small muted">Total ≈ 10:00 at a calm pace (about 140 words a minute, a short pause on every click). Read it aloud once with a timer; the [stage directions] in italics are not read aloud.</p>'
+body += '<p class="note"><b>Tips.</b> One click per slide — the doors, the zooms and the counter animate by themselves. End your part with the hand-over line (the next speaker’s name). In questions, everyone answers on their own part: Habiba — process and Jira; Karim — recommendations; Youssef — Virtual Try-On and architecture; Bashar — use cases; Salma — testing.</p>'
 for n, who, t, about, say in S:
     body += f'<div class="keep"><h3 style="font-style:normal;color:#2a2626"><span class="who">{who}</span>Slide {n} · {about} <span class="tiny muted">from {t}</span></h3><div class="say">{say}</div></div>'
 page('Closet_Presentation_Script', 'Presentation script', body)

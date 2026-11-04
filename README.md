@@ -158,11 +158,8 @@ docs/              Milestone 1 and Milestone 2 documents and diagrams
 | `Closet_SRS_v2.0.pdf` | Software Requirements Specification — one consolidated version; use case diagrams in 2.2 and Appendix B; Virtual Try-On in 4.23 |
 | `Closet_SDD_v2.0.pdf` | Software Design Document — architecture, class, sequence, data; design evolution and Virtual Try-On in chapter 8 |
 | `Closet_Test_Plan_and_Report_v2.0.pdf` | Test levels, techniques, results, defects D-29 – D-32 |
-| `Closet_M2_Presentation.pptx` | The 10-minute presentation (15 slides, Morph) — speaker notes per person |
-| `Closet_Presentation_Script.pdf` | Who says what on each slide |
-| `How_to_Run_Closet.pdf` · `Note_to_Dr_Sherif_Aly.pdf` | Running the app; the cover note with the links |
 
-The documents are generated from the sources by `docs/final/build_v2.py` + `make.py` (SRS/SDD) and `extra_docs.py` (the rest).
+The documents are generated from the sources by `docs/final/build_v2.py` + `make.py` (SRS/SDD) and `extra_docs.py` (test report). The presentation is submitted on Canvas.
 
 **Who presents what:** Habiba — opening, Sprint 1, feedback, closing · Karim — three looks · Youssef — Virtual Try-On and the component diagram · Bashar — the use case diagram · Salma — testing and retrospective.
 
