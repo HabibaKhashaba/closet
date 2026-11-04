@@ -2,12 +2,13 @@
 // The user chooses a full-body photo of herself; the look is placed on it (simulated overlay of
 // each piece's own photo — see photoTryOn.js). The photo never leaves this browser tab.
 // Flip between the same three looks (a changed piece is kept); wear, save, favourite or change a piece.
-// Without a photo, the stylised avatar is the fallback. A photo-real provider is a planned adapter.
+// Without a photo, the stylised avatar is the fallback. The realistic, image-based try-on is VirtualTryOnScreen.
 import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
 import { CountUp, Icon, Skeleton, SprintTag, Tile, matchWord, pieceName, useApp, CATEGORY_ONE } from '../ui.jsx';
 import { avatarSVG, SKIN_TONES } from '../avatar.js';
 import { go } from '../App.jsx';
+import { GarmentPicker } from './VirtualTryOnScreen.jsx';
 import { FlowRail, storedLooks } from './OutfitsScreen.jsx';
 import { DEFAULT_FIT, cutout, loadFit, loadPhoto, region, removePhoto, saveFit, storePhoto } from '../photoTryOn.js';
 
@@ -56,12 +57,7 @@ export default function TryOnScreen({ query }) {
   const [photo, setPhoto] = useState(() => loadPhoto());
   const [fit, setFit] = useState(() => loadFit());
   const [avatar, setAvatar] = useState(false);
-  // US-118 AI try-on (photo-real). Off when the server has no provider key; the overlay stays the fallback.
-  const [aiOn, setAiOn] = useState(false);
-  const [ai, setAi] = useState({});          // look index → { imageUrl, skipped }
-  const [aiBusy, setAiBusy] = useState(false);
-  const [consent, setConsent] = useState(false);
-  useEffect(() => { api.tryOnStatus().then((s) => setAiOn(Boolean(s.enabled))).catch(() => setAiOn(false)); }, []);
+  const [picking, setPicking] = useState(false); // realistic try-on: Virtual Try-On screen, one piece
   async function choosePhoto(e) {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { setPhoto(await storePhoto(f)); setAvatar(false); toast('Your photo is ready — it stays in this tab only'); } catch (err) { toast(err.message, true); }
@@ -98,21 +94,6 @@ export default function TryOnScreen({ query }) {
   const svg = useMemo(() => (look ? avatarSVG(look.pieces, tone) : ''), [look, tone]);
   const ids = look ? look.pieces.map((p) => p.id) : [];
 
-  async function aiTryOn() {
-    if (!consent) {
-      // Consent before the photo leaves the device (NFR-05, US-118).
-      if (!window.confirm('Create a realistic AI try-on?\n\nYour photo and the clothes will be sent to our server and to the AI try-on service (FASHN) to create the image. They are not stored by Closet. Continue?')) return;
-      setConsent(true);
-    }
-    setAiBusy(true);
-    try {
-      const r = await api.tryOnAI(photo, ids);
-      setAi({ ...ai, [i]: r });
-      toast(r.skipped.length ? `AI try-on ready — ${r.skipped.map((p) => p.name || p.category).join(', ')} not included` : 'AI try-on ready');
-    } catch (e) { toast(e.message || 'AI try-on failed — showing the simulated preview', true); }
-    setAiBusy(false);
-  }
-
   async function wear() { try { await api.wear(ids, null, meta.occasion ? { occasion: meta.occasion } : {}); setDone({ ...done, [i]: 'worn' }); toast('Worn today — wear counts updated'); refresh(); } catch (e) { toast(e.message, true); } }
   async function save(favorite) { try { await api.saveOutfit({ itemIds: ids, occasion: meta.occasion, ruleScore: look.ruleScore, reasons: look.reasons || [], ...(favorite && { favorite: true }) }); setDone({ ...done, [i]: favorite ? 'fav' : 'saved' }); toast(favorite ? 'Favourite saved — Closet learns from it' : 'Saved to your lookbook'); } catch (e) { toast(e.message, true); } }
 
@@ -130,10 +111,8 @@ export default function TryOnScreen({ query }) {
             <div className="stage-light" />
             <div className={`vanity ${photo && !avatar ? 'photo' : ''}`}>
               <div className="bulbs" aria-hidden="true">{BULBS.map(([x, y], k) => <i key={k} style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${k * 0.15}s` }} />)}</div>
-              {photo && !avatar && ai[i] ? (
-                <div className="mirror-glass photo-glass" key={`ai${i}`}><div className="on-photo ai-result"><img className="me" src={ai[i].imageUrl} alt="AI-generated try-on of this look" /></div></div>
-              ) : photo && !avatar ? (
-                <div className="mirror-glass photo-glass" key={`p${i}`}><OnPhoto photo={photo} pieces={look.pieces} fit={fit} />{aiBusy && <div className="ai-busy">Creating a realistic try-on… about 20–60 s</div>}</div>
+              {photo && !avatar ? (
+                <div className="mirror-glass photo-glass" key={`p${i}`}><OnPhoto photo={photo} pieces={look.pieces} fit={fit} /></div>
               ) : avatar ? (
                 // eslint-disable-next-line react/no-danger
                 <div className="mirror-glass" key={i + tone} dangerouslySetInnerHTML={{ __html: svg }} />
@@ -151,7 +130,7 @@ export default function TryOnScreen({ query }) {
               )}
             </div>
             <div className="stage-floor" />
-            <span className="sim-chip" title="A simulated overlay of each piece’s photo on your photo — not a generative try-on. A photo-real provider is a planned adapter.">{photo && !avatar && ai[i] ? 'AI-generated try-on · not a photo' : photo && !avatar ? 'Virtual Try-On Preview · simulated on your photo' : avatar ? 'Stylised avatar · no photo' : 'Virtual Try-On Preview · simulated overlay'}</span>
+            <span className="sim-chip" title="A simulated overlay of each piece’s photo on your photo — not a generative try-on. A photo-real provider is a planned adapter.">{photo && !avatar ? 'Virtual Try-On Preview · simulated on your photo' : avatar ? 'Stylised avatar · no photo' : 'Virtual Try-On Preview · simulated overlay'}</span>
             {looks.length > 1 && <>
               <button type="button" className="iconbtn nav-arrow" style={{ left: 18 }} onClick={() => setI((i + looks.length - 1) % looks.length)} aria-label="Previous look"><Icon name="back" /></button>
               <button type="button" className="iconbtn nav-arrow" style={{ right: 18 }} onClick={() => setI((i + 1) % looks.length)} aria-label="Next look"><Icon name="next" /></button>
@@ -172,10 +151,7 @@ export default function TryOnScreen({ query }) {
               ))}
             </div>
             {avatar && <div className="tones" aria-label="Avatar skin tone">{SKIN_TONES.map((t) => <button type="button" key={t} className={tone === t ? 'on' : ''} style={{ background: t }} onClick={() => setTone(t)} aria-label="Skin tone" />)}</div>}
-            {photo && !avatar && aiOn && (
-              ai[i] ? <button type="button" className="btn line sm" onClick={() => setAi({ ...ai, [i]: undefined })}><Icon name="back" size={13} />Back to the simulated preview</button>
-                : <button type="button" className="btn soft sm" disabled={aiBusy} onClick={aiTryOn}><Icon name="mirror" size={14} />{aiBusy ? 'Creating…' : 'Realistic AI try-on'}</button>
-            )}
+            <button type="button" className="btn soft sm" onClick={() => setPicking(true)}><Icon name="mirror" size={14} />Realistic Virtual Try-On (one piece)</button>
             {photo && !avatar && (
               <details className="fit">
                 <summary className="small"><Icon name="filter" size={14} />Adjust the fit to your photo</summary>
@@ -199,6 +175,7 @@ export default function TryOnScreen({ query }) {
               </div>
             )}
           </aside>
+          {picking && <GarmentPicker pieces={look.pieces} onClose={() => setPicking(false)} onPick={(p) => go(`/virtual-try-on?item=${p.id}&ids=${ids.join(',')}&look=${i}`)} />}
         </div>
       )}
     </>

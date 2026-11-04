@@ -980,56 +980,45 @@ button.link { background: none; border: 0; padding: 0; cursor: pointer; text-dec
 .ai-busy { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); background: rgba(20,20,20,.78); color: #fff; padding: 8px 14px; border-radius: 999px; font-size: 13px; white-space: nowrap; }
 .photo-glass { position: relative; }
 
-/* ───────────────────────── Closet design v2 — clean, photo-first ─────────────────────────
-   Replaces the theatrical look (curtains, bulbs, wooden wardrobe, serif headings) with a calm,
-   product-style interface: white surfaces, one sans-serif typeface, photos on neutral cards. */
-:root {
-  --bg: #f7f7f5; --bg-2: #ffffff; --card: #ffffff;
-  --ink: #161616; --ink-2: #3d3d3d; --muted: #7a7a7a;
-  --line: #e7e7e4; --line-2: #f0f0ee;
-  --rose: #1f1f1f; --rose-ink: #1f1f1f; --rose-soft: #f0f0ee; --rose-wash: #f5f5f3;
-  --serif: var(--sans);
-  --r-lg: 16px; --r: 12px; --r-sm: 8px;
-  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.04);
-  --shadow-lift: 0 2px 6px rgba(0,0,0,.06), 0 10px 24px rgba(0,0,0,.06);
-}
-h1, h2, h3, h4 { font-family: var(--sans); font-weight: 650; letter-spacing: -.02em; }
-h1 { font-size: 30px; }
-/* Photos on neutral cards, not coloured pastel blocks */
-.tile, .tile.Top, .tile.Bottom, .tile.Dress, .tile.Layer, .tile.Shoes, .tile.Bag, .tile.Extra { background: #f2f2f0; }
-.tile img { mix-blend-mode: multiply; }
-/* Closet: a plain grid of sections instead of a wooden wardrobe with rails and hangers */
-.wardrobe { background: transparent; border: 0; box-shadow: none; padding: 0; border-radius: 0; }
-.rail-section { padding-top: 34px; }
-.rail-section::before { display: none; }
-.rail-section > h4 { position: absolute; top: 0; left: 0; background: none; padding: 0; font-family: var(--sans); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-.rail { flex-wrap: wrap; overflow: visible; gap: 18px; }
-.rail .piece-card::before { display: none; }
-.rail .piece-card:hover { transform: none; }
-.rail .piece-card .tile { box-shadow: none; }
-.hook, .hanger-row .hook { display: none; }
-/* Dressing room: a clean photo view instead of a stage with curtains, bulbs and an arched mirror */
-.stage { background: #f2f2f0; box-shadow: none; border: 1px solid var(--line); border-radius: var(--r-lg); }
-.curtain, .stage-light, .stage-floor, .bulbs { display: none; }
-.vanity { background: none; box-shadow: none; padding: 0; border-radius: var(--r); width: min(420px, 100%); height: 600px; }
-.mirror-glass { border-radius: var(--r); background: #fff; box-shadow: none; }
-.mirror-glass::before { display: none; }
-.wardrobe.dressing-env { background: #f2f2f0; box-shadow: none; }
-.wardrobe.dressing-env::before, .wardrobe.dressing-env::after { display: none; }
-.look-dots button { background: rgba(0,0,0,.18); } .look-dots button.on { background: #161616; }
-.sim-chip { background: rgba(22,22,22,.78); }
-.topbar { background: rgba(247,247,245,.9); }
-.dressing-env .rail-section.shelf { background: transparent; padding-top: 34px; }
-.dressing-env .rail-section.shelf::before { display: none; }
-.card.tint-rose, .card.tint-lilac, .style-studio, .forgot { background: #fff; border-color: var(--line); }
-.today-card .look { background: #f2f2f0; box-shadow: none; transform: none; }
-.bar-row .track { background: #eeeeec; }
-:root { --board: #f2f2f0; --taupe: #c9c9c5; }
-.wardrobe.dressing-env { background: transparent; padding: 0; }
-.dressing-env .led-strip { display: none; }
-.dressing-env .rail-section, .dressing-env .rail-section.shelf { background: transparent; border-radius: 0; padding: 34px 0 6px; margin-bottom: 18px; border-top: 1px solid var(--line); }
-.dressing-env .rail-section::before { display: none; }
-.dressing-env .rail-section > h4 { top: 12px; left: 0; color: var(--muted); }
-.dressing-env .rail .piece-card::before { display: none; }
-.dressing-env .rail .piece-card .tile { background: #f2f2f0; }
-.today-card { background: #fff !important; }
+/* Virtual try-on v2 — a clean photo view instead of the stage (curtains, bulbs, arched mirror). */
+.fitting-room .stage { background: #f2f2f0; box-shadow: none; border: 1px solid var(--line); border-radius: var(--r-lg); }
+.fitting-room .curtain, .fitting-room .stage-light, .fitting-room .stage-floor, .fitting-room .bulbs { display: none; }
+.fitting-room .vanity { background: none; box-shadow: none; padding: 0; border-radius: var(--r); width: min(420px, 100%); height: 600px; }
+.fitting-room .mirror-glass { border-radius: var(--r); background: #fff; box-shadow: none; }
+.fitting-room .mirror-glass::before { display: none; }
+.fitting-room .look-dots button { background: rgba(0,0,0,.18); }
+.fitting-room .look-dots button.on { background: var(--ink); }
+.fitting-room .hanger-row .hook { display: none; }
+
+/* ---------- Virtual Try-On (US-118): image-based, one piece ---------- */
+.vto { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .vto { grid-template-columns: 1fr; } }
+.vto-stage { position: relative; min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px; background: linear-gradient(180deg, var(--card), var(--bg-2)); overflow: hidden; }
+.vto-stage img { max-width: 100%; max-height: 640px; border-radius: 16px; object-fit: contain; display: block; }
+.vto-photo, .vto-result { position: relative; margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.vto-result figcaption { text-align: center; }
+.vto-upload, .vto-failed { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; max-width: 340px; color: var(--ink-2); }
+.vto-failed p { margin: 0; }
+.vto-running { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; min-height: 480px; }
+.vto-ghost { position: absolute; inset: 0; margin: auto; opacity: .28; filter: blur(2px) saturate(.6); }
+.vto-running-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 22px 26px; border-radius: var(--r); background: rgba(255, 255, 255, .92); border: 1px solid var(--line); box-shadow: var(--shadow); max-width: 320px; }
+.vto-photo-error { position: absolute; left: 16px; right: 16px; bottom: 16px; }
+.vto-side { display: flex; flex-direction: column; gap: 16px; }
+.vto-garment { display: flex; gap: 14px; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.vto-opt { display: flex; gap: 10px; align-items: center; padding: 10px; border: 1px solid var(--line); border-radius: var(--r-sm); cursor: pointer; background: var(--card); }
+.vto-opt.on { border-color: var(--rose); background: var(--rose-wash); }
+.vto-opt img { width: 46px; height: 58px; object-fit: cover; border-radius: 8px; flex: none; }
+.vto-opt-icon { width: 46px; height: 58px; border-radius: 8px; background: var(--bg-2); display: grid; place-items: center; flex: none; color: var(--muted); }
+.vto-side .check { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+.vto-consent { background: var(--bg-2); border-radius: var(--r-sm); padding: 10px; line-height: 1.4; }
+.warn-chip { background: var(--warn-soft); border-color: #f0dcc0; }
+.vto-pick { display: flex; flex-direction: column; gap: 8px; }
+.vto-pick-row { display: flex; gap: 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--card); text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.vto-pick-row:hover:not(:disabled) { border-color: var(--rose); background: var(--rose-wash); }
+.vto-pick-row.off { opacity: .55; cursor: not-allowed; }
+.vto-history { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+.vto-hist { display: flex; flex-direction: column; gap: 8px; padding: 10px; color: inherit; text-decoration: none; }
+.vto-hist-img { aspect-ratio: 3 / 4; border-radius: 12px; background: var(--bg-2); display: grid; place-items: center; overflow: hidden; }
+.vto-hist-img img { width: 100%; height: 100%; object-fit: cover; }
+.vto-empty { display: flex; gap: 14px; align-items: center; }
+.vto-empty p { margin: 4px 0 0; }

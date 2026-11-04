@@ -23,8 +23,9 @@ const fakeGoogle = async (credential) => {
   return kind === 'google' && sub && email ? { sub, email } : null;
 };
 
-function makeApp() {
-  return createApp({ db: { pool, transaction }, storage, googleVerifier: fakeGoogle, weather: fakeWeather, parser: llmAdapter({ env: {} }) });
+// `extra` lets a test replace a dependency (e.g. the Virtual Try-On provider; never a real one with a key).
+function makeApp(extra = {}) {
+  return createApp({ db: { pool, transaction }, storage, googleVerifier: fakeGoogle, weather: fakeWeather, parser: llmAdapter({ env: {} }), ...extra });
 }
 
 async function resetDb() {

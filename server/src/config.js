@@ -24,6 +24,16 @@ module.exports = {
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',
   maxPhotoBytes: 10 * 1024 * 1024, // US-08: photos up to 10 MB
   lockout: { maxFailures: 5, minutes: 15 }, // NFR-04
-  // US-118 AI try-on (FASHN). Without FASHN_API_KEY the feature is off and the simulated preview is used.
-  tryOn: { dailyLimit: Number(process.env.TRYON_DAILY_LIMIT || 20) },
+  // US-118 Virtual Try-On (image-based, one garment). Provider: TRYON_PROVIDER=fashn|mock|none; FASHN_API_KEY.
+  tryOn: {
+    dailyLimit: Number(process.env.TRYON_DAILY_LIMIT || 20),
+    maxActive: 2,                                                  // generations running at once per user
+    timeoutMs: Number(process.env.TRYON_TIMEOUT_MS || 180000),     // a job still running after this → FAILED
+    minCheckMs: 2500,                                              // at most one provider status call per try-on per 2.5 s
+    maxPhotoBytes: 10 * 1024 * 1024,
+    maxResultBytes: 15 * 1024 * 1024,
+    minPhotoSide: 300,                                             // px, user photo
+    minGarmentSide: 200,                                           // px, garment photo
+    categories: require('./modules/tryon/imageChecks').supportedCategories(),
+  },
 };

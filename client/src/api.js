@@ -65,13 +65,27 @@ export const api = {
   hide: (id) => call('POST', `/items/${id}/hide`),
   unhide: (id) => call('DELETE', `/items/${id}/hide`),
 
-  // US-118 AI try-on: the photo is sent to our server (with the user's consent), which calls the provider.
-  tryOnStatus: () => call('GET', '/tryon/status'),
-  tryOnAI: async (photoDataUrl, itemIds) => {
-    const form = new FormData();
-    form.append('photo', await (await fetch(photoDataUrl)).blob(), 'me.jpg');
-    form.append('itemIds', JSON.stringify(itemIds));
-    return call('POST', '/tryon', form, { form: true });
+  // US-118 Virtual Try-On (image-based, one garment). The browser only talks to Closet's server;
+  // the server calls the try-on provider with its own key.
+  vto: {
+    status: () => call('GET', '/virtual-try-on/status'),
+    photo: () => call('GET', '/virtual-try-on/photo'),
+    savePhoto: (file) => { const f = new FormData(); f.append('photo', file); f.append('consent', 'true'); return call('PUT', '/virtual-try-on/photo', f, { form: true }); },
+    deletePhoto: () => call('DELETE', '/virtual-try-on/photo'),
+    create: ({ wardrobeItemId, outfitId, outfitItemIds, file, useSavedPhoto, savePhoto }) => {
+      const f = new FormData();
+      f.append('wardrobeItemId', wardrobeItemId); f.append('consent', 'true');
+      if (outfitId) f.append('outfitId', outfitId);
+      if (outfitItemIds && outfitItemIds.length) f.append('outfitItemIds', JSON.stringify(outfitItemIds));
+      if (file) f.append('photo', file); else if (useSavedPhoto) f.append('useSavedPhoto', 'true');
+      if (savePhoto) f.append('savePhoto', 'true');
+      return call('POST', '/virtual-try-on', f, { form: true });
+    },
+    get: (id) => call('GET', `/virtual-try-on/${id}`),
+    list: (saved) => call('GET', `/virtual-try-on${saved ? '?saved=true' : ''}`),
+    save: (id, saved = true) => call('POST', `/virtual-try-on/${id}/save`, { saved }),
+    retry: (id) => call('POST', `/virtual-try-on/${id}/retry`),
+    remove: (id) => call('DELETE', `/virtual-try-on/${id}`),
   },
 
   laundry: () => call('GET', '/laundry'),

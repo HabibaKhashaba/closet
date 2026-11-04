@@ -1,5 +1,6 @@
 // Offline demo entry (browser): answers the web app's fetch('/api/v1/...') with localApi.js, which runs
 // Closet's real services on in-memory data. State survives a refresh in the same tab (sessionStorage).
+if (typeof globalThis.Buffer === 'undefined') globalThis.Buffer = require('./shims/buffer'); // the server's image checks use Buffer
 const { createLocalApi } = require('./localApi');
 
 const KEY = 'closet.offline.state';
@@ -15,8 +16,9 @@ window.fetch = async (url, opt = {}) => {
   const method = (opt.method || 'GET').toUpperCase();
   let body = null;
   if (typeof FormData !== 'undefined' && opt.body instanceof FormData) {
-    const photo = opt.body.get('photo');
-    body = { details: opt.body.get('details'), photo: photo ? await toDataUrl(photo) : null };
+    body = {};
+    for (const [k, val] of opt.body.entries()) body[k] = (typeof Blob !== 'undefined' && val instanceof Blob) ? await toDataUrl(val) : val;
+    if (!('photo' in body)) body.photo = null;
   } else if (typeof opt.body === 'string') { try { body = JSON.parse(opt.body); } catch { body = {}; } }
   const auth = opt.headers && (opt.headers.Authorization || opt.headers.authorization);
   const r = await api.handle(method, url.slice('/api/v1'.length), body, auth);

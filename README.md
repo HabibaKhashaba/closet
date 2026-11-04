@@ -109,14 +109,25 @@ The full checklist with the expected values is `docs/milestone2/DEMO_PREFLIGHT.m
 
 `bash tools/offline_demo/build.sh` builds `Closet_Demo.html`: the built web app plus the **real services and rules running on in-memory repositories** (same seed), in one file that opens with a double-click; state lasts for the browser session and the Reset badge restores the seed (`npm run demo:offline`). `tools/record_demo_video.py` records `Closet_Demo_FINAL.mp4` (the 13 demo steps, 5:33) from a fresh seed: `TRYON_PHOTO=avatar` uses the stylised avatar, or pass a consenting team member’s full-body photo. The recording is embedded in both presentation files.
 
-## AI virtual try-on (US-118)
+## Virtual Try-On (US-118) — image-based, one piece at a time
 
-The dressing room has two modes:
+**Flow:** Style me → 3 looks → **Virtual Try-On** on a look → choose the piece (tops, jackets/layers and dresses; shoes, bags and accessories are shown as "not supported yet") → upload a full-body photo or use the saved try-on photo → agree to the photo notice → **Generate try-on** → "Creating your virtual try-on…" → the result, labelled AI-generated → **Save result · Try another item · Back to outfit**, or **Retry** if it failed. Leaving the screen does not cancel the job; it is listed under *Virtual try-on* in the sidebar. The old in-browser overlay is still there as **Quick fit preview** (the *Preview* button on a look).
 
-- **Simulated preview** (always available): each piece's photo is placed on the user's photo in the browser. Nothing is uploaded.
-- **Realistic AI try-on** (when a provider key is set): after the user agrees, the full-body photo and the look's pieces go to our server, which calls the [FASHN](https://fashn.ai) try-on API through the Try-On adapter (`server/src/modules/tryon/`). It dresses the person one garment at a time (a dress, or bottom then top, then a layer) and returns a realistic image labelled "AI-generated". Shoes, bags and extras are not supported by the provider and are listed as skipped. Closet does not store the photo.
+**Architecture** (`server/src/modules/tryon/`): `virtualTryOnController.js` (HTTP) → `virtualTryOnService.js` (rules, statuses PENDING → PROCESSING → COMPLETED / FAILED) → `providers/VirtualTryOnProvider.js` (contract: `generateTryOn`, `getStatus`, `getResult`) → `providers/fashnProvider.js` (FASHN API) or `providers/mockProvider.js` (no AI, for demos). The browser only calls Closet; the API key stays on the server. Data: migration `008_virtual_try_on.sql` (`tryon.virtual_try_ons`, `tryon.user_photos`). Photos and results are private files behind signed URLs.
 
-Setup: add `FASHN_API_KEY=...` to `server/.env` (never commit it), rebuild the client (`npm --prefix client run build`) and restart the server. Without a key the button is hidden and the simulated preview is used. Limits: 20 AI try-ons per user per day (`TRYON_DAILY_LIMIT`); provider errors or a 90 s timeout fall back to the simulated preview. Tests: `server/tests/unit/tryon.test.js` (TO-01 – TO-12, provider mocked).
+**API** (`/api/v1/virtual-try-on`, login required): `GET /status` · `GET|PUT|DELETE /photo` · `POST /` (multipart: `wardrobeItemId`, `photo` or `useSavedPhoto=true`, `savePhoto`, `outfitId`, `outfitItemIds`, `consent=true`) → 202 · `GET /` · `GET /:id` (poll) · `POST /:id/save` · `POST /:id/retry` · `DELETE /:id`.
+
+**Setup** in `server/.env` (never commit it):
+
+```
+TRYON_PROVIDER=fashn          # fashn | mock | none  (default: fashn when FASHN_API_KEY is set, otherwise none)
+FASHN_API_KEY=fa-...          # from https://app.fashn.ai → API keys
+# FASHN_MODEL=tryon-v1.6  TRYON_DAILY_LIMIT=20  TRYON_TIMEOUT_MS=180000  TRYON_CATEGORIES=Top,Layer,Dress
+```
+
+Without a key, use `TRYON_PROVIDER=mock` to run the whole flow (the "result" is your own photo, labelled *Mock result · no AI was used*). Run `npm run migrate` once for the new tables.
+
+**Tests:** `server/tests/unit/virtual_tryon.test.js` (VT-01 – VT-27), `server/tests/api/virtual_tryon_api.test.js` (API-VT01 – VT09, real PostgreSQL, provider mocked), `e2e/virtual_tryon_journey.py` (browser, live app with `TRYON_PROVIDER=mock` or the offline demo).
 
 ## Deploy
 
@@ -134,15 +145,31 @@ server/src/
   events/          in-process event bus (Observer)
   shared/          vocabulary (requirements §3.1), validation, errors
   db/              connection, migrations runner, demo seed
-server/migrations/ SQL schema (001 Sprint 1, 002 outfits / planner / chat, 003 customization, shopping)
+server/migrations/ SQL schema (001 Sprint 1 … 007 lifecycle, 008 virtual try-on)
 server/seed/photos 29 original garment illustrations for the demo closet
 server/tests/      unit/ and api/ (acceptance.test.js = one test per story)
 docs/              Milestone 1 and Milestone 2 documents and diagrams
 ```
+
+## Milestone 2 submission (Sprint 1) — what to read
+
+| File (in `docs/final/`) | What it is |
+| --- | --- |
+| `Closet_SRS_v2.0.pdf` | Software Requirements Specification — one consolidated version; use case diagrams in 2.2 and Appendix B; Virtual Try-On in 4.23 |
+| `Closet_SDD_v2.0.pdf` | Software Design Document — architecture, class, sequence, data; design evolution and Virtual Try-On in chapter 8 |
+| `Closet_Test_Plan_and_Report_v2.0.pdf` | Test levels, techniques, results, defects D-29 – D-32 |
+| `Closet_M2_Presentation.pptx` | The 10-minute presentation (15 slides, Morph) — speaker notes per person |
+| `Closet_Presentation_Script.pdf` | Who says what on each slide |
+| `How_to_Run_Closet.pdf` · `Note_to_Dr_Sherif_Aly.pdf` | Running the app; the cover note with the links |
+
+The documents are generated from the sources by `docs/final/build_v2.py` + `make.py` (SRS/SDD) and `extra_docs.py` (the rest).
+
+**Who presents what:** Habiba — opening, Sprint 1, feedback, closing · Karim — three looks · Youssef — Virtual Try-On and the component diagram · Bashar — the use case diagram · Salma — testing and retrospective.
 
 ## Documents
 
 | Milestone | Files |
 | --- | --- |
 | Milestone 1 | `docs/milestone1/` – requirements and architecture, use case and component diagrams, prototype |
-| Milestone 2 | `docs/milestone2/` – **final (build v1.6):** Closet_SRS_v1.3 and Closet_SDD_v1.3, revision 5 (front matter on top of the tracked v1.2 baseline; builders in `rev5/`, revision 4 in `rev4/`), Test Plan and Report v1.3, Traceability v1.6, API table v1.6, 24 diagrams (SVG + PNG, D24 – D26 new in v1.6), the test plan and report, the presentation (interactive, linear, PDF) and one presenter pack (Q&A, Jira checklist, verification matrix), the demo script and `DEMO_PREFLIGHT.md`; test evidence in `evidence/` (including three fresh-seed demo runs); slide sources in `slides-source/`. Earlier drafts are in the git history. |
+| Milestone 2 (final) | `docs/final/` – **v2.0 documents** (above). |
+| Milestone 2 (history) | `docs/milestone2/` – build v1.6: Closet_SRS_v1.3 and Closet_SDD_v1.3, revision 5 (front matter on top of the tracked v1.2 baseline; builders in `rev5/`, revision 4 in `rev4/`), Test Plan and Report v1.3, Traceability v1.6, API table v1.6, 24 diagrams (SVG + PNG, D24 – D26 new in v1.6), the test plan and report, the presentation (interactive, linear, PDF) and one presenter pack (Q&A, Jira checklist, verification matrix), the demo script and `DEMO_PREFLIGHT.md`; test evidence in `evidence/` (including three fresh-seed demo runs); slide sources in `slides-source/`. Earlier drafts are in the git history. |

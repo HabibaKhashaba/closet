@@ -149,7 +149,7 @@ with sync_playwright() as p:
     shot('41_change_piece')
     pg.locator('.looks .flip').first.locator('.why-btn').click(); pg.wait_for_timeout(800); shot('40b_why')
     pg.locator('.looks .flip').first.locator('button:has-text("Back to the look")').click(); pg.wait_for_timeout(600)
-    pg.locator('.looks .flip').first.locator('button:has-text("Try on")').click()
+    pg.locator('.looks .flip').first.locator('.toolbar button:has-text("Preview")').click()   # quick fit preview (simulated)
     pg.wait_for_selector('text=See this look on you'); shot('42a_tryon_choose_photo')
     pg.set_input_files('input[aria-label="Choose my photo"]', TRYON)
     pg.wait_for_selector('.on-photo .me'); pg.wait_for_timeout(2200)

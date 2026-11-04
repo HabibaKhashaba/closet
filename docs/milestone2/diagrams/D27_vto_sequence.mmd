@@ -1,0 +1,28 @@
+sequenceDiagram
+  autonumber
+  actor U as User
+  participant W as Web app (VirtualTryOnScreen)
+  participant C as VirtualTryOnController
+  participant S as VirtualTryOnService
+  participant P as VirtualTryOnProvider (FASHN)
+  participant DB as PostgreSQL + photo storage
+  U->>W: Virtual Try-On on a look, pick a top
+  W->>C: POST /virtual-try-on (photo, wardrobeItemId, consent)
+  C->>S: create(userId, input)
+  S->>DB: check piece owner, category, images, quota
+  S->>DB: store photo copy, insert row PENDING
+  S->>P: generateTryOn(person, garment, "tops")
+  P-->>S: jobId
+  S->>DB: status PROCESSING
+  C-->>W: 202 {tryOnId, PROCESSING}
+  loop every 2.5 s, then 4 s, then 6 s
+    W->>C: GET /virtual-try-on/:id
+    C->>S: get(userId, id)
+    S->>P: getStatus(jobId)
+    P-->>S: PROCESSING or COMPLETED or FAILED
+  end
+  S->>P: getResult(jobId)
+  P-->>S: imageUrl
+  S->>DB: copy result to private storage, COMPLETED
+  C-->>W: {COMPLETED, resultImageUrl (signed)}
+  W-->>U: result + Save result, Try another item, Back to outfit

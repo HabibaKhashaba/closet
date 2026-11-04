@@ -1,0 +1,54 @@
+classDiagram
+  direction LR
+  class VirtualTryOnController {
+    +GET /status
+    +GET|PUT|DELETE /photo
+    +POST /
+    +GET /:id
+    +POST /:id/save
+    +POST /:id/retry
+    +DELETE /:id
+  }
+  class VirtualTryOnService {
+    +create(userId, input)
+    +get(userId, id)
+    +retry(userId, id)
+    +setSaved(userId, id, saved)
+    +savePhoto / deletePhoto
+    -advance(row)
+    -storeResult(url)
+  }
+  class VirtualTryOnProvider {
+    <<interface>>
+    +name
+    +enabled
+    +generateTryOn(person, garment, category) jobId
+    +getStatus(jobId) status
+    +getResult(jobId) imageUrl
+  }
+  class FashnVirtualTryOnProvider
+  class MockVirtualTryOnProvider
+  class VirtualTryOnRepository {
+    +insert / get / update / list / remove
+    +getPhoto / setPhoto / deletePhoto
+  }
+  class VirtualTryOn {
+    id
+    userId
+    outfitId
+    wardrobeItemId
+    userImageKey
+    garmentImageKey
+    resultImageKey
+    status
+    provider
+    createdAt
+  }
+  VirtualTryOnController --> VirtualTryOnService
+  VirtualTryOnService --> VirtualTryOnProvider
+  VirtualTryOnService --> VirtualTryOnRepository
+  VirtualTryOnService ..> WardrobeService : getPiece, photoKey
+  VirtualTryOnService ..> PhotoStorage : save, read, signedUrl
+  VirtualTryOnProvider <|.. FashnVirtualTryOnProvider
+  VirtualTryOnProvider <|.. MockVirtualTryOnProvider
+  VirtualTryOnRepository --> VirtualTryOn

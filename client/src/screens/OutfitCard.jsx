@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { Board, CountUp, Icon, Look, Modal, Criteria, Score, Stars, Why, matchWord, useApp } from '../ui.jsx';
 import { go } from '../App.jsx';
+import { GarmentPicker } from './VirtualTryOnScreen.jsx';
 
 export const REJECT_REASONS = ['Too formal', 'Too casual', 'Don’t like these colours', 'Not comfortable', 'Wore this recently', 'Don’t like one piece', 'Not in the mood today'];
 
@@ -17,6 +18,7 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
   const [rejecting, setRejecting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [flipped, setFlipped] = useState(false);
+  const [picking, setPicking] = useState(false);   // Virtual Try-On: which piece?
   const ids = outfit.pieces.map((p) => p.id);
   const wearable = outfit.pieces.every((p) => p.status === 'Available' || p.backBy);
   // v1.6 repeat intelligence: "You wore almost this exact look twice this week" / "You loved this look last time".
@@ -59,7 +61,10 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
       onReject && onReject(reason);
     } catch (e) { toast(e.message, true); }
   }
-  const tryOn = () => go(`/tryon?ids=${ids.join(',')}${index !== undefined ? `&look=${index}` : ''}`);
+  // Virtual Try-On (image-based, one piece): choose the piece, then the try-on screen opens.
+  const tryOn = () => setPicking(true);
+  const tryPiece = (p) => { setPicking(false); go(`/virtual-try-on?item=${p.id}&ids=${ids.join(',')}${index !== undefined ? `&look=${index}` : ''}${savedId ? `&outfit=${savedId}` : ''}`); };
+  const quickPreview = () => go(`/tryon?ids=${ids.join(',')}${index !== undefined ? `&look=${index}` : ''}`);
   const hasMatch = outfit.compatibility !== undefined;
 
   if (compact) {
@@ -71,7 +76,8 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
         </div>
         <Board pieces={outfit.pieces} small />
         {extra}
-        {!hideActions && <div className="row nowrap"><button type="button" className="btn sm grow" onClick={tryOn}><Icon name="mirror" size={15} />Try on</button><button type="button" className="btn line sm grow" onClick={wear} disabled={busy || !wearable}><Icon name="check" size={15} />Wear</button></div>}
+        {picking && <GarmentPicker pieces={outfit.pieces} onClose={() => setPicking(false)} onPick={tryPiece} />}
+        {!hideActions && <div className="row nowrap"><button type="button" className="btn sm grow" onClick={tryOn}><Icon name="mirror" size={15} />Virtual Try-On</button><button type="button" className="btn line sm grow" onClick={wear} disabled={busy || !wearable}><Icon name="check" size={15} />Wear</button></div>}
       </article>
     );
   }
@@ -112,13 +118,14 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
           ) : (
             <>
               <div className="row nowrap">
-                <button type="button" className="btn sm grow" onClick={tryOn}><Icon name="mirror" size={15} />Try on</button>
+                <button type="button" className="btn sm grow" onClick={tryOn}><Icon name="mirror" size={15} />Virtual Try-On</button>
                 <button type="button" className="btn line sm grow" onClick={wear} disabled={busy || !wearable} title={wearable ? '' : 'A piece is not available'}><Icon name="check" size={15} />Wear this</button>
               </div>
               <div className="toolbar">
                 <button type="button" className={savedId ? 'on' : ''} onClick={save} aria-label="Save"><Icon name="bookmark" size={15} fill={savedId ? 'currentColor' : 'none'} />{savedId ? 'Saved' : 'Save'}</button>
                 <button type="button" className={fav ? 'on' : ''} onClick={favourite} aria-label="Favourite"><Icon name="heart" size={15} fill={fav ? 'currentColor' : 'none'} /></button>
                 <button type="button" onClick={() => setFlipped(true)} className="why-btn"><Icon name="sparkle" size={15} />Why?</button>
+                <button type="button" onClick={quickPreview} title="Quick fit preview (simulated, stays in your browser)"><Icon name="grid" size={14} />Preview</button>
                 {onReject !== false && <button type="button" onClick={() => setRejecting(true)} style={{ marginLeft: 'auto' }}><Icon name="x" size={14} />Not for me</button>}
               </div>
             </>
@@ -137,6 +144,7 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
           <button type="button" className="btn line sm" onClick={() => setFlipped(false)} style={{ marginTop: 'auto' }}><Icon name="back" size={14} />Back to the look</button>
         </div>
       </div>
+      {picking && <GarmentPicker pieces={outfit.pieces} onClose={() => setPicking(false)} onPick={tryPiece} />}
       {rejecting && (
         <Modal title="Not for you?" sub="Pick a reason — the next looks will fit better." onClose={() => setRejecting(false)}>
           <div className="reason-grid">

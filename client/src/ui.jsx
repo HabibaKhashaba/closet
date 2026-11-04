@@ -80,16 +80,11 @@ export const SPRINT = {
   3: { cls: 's3', short: 'Sprint 3', label: 'Sprint 3 · Product preview', note: 'A preview of the full product. Not part of Sprint 1 grading.' },
   4: { cls: 's4', short: 'Stretch', label: 'Stretch goal · Concept preview', note: 'A stretch / future feature shown as a working concept. Not committed for December 1 and not part of Sprint 1 grading.' },
 };
-// Sprint labels are for the course documents, not the product: hidden in the app unless turned on
-// (localStorage closet.showSprints = '1', e.g. for a sprint review).
-export const SHOW_SPRINTS = (() => { try { return localStorage.getItem('closet.showSprints') === '1'; } catch { return false; } })();
 export function SprintTag({ n, short }) {
-  if (!SHOW_SPRINTS) return null;
   const s = SPRINT[n];
   return <span className={`tag ${s.cls}`} title={s.note}><span className={`dot ${s.cls}`} style={{ width: 6, height: 6, borderRadius: 9 }} />{short ? s.short : s.label}</span>;
 }
 export function SprintNote({ n, children }) {
-  if (!SHOW_SPRINTS) return null;
   return (
     <div className="sprint-note"><SprintTag n={n} /><span>{children || SPRINT[n].note}</span></div>
   );

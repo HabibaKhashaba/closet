@@ -1,0 +1,24 @@
+PASS Providers (VirtualTryOnProvider contract) › VT-01 FASHN: submits the person photo + garment with the category and returns the job id
+PASS Providers (VirtualTryOnProvider contract) › VT-02 FASHN: status maps processing → PROCESSING, completed → COMPLETED + result URL, failed → FAILED
+PASS Providers (VirtualTryOnProvider contract) › VT-03 FASHN: no key → disabled; bad key, rate limit and network errors become typed ProviderErrors
+PASS Providers (VirtualTryOnProvider contract) › VT-04 provider choice comes from the environment; mock only when asked for; every provider has the full contract
+PASS Image checks › VT-05 real type and pixel size are read from the file header; non-images are refused
+PASS VirtualTryOnService › VT-10 successful try-on: PENDING → PROCESSING → COMPLETED, result stored privately, original garment photo untouched
+PASS VirtualTryOnService › VT-11 an async provider is polled through GET: still PROCESSING until the job finishes
+PASS VirtualTryOnService › VT-12 invalid or someone else’s wardrobe item → 400 / 404 (nothing is sent)
+PASS VirtualTryOnService › VT-13 unsupported garment type (shoes) → 422 UNSUPPORTED_GARMENT
+PASS VirtualTryOnService › VT-14 missing images: no user photo → PHOTO_REQUIRED; piece without a usable photo → GARMENT_IMAGE_MISSING / UNSUITABLE
+PASS VirtualTryOnService › VT-15 user photo validation: not an image → 415, too small → 422, no consent → 400
+PASS VirtualTryOnService › VT-16 provider failure → the try-on is FAILED with a friendly message, and Retry starts it again
+PASS VirtualTryOnService › VT-17 timeout, failed job and empty result all end as FAILED (never stuck, never blank)
+PASS VirtualTryOnService › VT-18 a temporary network error while polling keeps it PROCESSING (the next poll tries again)
+PASS VirtualTryOnService › VT-19 status retrieval and isolation: another user can neither read, save, retry nor delete my try-on
+PASS VirtualTryOnService › VT-20 save result, list saved, delete removes the stored images
+PASS VirtualTryOnService › VT-21 saved try-on photo: save, reuse, replace, delete
+PASS VirtualTryOnService › VT-22 uploading with "save this photo" also stores it for next time
+PASS VirtualTryOnService › VT-23 limits: daily quota and at most two running at once → 429
+PASS VirtualTryOnService › VT-24 provider not configured → 503 TRYON_DISABLED and status says enabled: false
+PASS VirtualTryOnService › VT-25 a saved look links the try-on to the outfit; someone else’s look is 404
+PASS VirtualTryOnService › VT-26 an https result from the provider is copied into private storage
+PASS VirtualTryOnService › VT-27 account deletion removes every try-on file of the user
+23/23

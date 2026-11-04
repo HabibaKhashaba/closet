@@ -14,7 +14,7 @@ function createMemoryStore() {
   return {
     users: [], profiles: new Map(), items: [], careJobs: [], loans: [], deletions: [], status: new Map(), history: [],
     outfits: [], wears: [], feedback: [], hidden: [], events: [], actions: [], decisions: [], listItems: [],
-    learned: [], read: [], snoozes: [], activity: [], trips: [], seq: { wear: 0, activity: 0, history: 0, deletion: 0, job: 0, loan: 0 },
+    learned: [], read: [], snoozes: [], activity: [], trips: [], tryOns: [], tryOnPhotos: [], seq: { wear: 0, activity: 0, history: 0, deletion: 0, job: 0, loan: 0 },
   };
 }
 
@@ -232,7 +232,40 @@ function memoryRepositories(S = createMemoryStore()) {
     async pieceLabel(userId, itemId) { const r = own(S.items, userId, itemId); return r ? { name: r.name, colour: r.colour, category: r.category } : null; },
   };
 
-  return { store: S, profile, wardrobe, availability, outfits, planner, shopping, intelligence, packing, assistant, activity };
+  // Virtual Try-On (same interface as modules/tryon/virtualTryOnRepository.js)
+  if (!S.tryOns) S.tryOns = []; if (!S.tryOnPhotos) S.tryOnPhotos = [];
+  const COLS = { status: 'status', providerJobId: 'provider_job_id', errorCode: 'error_code', errorMessage: 'error_message', resultImageKey: 'result_image_key',
+    resultRemoteUrl: 'result_remote_url', saved: 'saved', completedAt: 'completed_at', startedAt: 'started_at', attempts: 'attempts' };
+  const virtualTryOn = {
+    async insert(userId, r) {
+      const t = now();
+      const row = { id: uuid(), user_id: userId, outfit_id: r.outfitId || null, outfit_item_ids: r.outfitItemIds || [], wardrobe_item_id: r.wardrobeItemId, garment_name: r.garmentName || null,
+        garment_category: r.garmentCategory, user_image_key: r.userImageKey, garment_image_key: r.garmentImageKey, result_image_key: null, result_remote_url: null, status: r.status, provider: r.provider,
+        provider_job_id: null, error_code: null, error_message: null, saved: false, attempts: 1, started_at: r.startedAt || t, completed_at: null, created_at: t, updated_at: t };
+      S.tryOns.push(row); return { ...row };
+    },
+    async get(userId, id) { const r = own(S.tryOns, userId, id); return r ? { ...r } : null; },
+    async update(userId, id, c) {
+      const r = own(S.tryOns, userId, id); if (!r) return null;
+      for (const [k, col] of Object.entries(COLS)) if (k in c) r[col] = c[k];
+      r.updated_at = now(); return { ...r };
+    },
+    async list(userId, { savedOnly = false, limit = 30 } = {}) { return S.tryOns.filter((r) => r.user_id === userId && (!savedOnly || r.saved)).sort((a, b) => b.created_at - a.created_at).slice(0, limit).map((r) => ({ ...r })); },
+    async remove(userId, id) { const r = own(S.tryOns, userId, id); if (!r) return null; S.tryOns = S.tryOns.filter((x) => x !== r); return { ...r }; },
+    async countSince(userId, since) { return S.tryOns.filter((r) => r.user_id === userId && new Date(r.started_at) >= since).length; },
+    async countActive(userId) { return S.tryOns.filter((r) => r.user_id === userId && (r.status === 'PENDING' || r.status === 'PROCESSING')).length; },
+    async keysOf(userId) { return [...S.tryOns.filter((r) => r.user_id === userId).flatMap((r) => [r.user_image_key, r.result_image_key]), ...S.tryOnPhotos.filter((p) => p.user_id === userId).map((p) => p.photo_key)].filter(Boolean); },
+    async getPhoto(userId) { const p = S.tryOnPhotos.find((x) => x.user_id === userId); return p ? { ...p } : null; },
+    async setPhoto(userId, photoKey) {
+      let p = S.tryOnPhotos.find((x) => x.user_id === userId);
+      if (p) Object.assign(p, { photo_key: photoKey, consent_at: now(), updated_at: now() });
+      else { p = { user_id: userId, photo_key: photoKey, consent_at: now(), created_at: now(), updated_at: now() }; S.tryOnPhotos.push(p); }
+      return { ...p };
+    },
+    async deletePhoto(userId) { const p = S.tryOnPhotos.find((x) => x.user_id === userId); if (!p) return null; S.tryOnPhotos = S.tryOnPhotos.filter((x) => x !== p); return { ...p }; },
+  };
+
+  return { store: S, virtualTryOn, profile, wardrobe, availability, outfits, planner, shopping, intelligence, packing, assistant, activity };
 }
 
 // The store as JSON (Maps → arrays) so the offline demo can keep state across a page refresh in the

@@ -1,7 +1,7 @@
 // Controller layer (MVC): routing, signed-in state and shared data. Screens are the views.
 import React, { useCallback, useEffect, useState } from 'react';
 import { api, session, whenSignedOut } from './api.js';
-import { AppContext, Icon, Spinner, useToast, WeatherPill, SPRINT, SHOW_SPRINTS, relDay } from './ui.jsx';
+import { AppContext, Icon, Spinner, useToast, WeatherPill, SPRINT, relDay } from './ui.jsx';
 import AuthScreen from './screens/AuthScreen.jsx';
 import QuizScreen from './screens/QuizScreen.jsx';
 import HomeScreen from './screens/HomeScreen.jsx';
@@ -17,6 +17,7 @@ import OutfitsScreen from './screens/OutfitsScreen.jsx';
 import MixMatchScreen from './screens/MixMatchScreen.jsx';
 import SavedScreen from './screens/SavedScreen.jsx';
 import TryOnScreen from './screens/TryOnScreen.jsx';
+import VirtualTryOnScreen from './screens/VirtualTryOnScreen.jsx';
 import AskScreen from './screens/AskScreen.jsx';
 import AnalyticsScreen from './screens/AnalyticsScreen.jsx';
 import ShoppingScreen from './screens/ShoppingScreen.jsx';
@@ -43,7 +44,7 @@ export const go = (path) => { window.location.hash = path; };
 const NAV = [
   ['Today', [['/', 'home', 'Home', null]]],
   ['Wardrobe', [['/closet', 'closet', 'Closet', 1], ['/care', 'laundry', 'Care', 1], ['/lending', 'user', 'Borrow & lend', 3], ['/donation', 'heart', 'Donation', 3]]],
-  ['Style', [['/outfits', 'sparkle', 'Style me · 3 looks', 2], ['/mix', 'grid', 'Mix & Match', 2], ['/tryon', 'mirror', 'Virtual try-on', 3], ['/saved', 'bookmark', 'Lookbook', 2]]],
+  ['Style', [['/outfits', 'sparkle', 'Style me · 3 looks', 2], ['/mix', 'grid', 'Mix & Match', 2], ['/virtual-try-on', 'mirror', 'Virtual try-on', 2], ['/tryon', 'grid', 'Quick fit preview', 3], ['/saved', 'bookmark', 'Lookbook', 2]]],
   ['Assistant', [['/ask', 'brain', 'Ask Closet', 3]]],
   ['Plan', [['/planner', 'calendar', 'Planner', 1], ['/packing', 'suitcase', 'Packing', 4]]],
   ['Insights', [['/analytics', 'chart', 'Analytics & insights', 3], ['/shopping', 'bag', 'Shopping bag', 3]]],
@@ -138,6 +139,7 @@ export default function App() {
   else if (section === 'mix') screen = <MixMatchScreen key={q.ids || ''} query={q} />;
   else if (section === 'saved') screen = <SavedScreen />;
   else if (section === 'tryon') screen = <TryOnScreen key={q.ids || ''} query={q} />;
+  else if (section === 'virtual-try-on') screen = <VirtualTryOnScreen key={`${q.item || ''}${q.id || ''}`} query={q} />;
   else if (section === 'ask') screen = <AskScreen query={q} />;
   else if (section === 'analytics') screen = <AnalyticsScreen />;
   else if (section === 'shopping') screen = <ShoppingScreen />;
@@ -157,7 +159,7 @@ export default function App() {
         {items.map(([path, icon, label, sprint]) => (
           <a key={path} href={`#${path}`} className={isOn(path) ? 'on' : ''} onClick={() => setMoreOpen(false)}>
             <Icon name={icon} size={18} />{label}
-            {path === '/care' && laundryCount > 0 ? <span className="count">{laundryCount}</span> : SHOW_SPRINTS && sprint && <span className={`dot ${SPRINT[sprint].cls}`} title={SPRINT[sprint].label} />}
+            {path === '/care' && laundryCount > 0 ? <span className="count">{laundryCount}</span> : sprint && <span className={`dot ${SPRINT[sprint].cls}`} title={SPRINT[sprint].label} />}
           </a>
         ))}
         {group === 'You' && user.role === 'admin' && (

@@ -25,8 +25,7 @@ const { registerAdmin } = require('./modules/admin/adminModule');
 const { registerIntelligence } = require('./modules/intelligence/intelligenceModule');
 const { registerPacking } = require('./modules/packing/packingModule');
 const { registerActivity } = require('./modules/activity/activityModule');
-const { registerTryOn } = require('./modules/tryon/tryonModule');
-const { fashnAdapter } = require('./modules/tryon/fashnAdapter');
+const { registerVirtualTryOn } = require('./modules/tryon/tryonModule');
 const { audit } = require('./gateway/audit');
 const vocabulary = require('./shared/vocabulary');
 const { ALLOWED: STATUS_TRANSITIONS } = require('./modules/availability/statusMachine');
@@ -65,7 +64,8 @@ function buildModules(deps = {}) {
     wardrobe: () => wardrobe.service, availability: availability.service, planner: () => planner.service, shopping: () => shopping.service,
     proactive: () => intelligence.service.proactive, intelligence: () => intelligence.service, packing: () => packing.service, profile: profile.service,
   });
-  const tryOn = registerTryOn({ wardrobe: () => wardrobe.service, storage, adapter: deps.tryOnAdapter || fashnAdapter() });
+  const tryOn = registerVirtualTryOn({ db: pool, repo: repos.virtualTryOn, bus, wardrobe: () => wardrobe.service, outfits: () => outfits.service, storage,
+    provider: deps.tryOnProvider, settings: deps.tryOnSettings, fetchImpl: deps.fetchImpl });
   return { tryOn, bus, storage, identity, profile, availability, wardrobe, outfits, weather, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant };
 }
 
@@ -108,7 +108,7 @@ function createApp(deps = {}) {
   api.use('/notifications', intelligence.routes.notifications);
   api.use('/packing', packing.routes);
   api.use('/activity', activity.routes);
-  api.use('/tryon', tryOn.routes);          // US-118 AI try-on (photo-real provider; overlay is the fallback)
+  api.use('/virtual-try-on', tryOn.routes); // US-118 image-based Virtual Try-On (one garment, external provider)
   api.use('/admin', admin.routes); // Access Control: requireRole('admin')
   api.use('/account', privacy.routes);
 

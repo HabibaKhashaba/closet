@@ -65,6 +65,9 @@ function localPhotoStorage({ dir, secret, ttlSeconds = 15 * 60 }) {
       const given = Buffer.from(String(sig || ''));
       return expected.length === given.length && crypto.timingSafeEqual(expected, given);
     },
+    async read(key) {
+      return fs.readFile(path.join(dir, path.basename(key)));
+    },
     filePath(key) {
       return path.resolve(dir, path.basename(key));
     },

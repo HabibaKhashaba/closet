@@ -1,0 +1,83 @@
+Key,Summary,Status,Assignee
+SCRUM-3,Task 3,Done,—
+SCRUM-4,Subtask 2.1,Done,—
+SCRUM-5,US-01 Register and log in with email or Google,Done,Karim Eid
+SCRUM-6,US-06 Delete my account and all my photos and data,Done,Karim Eid
+SCRUM-7,US-08 Add a piece by taking or uploading a photo,Done,bashar_elazony
+SCRUM-8,"US-09 Enter category, colour, fabric, season, size, style, dress code",Done,Karim Eid
+SCRUM-9,US-11 Review and edit every detail before saving,Done,salma.fahim
+SCRUM-10,US-12 Browse and filter my closet by category and status,Done,salma.fahim
+SCRUM-11,US-71 Edit a piece’s details later,Done,salma.fahim
+SCRUM-12,US-15 Put a piece in the laundry basket and take it out,Done,Habiba Khashaba
+SCRUM-13,US-16 Return everything with one “Wash done” tap,Done,Habiba Khashaba
+SCRUM-14,US-56 Set a status per piece (5 statuses),Done,salma.fahim
+SCRUM-15,"US-02 Answer a short style quiz: styles, colours, occasions",Done,bashar_elazony
+SCRUM-16,US-03 Set my usual dress code and a modest preference,Done,bashar_elazony
+SCRUM-17,US-04 Set my city so outfits use my local weather,Done,Habiba Khashaba
+SCRUM-18,US-46 Add events by hand and see them in a calendar,Done,Karim Eid
+SCRUM-19,US-64 See closet gaps by category and dress code,Done,Habiba Khashaba
+SCRUM-20,T-01 Set up repo structure and CI: tests run on every pull request,Done,Youssouf Ezzeldin
+SCRUM-21,"T-03 Database schema, migrations and demo seed data",Done,Karim Eid
+SCRUM-22,"T-04 Security pipeline: HTTPS only, CORS, security headers, rate limit",Done,Karim Eid
+SCRUM-23,T-05 Request validation with safe error messages,Done,Youssouf Ezzeldin
+SCRUM-24,"T-06 Authentication middleware (JWT) and access control (own data only, user/admin role)",Done,Youssouf Ezzeldin
+SCRUM-25,"T-07 UI: login, register, style quiz, profile settings, delete account",Done,Youssouf Ezzeldin
+SCRUM-26,"T-08 UI: add piece, review screen, closet grid with filters, edit piece",Done,Youssouf Ezzeldin
+SCRUM-27,"T-09 UI: status menu, laundry basket, Wash done",Done,Youssouf Ezzeldin
+SCRUM-28,"T-10 UI: calendar month view, closet gaps",Done,bashar_elazony
+SCRUM-29,"T-11 Lower-level design: ER, class, sequence and state diagrams, API table",Done,bashar_elazony
+SCRUM-30,T-12 Use case model v1.1: add Admin actor (M1 feedback),Done,bashar_elazony
+SCRUM-31,T-13 Component diagram v1.1: authentication and security (M1 feedback),Done,bashar_elazony
+SCRUM-32,"T-14 Test plan and black-box test cases (EP, BVA, state transition)",Done,salma.fahim
+SCRUM-33,T-15 Unit and API tests with coverage report,Done,salma.fahim
+SCRUM-34,T-16 Acceptance tests from story acceptance criteria,Done,Habiba Khashaba
+SCRUM-35,"T-17 Requirements and design documents with change log (SRS, SDD, Test Plan & Report)",Done,Habiba Khashaba
+SCRUM-36,T-18 Sprint 1 retrospective,Done,Habiba Khashaba
+SCRUM-37,T-19 Demo script and backup demo video,Done,Habiba Khashaba
+SCRUM-38,T-20 Sprint review presentation (interactive deck),Done,Habiba Khashaba
+SCRUM-39,"T-02 Deploy web app, API and database to a shared live link",In Progress,Youssouf Ezzeldin
+SCRUM-40,"US-94 Still love it? — style, keep or donate a long-unworn piece",To Do,Youssouf Ezzeldin
+SCRUM-41,"US-95 Donate, give or sell a piece",To Do,Youssouf Ezzeldin
+SCRUM-42,US-96 Seasonal rotation,To Do,Youssouf Ezzeldin
+SCRUM-43,US-97 Laundry before an event and multi-day plans,To Do,Karim Eid
+SCRUM-44,US-98 Repeat a look — intentionally,To Do,bashar_elazony
+SCRUM-45,US-99 Outfit memory,To Do,bashar_elazony
+SCRUM-46,US-100 Planned-outfit monitor (weather + availability),To Do,Karim Eid
+SCRUM-47,US-101 Borrow tracker,To Do,salma.fahim
+SCRUM-48,US-102 Explain my Wardrobe Health,To Do,Habiba Khashaba
+SCRUM-49,US-103 Duplicate check when adding,To Do,salma.fahim
+SCRUM-50,US-104 Gaps with confidence,To Do,Habiba Khashaba
+SCRUM-51,US-105 What would this purchase add?,To Do,Habiba Khashaba
+SCRUM-52,US-106 Trip capsule,To Do,Karim Eid
+SCRUM-53,US-107 I have nothing to wear,To Do,bashar_elazony
+SCRUM-54,US-108 Cost per wear,To Do,Habiba Khashaba
+SCRUM-55,US-109 One notification center for proactive notices,To Do,Karim Eid
+SCRUM-56,US-110 Ask Closet understands my wardrobe questions,To Do,bashar_elazony
+SCRUM-57,US-111 Offline demo on real logic,To Do,Karim Eid
+SCRUM-58,US-112 One status I can trust,To Do,salma.fahim
+SCRUM-59,"US-113 Repairs, alterations and the tailor",To Do,salma.fahim
+SCRUM-60,US-114 Borrow & lend,To Do,salma.fahim
+SCRUM-61,US-115 Donate a piece,To Do,Youssouf Ezzeldin
+SCRUM-62,US-116 See the intelligence features in the app,To Do,Habiba Khashaba
+SCRUM-63,"US-117 Ask Closet about care, loans and donations",To Do,bashar_elazony
+SCRUM-64,"US-118 Virtual Try-On (image-based, one garment from a recommended look)",In Progress,Youssouf Ezzeldin
+SCRUM-65,T-21 Bashar: check SDD diagrams against the code + present Station 3 (System),In Progress,bashar_elazony
+SCRUM-66,T-22 Karim: run the demo preflight + drive the live demo on Habiba's laptop,In Progress,Karim Eid
+SCRUM-67,T-23 Salma: PowerPoint playback check + manual regression of US-11/12/71,In Progress,salma.fahim
+SCRUM-68,T-24 Photograph 6–8 of my own clothes for the demo closet (Habiba),To Do,Habiba Khashaba
+SCRUM-69,T-25 Photograph 6–8 of my own clothes for the demo closet (Karim),To Do,Karim Eid
+SCRUM-70,T-26 Photograph 6–8 of my own clothes for the demo closet (Bashar),To Do,bashar_elazony
+SCRUM-71,T-27 Photograph 6–8 of my own clothes for the demo closet (Salma),To Do,salma.fahim
+SCRUM-72,T-28 Photograph 6–8 of my own clothes for the demo closet (Youssef),To Do,Youssouf Ezzeldin
+SCRUM-73,"T-29 Replace the drawn demo clothes with the team's real photos, with background removal",To Do,Karim Eid
+SCRUM-74,T-30 Run Virtual Try-On live with the FASHN key; screenshot for the docs,To Do,Youssouf Ezzeldin
+SCRUM-75,T-31 React component tests for the main screens + npm audit in CI,To Do,salma.fahim
+SCRUM-76,T-32 Sprint 2 retrospective (team meeting),To Do,Habiba Khashaba
+SCRUM-77,T-33 Usability test with 5 users (NFR-03),To Do,salma.fahim
+SCRUM-78,T-34 Load test: three outfits for a 300-piece closet (NFR-01),To Do,Karim Eid
+SCRUM-79,T-35 SRS v2.0: one clean final requirements document with change history,To Do,Habiba Khashaba
+SCRUM-80,"T-36 SDD v2.0: final architecture, class, sequence and deployment diagrams with refinement history",To Do,bashar_elazony
+SCRUM-81,T-37 Final test plan and report v2.0,To Do,salma.fahim
+SCRUM-82,T-38 Future expansion plan,To Do,bashar_elazony
+SCRUM-83,T-39 Final presentation and Sprint 3 retrospective,To Do,Habiba Khashaba
+SCRUM-84,T-40 Final demo script and rehearsal of all implemented features,To Do,Youssouf Ezzeldin

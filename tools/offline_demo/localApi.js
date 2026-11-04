@@ -14,6 +14,7 @@ const vocabulary = require('../../server/src/shared/vocabulary');
 const { ALLOWED: STATUS_TRANSITIONS } = require('../../server/src/modules/availability/statusMachine');
 const { weatherAdapter } = require('../../server/src/modules/recommendation/weatherAdapter');
 const { llmAdapter } = require('../../server/src/modules/assistant/llmAdapter');
+const { mockProvider } = require('../../server/src/modules/tryon/providers/mockProvider');
 const { TOPICS } = require('../../server/src/events/eventBus');
 const v = require('../../server/src/shared/validate');
 const { AppError } = require('../../server/src/shared/errors');
@@ -33,10 +34,14 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   const repos = memoryRepositories(saved ? restoreStore(saved) : createMemoryStore());
   const S = repos.store;
   const storage = {
-    async save(buffer, mime) { const key = `local-${Object.keys(PHOTOS).length}`; PHOTOS[key] = buffer; return key; },
-    async remove() {}, signedUrl: (key) => PHOTOS[key] || '', verify: () => false, filePath: () => '',
+    async save(buffer, mime) { const key = `local-${Object.keys(PHOTOS).length}`; PHOTOS[key] = typeof buffer === 'string' ? buffer : `data:${mime};base64,${buffer.toString('base64')}`; return key; },
+    async read(key) { const m = /^data:[^;,]+;base64,(.*)$/s.exec(PHOTOS[key] || ''); if (!m) throw new Error('missing'); return Buffer.from(m[1], 'base64'); },
+    // seed photos are shared by several rows: only photos added in this tab are removed
+    async remove(key) { if (String(key).startsWith('local-')) delete PHOTOS[key]; }, signedUrl: (key) => PHOTOS[key] || '', verify: () => false, filePath: () => '',
   };
-  const m = buildModules({ repos: { ...repos, identity: false, admin: false }, storage, weather: weatherAdapter({ mode: 'estimate' }), parser: llmAdapter({ env: {} }) });
+  // Virtual Try-On runs the real service with the MOCK provider (no AI, no network; labelled "Mock result" in the app).
+  const m = buildModules({ repos: { ...repos, identity: false, admin: false }, storage, weather: weatherAdapter({ mode: 'estimate' }), parser: llmAdapter({ env: {} }),
+    tryOnProvider: mockProvider({ delayMs: 2500, fail: () => { const f = globalThis.__closetTryOnFailNext || null; globalThis.__closetTryOnFailNext = null; return f; } }) });
   const uid = USER.id;
 
   // ---------- deterministic seed through the same services (data: server/src/db/seedData.js) ----------
@@ -160,6 +165,21 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   route('PATCH', '/outfits/wears/:id', ({ p, body }) => sv().outfits.rate(uid, Number(p.id), body.rating));
   route('POST', '/outfits/reject', ({ body }) => sv().outfits.reject(uid, ids(body.itemIds, 2, 4), body.reason));
   route('GET', '/insights', () => sv().outfits.insights(uid));
+  // Virtual Try-On (same service as the server; mock provider)
+  const vto = () => m.tryOn.service;
+  const yes = (x) => x === true || x === 'true';
+  const fileOf = (d) => { const mm = /^data:[^;,]+;base64,(.*)$/s.exec(d || ''); return mm ? { buffer: Buffer.from(mm[1], 'base64') } : null; };
+  route('GET', '/virtual-try-on/status', () => vto().status());
+  route('GET', '/virtual-try-on/photo', () => vto().getPhoto(uid));
+  route('PUT', '/virtual-try-on/photo', ({ body }) => vto().savePhoto(uid, fileOf(body.photo), yes(body.consent)));
+  route('DELETE', '/virtual-try-on/photo', () => vto().deletePhoto(uid));
+  route('POST', '/virtual-try-on', ({ body }) => vto().create(uid, { wardrobeItemId: body.wardrobeItemId, outfitId: body.outfitId || null, outfitItemIds: body.outfitItemIds ? JSON.parse(body.outfitItemIds) : [],
+    file: fileOf(body.photo), useSavedPhoto: yes(body.useSavedPhoto), savePhoto: yes(body.savePhoto), consent: yes(body.consent) }));
+  route('GET', '/virtual-try-on', ({ query }) => vto().list(uid, { savedOnly: query.saved === 'true' }));
+  route('GET', '/virtual-try-on/:id', ({ p }) => vto().get(uid, p.id));
+  route('POST', '/virtual-try-on/:id/save', ({ p, body }) => vto().setSaved(uid, p.id, !(body && body.saved === false)));
+  route('POST', '/virtual-try-on/:id/retry', ({ p }) => vto().retry(uid, p.id));
+  route('DELETE', '/virtual-try-on/:id', ({ p }) => vto().remove(uid, p.id));
   // Ask Closet
   route('GET', '/chat', () => ({ suggestions: [], languageModel: 'keyword parser' }));
   route('POST', '/chat', ({ body }) => sv().assistant.chat(uid, { message: String(body.message || '').slice(0, 500), context: body.context || null, pieceId: body.pieceId }));

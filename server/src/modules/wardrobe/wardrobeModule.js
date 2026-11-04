@@ -176,6 +176,13 @@ function wardrobeService({ repo, storage, bus, availability, profile }) {
       return { items, counts, total: all.length };
     },
 
+    // Storage key of the piece's photo (Virtual Try-On reads the original; it is never changed).
+    async photoKey(userId, id) {
+      const row = await repo.get(userId, id);
+      if (!row) throw errors.notFound('Piece');
+      return row.photo_key;
+    },
+
     async getPiece(userId, id) {
       const row = await repo.get(userId, id);
       if (!row) throw errors.notFound('Piece');
