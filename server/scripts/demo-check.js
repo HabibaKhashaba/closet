@@ -110,7 +110,8 @@ async function call(token, method, url, body, form) {
   const bor = (await api('GET', '/intelligence/borrowed')).data;
   ok(bor.overdue.some((x) => x.borrowedBy === 'Nour'), 'Borrow tracker: the rose wrap dress is overdue (with Nour)');
   const sea = (await api('GET', '/intelligence/seasonal')).data;
-  if (LIVE && !sea.pack.length) note(`Seasonal rotation: nothing to store at ${sea.tempC} °C (it suggests storing cold-weather pieces only when it is hot)`);
+  // Storing cold-weather pieces is only suggested in summer (it is correct that nothing is suggested in spring / autumn).
+  if (!sea.pack.length && (LIVE || !['Summer', 'Winter'].includes(sea.season))) note(`Seasonal rotation: nothing to store at ${sea.tempC} °C (${sea.season}: it suggests storing out-of-season pieces only in summer or winter)`);
   else ok(sea.pack.length >= 1, `Seasonal rotation suggests cold-weather pieces at ${sea.tempC} °C (nothing moves until you confirm)`, sea.pack.map((p) => p.name).join(', '));
   const learned = (await api('GET', '/intelligence/learned')).data;
   const pats = learned.patterns || learned.learned || learned;

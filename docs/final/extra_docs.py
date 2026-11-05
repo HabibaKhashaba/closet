@@ -96,7 +96,7 @@ body += tbl(['File', 'What it is'], [
   ['Closet_SRS_v2.0.pdf', 'Software Requirements Specification (use case diagrams in 2.2 and Appendix B; change log in Appendix D)'],
   ['Closet_SDD_v2.0.pdf', 'Software Design Document (architecture, class, sequence, data; Virtual Try-On in 8.20)'],
   ['Closet_Test_Plan_and_Report_v2.0.pdf', 'Test plan, methodology and results'],
-  ['Closet_M2_Presentation.pptx', 'The 10-minute presentation (15 slides)'],
+  ['Closet_M2_Presentation.pptx', 'The 10-minute presentation (Morph animations: the closet opens and closes, the diagrams zoom)'],
   ['How_to_Run_Closet.pdf', 'How to run the app locally']])
 body += tbl(['Link', ''], [['Jira (project SCRUM)', 'aucegypt-team-r73i3oon.atlassian.net/jira/software/projects/SCRUM/boards/1'], ['GitHub', 'github.com/HabibaKhashaba/closet'], ['GitHub Actions (CI)', 'github.com/HabibaKhashaba/closet/actions'], ['Demo', 'live in class from our laptop (React + Node API + PostgreSQL)']])
 body += '<p>Thank you,<br/>Team Closet — Habiba Khashaba, Salma, Bashar, Karim and Youssef</p>'
