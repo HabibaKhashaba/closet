@@ -105,7 +105,7 @@ async function call(token, method, url, body, form) {
   ok(f2.top && f2.top.piece.name === 'Denim jacket' && f2.top.days === 104, '“Still love it?” → Denim jacket, 104 days', f2.top ? `${f2.top.piece.name} · ${f2.top.days} days` : 'none');
   const mon = (await api('GET', '/intelligence/monitor')).data.alerts;
   const wx = mon.find((a) => a.kind === 'weather' && /navy blazer/.test(a.message));
-  if (LIVE && !wx) note('Planner: no weather alert for the presentation — tomorrow’s real forecast is under 24 °C, so a “too warm” alert would not be true (re-seed on a warm day to show it).');
+  if (LIVE && !wx) note('Planner: no weather alert for the presentation — tomorrow’s real forecast is not 6 °C warmer than the seeded plan, so a “too warm” alert would not be true (re-seed on a warm day to show it).');
   else ok(Boolean(wx), 'Planner monitor: the planned navy blazer is too warm for the new forecast', wx ? wx.message.replace(/^.*?(It’s now expected[^.]*)\..*$/, '$1') : mon.map((a) => a.kind).join(', '));
   const bor = (await api('GET', '/intelligence/borrowed')).data;
   ok(bor.overdue.some((x) => x.borrowedBy === 'Nour'), 'Borrow tracker: the rose wrap dress is overdue (with Nour)');

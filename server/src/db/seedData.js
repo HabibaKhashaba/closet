@@ -83,12 +83,15 @@ const PRICES = {
 
 // The app's "today" is the UTC day (every module uses isoDay(Date.now())); the seed uses the same day so dates
 // near midnight cannot disagree (found in the v1.6 run at 01:00 Cairo time: events were a day further away).
+// The seasonal estimate for a day (same table the weather adapter uses), minus 6 °C.
+const plannedTemp = (day) => require('../modules/recommendation/weatherAdapter').CAIRO_MONTHLY_HIGH[new Date(`${day}T12:00:00Z`).getUTCMonth()] - 6;
 function inDays(n) {
   return new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
 }
 const EVENTS = [
   // plannedWeather = the forecast when the outfit was chosen; today's estimate is warmer, so Closet warns (weather monitor).
-  { title: 'Software Engineering presentation', date: inDays(1), time: '11:00', occasion: 'University', plannedWeather: { tempC: 24, condition: 'Partly cloudy' }, plan: ['blue_oxford_shirt', 'black_tailored_trousers', 'navy_blazer', 'black_loafers'], reasons: ['Every piece suits Casual for university, sharpened for presenting.', 'The navy blazer adds structure for the presentation.', 'Colours: neutrals with blue.'] },
+  // It is 6 °C below the seasonal estimate for that day, so the warning appears in every month (CI defect D-33: a fixed 24 °C stopped warning in November).
+  { title: 'Software Engineering presentation', date: inDays(1), time: '11:00', occasion: 'University', plannedWeather: { tempC: plannedTemp(inDays(1)), condition: 'Partly cloudy' }, plan: ['blue_oxford_shirt', 'black_tailored_trousers', 'navy_blazer', 'black_loafers'], reasons: ['Every piece suits Casual for university, sharpened for presenting.', 'The navy blazer adds structure for the presentation.', 'Colours: neutrals with blue.'] },
   { title: 'Dinner with family', date: inDays(3), time: '20:00', occasion: 'Dinner', plan: ['ivory_silk_blouse', 'cream_pleated_skirt', 'black_loafers', 'structured_black_bag'], reasons: ['Every piece suits Smart Casual for dinner.', 'Ivory and cream keep it soft; the black bag grounds it.'] },
   { title: 'Internship interview', date: inDays(2), time: '10:00', occasion: 'Interview' },
   { title: "Nour's wedding", date: inDays(9), time: '19:30', occasion: 'Wedding' },

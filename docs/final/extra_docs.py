@@ -39,7 +39,8 @@ body += '<h1 class="nonum">2. Results</h1>'
 body += tbl(['Suite', 'Result', 'Run'], [
   ['Full suite, build v1.6 (unit + API + acceptance)', '<b>599 / 599 passed</b> · 0 failed · line coverage 97.53 %', 'GitHub Actions CI #5, 29 Oct 2026 (real Jest, PostgreSQL 16)'],
   ['Virtual Try-On unit tests VT-01 – VT-27', f'<b>{len(vt)} / {len(vt)} passed</b>', 'sandbox, 4 Nov 2026 (Node 22; Jest-compatible runner because the npm registry is blocked there)'],
-  ['Virtual Try-On API tests API-VT01 – VT09', f'{len(api)} written · <b>run on GitHub Actions after the push</b>', 'not executed in the sandbox (needs npm packages + PostgreSQL)'],
+  ['Full suite after Virtual Try-On (GitHub Actions, 4 Nov)', '<b>630 / 631 passed</b> · 1 failed: OF-09 (defect D-33, fixed) · line coverage 94.53 %', 'GitHub Actions run 41865197065, real Jest + PostgreSQL 16'],
+  ['Virtual Try-On API tests API-VT01 – VT09', f'<b>{len(api)} / {len(api)} passed</b>', 'GitHub Actions run 41865197065'],
   ['e2e virtual_tryon_journey.py', e2e['virtual_tryon'], 'offline demo build, Chromium, 4 Nov 2026'],
   ['e2e lifecycle_journey.py (regression)', e2e['lifecycle'], 'offline demo build, 4 Nov 2026'],
   ['e2e stateful_journey.py (regression)', e2e['stateful'], 'offline demo build, 4 Nov 2026']])
@@ -57,13 +58,16 @@ body += '<h2>2.4 Defects found in this pass (all fixed)</h2>' + tbl(['ID', 'Foun
   ['D-29', 'e2e v05', 'High', 'Offline demo: deleting a seeded piece removed a photo shared by other pieces, so a top had “no usable photo”.', 'only photos added in the tab are removed'],
   ['D-30', 'visual check', 'Medium', 'The garment picker opened inside the flipping outfit card and was clipped.', 'rendered into the page body (portal)'],
   ['D-31', 'e2e v08', 'Low', 'Try another item on the same piece kept the previous upload instead of the saved photo.', 'reset photo choice and consent'],
-  ['D-32', 'e2e v12', 'Medium', 'Back to outfit from “Your try-ons” opened an empty Style me.', 'returns to the stored three looks']])
-body += '<h2>2.5 Not verified yet</h2><ul><li>Live FASHN generation (needs the team’s API key, T-30).</li><li>API-VT01 – VT09 and the full suite after this change on GitHub Actions (runs on push).</li><li>Usability test with classmates (T-33) and load test (T-34) — Sprint 2.</li></ul>'
+  ['D-32', 'e2e v12', 'Medium', 'Back to outfit from “Your try-ons” opened an empty Style me.', 'returns to the stored three looks'],
+  ['D-33', 'CI (OF-09)', 'Low', 'The seeded presentation plan had a fixed 24 °C; in November the seasonal estimate is 25 °C, so the “warmer forecast” alert no longer appeared.', 'plan = seasonal estimate − 6 °C, every month']])
+body += '<h2>2.5 Not verified yet</h2><ul><li>Live FASHN generation (needs the team’s API key, T-30).</li><li>The re-run of the full suite after the D-33 fix (expected 631 / 631).</li><li>Usability test with classmates (T-33) and load test (T-34) — Sprint 2.</li></ul>'
 page('Closet_Test_Plan_and_Report_v2.0', 'Test Plan and Report · v2.0', body)
 
 # ---------------------------------------------------------------- Presentation script (10 minutes, 15 slides)
-from notes15 import S
-body = head('Presentation script', '15 slides · 10 minutes · Closet_M2_Presentation.pptx — the same text is in each slide’s speaker notes')
+from notes32 import S as _S
+ORDER = [n for n, *_ in _S]
+S = [(ORDER.index(n) + 1, who, t, about, say) for n, who, t, about, say in _S]
+body = head('Presentation script', '32 slides (doors, zooms and closing are animation steps) · about 10 minutes with the animations · Closet_M2_Presentation.pptx — the same text is in each slide’s speaker notes')
 import collections
 words = lambda x: len(re.sub('<.*?>', '', x).split())
 part = collections.OrderedDict()
