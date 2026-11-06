@@ -1,0 +1,86 @@
+:root{--bg:#f6f1ec;--ink:#2a2626;--muted:#8a807c;--line:#ece4dd;--rose:#c48a86;--rose-ink:#9c5f5b;--rose-soft:#f5e6e3;--rose-wash:#fbf1ef;--sage:#e5ede3;--sage-ink:#4d7a5c;--butter:#f6eedb;--butter-ink:#8a6420;--sky:#e5ecf3;--sky-ink:#3e5d80;--lilac:#eee7f2;--lilac-ink:#6a4b87;--sand:#f1e8de}
+@page{size:A4;margin:20mm 18mm 18mm 18mm;
+ @top-left{content:"Closet · " string(doc);font-family:"Times New Roman","Liberation Serif",serif;font-size:8.5pt;color:#9c5f5b;font-style:italic}
+ @top-right{content:string(chap);font-family:"Times New Roman","Liberation Serif",serif;font-size:8.5pt;color:#8a807c}
+ @bottom-right{content:counter(page);font-family:"Times New Roman","Liberation Serif",serif;font-size:9pt;color:#fff;background:#c48a86;border-radius:9pt;width:20pt;height:14pt;text-align:center;vertical-align:middle;margin-top:6mm}
+ @bottom-left{content:"Team Closet · CSCE 3701 · Fall 2026";font-family:"Times New Roman","Liberation Serif",serif;font-size:8pt;color:#b0a7a2}}
+@page cover{size:A4;margin:20mm 18mm 18mm 18mm;@top-left{content:none}@top-right{content:none}@bottom-right{content:none;background:none}@bottom-left{content:none}}
+*{box-sizing:border-box}
+body{font-family:"Times New Roman","Liberation Serif",Times,serif;font-size:11.5pt;line-height:1.42;color:var(--ink);margin:0;string-set:doc attr(data-doc)}
+title{string-set:doc content()}
+p{margin:0 0 7pt;text-align:justify;hyphens:auto}
+b{color:#2a2626}
+h1,h2,h3{break-after:avoid;color:var(--ink)}
+h1.chap{break-before:page;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:14pt;align-items:end;margin:0 0 16pt;padding:16pt 18pt;background:linear-gradient(120deg,#fbf1ef 0%,#f5e6e3 55%,#f6eedb 100%);border-radius:18pt;string-set:chap attr(data-t)}
+h1.chap .cn{grid-row:1/3;font-size:46pt;line-height:.9;font-style:italic;color:var(--rose);font-weight:bold;min-width:30pt}
+h1.chap .ck{font-size:8.5pt;letter-spacing:2.5pt;text-transform:uppercase;color:var(--rose-ink);font-weight:bold}
+h1.chap .ctx{font-size:22pt;font-weight:bold;line-height:1.1}
+h1.nonum{margin-top:22pt!important}
+h1.nonum,.toc-h{font-size:22pt;margin:0 0 12pt;padding:0 0 6pt;border-bottom:2pt solid var(--rose)}
+.toc-h{break-before:avoid}
+h2{font-size:14.5pt;margin:18pt 0 7pt;padding-left:10pt;border-left:4pt solid var(--rose);line-height:1.2}
+h3{font-size:12.3pt;margin:13pt 0 5pt;color:var(--rose-ink);font-style:italic}
+ul{margin:0 0 8pt 4pt;padding:0;list-style:none}
+li{margin:0 0 3pt;padding-left:14pt;position:relative;text-align:justify}
+li::before{content:"";position:absolute;left:2pt;top:6pt;width:5pt;height:5pt;border-radius:50%;background:var(--rose)}
+table{width:100%;border-collapse:separate;border-spacing:0;margin:6pt 0 12pt;font-size:9.8pt;line-height:1.28;border:0.8pt solid var(--line);border-radius:10pt;overflow:hidden}
+th{background:var(--rose-soft);color:var(--rose-ink);text-align:left;font-weight:bold;padding:5pt 6pt;border-bottom:1pt solid #e8cfcb;font-size:9.3pt;letter-spacing:.2pt}
+td{padding:4pt 6pt;border-bottom:0.6pt solid var(--line);vertical-align:top}
+tbody tr:nth-child(even) td{background:#fcf9f6}
+tbody tr:last-child td{border-bottom:none}
+td:first-child{font-weight:bold;color:var(--rose-ink);white-space:nowrap}
+thead{display:table-header-group} tr{break-inside:avoid}
+code{font-family:"Liberation Mono",monospace;font-size:8.6pt;background:var(--sand);padding:0 2pt;border-radius:3pt}
+pre{font-family:"Liberation Mono",monospace;font-size:8.4pt;line-height:1.4;background:#fbf7f3;color:#3a3232;border:0.8pt solid #ece4dd;border-left:4pt solid #c48a86;border-radius:10pt;padding:9pt 11pt;margin:5pt 0 11pt;white-space:pre-wrap;break-inside:avoid}
+pre code{background:none;color:inherit}
+figure{margin:9pt 0 13pt;text-align:center;break-inside:avoid;background:var(--bg);border-radius:14pt;padding:9pt 9pt 6pt}
+figure img{max-width:100%;max-height:200mm;object-fit:contain;border-radius:8pt;background:#fff}
+figure.shot img{max-height:105mm;box-shadow:0 4pt 14pt rgba(60,40,35,.12)}
+figcaption,p.cap{font-style:italic;font-size:9.8pt;text-align:center;margin-top:5pt;color:#6f6461}
+.note,p.note{background:var(--sage);border-radius:10pt;padding:8pt 11pt;font-size:10.5pt;border:none}
+.note b{color:var(--sage-ink)}
+.small{font-size:10pt}.muted{color:var(--muted)}
+.tag{font-weight:bold;border-radius:8pt;padding:0 5pt}.tag.ok{background:var(--sage);color:var(--sage-ink)}.tag.warn{background:var(--butter);color:var(--butter-ink)}
+/* toc */
+.toc .t1{font-weight:bold;margin-top:7pt;color:var(--rose-ink)}.toc .t2{padding-left:16pt;font-size:10.6pt}
+.toc a{display:flex;color:inherit;text-decoration:none;line-height:1.55}
+.toc a i{flex:1;border-bottom:1pt dotted #d8c4bf;margin:0 4pt 5pt;font-style:normal;position:relative}
+.toc a i::after{content:attr(data-p);position:absolute;right:-4pt;bottom:-6pt;background:#fff;padding-left:4pt}
+table.rh td:nth-child(2){white-space:nowrap}
+
+/* cover: an editorial "issue" with a clothing rail */
+.cover{page:cover;position:relative;width:210mm;height:296.5mm;background:#f6f1ec;overflow:hidden;break-after:page;padding:14mm 15mm 0}
+.cv-blob{position:absolute;border-radius:50%;filter:blur(2pt)}
+.cv-blob.b1{width:150mm;height:150mm;right:-45mm;top:52mm;background:radial-gradient(circle,#f5e6e3 0%,#f5e6e3 55%,rgba(245,230,227,0) 72%)}
+.cv-blob.b2{width:90mm;height:90mm;left:-30mm;bottom:40mm;background:radial-gradient(circle,#f6eedb 0%,rgba(246,238,219,0) 70%)}
+.cv-top{position:relative;display:flex;justify-content:space-between;font-size:8pt;letter-spacing:2pt;text-transform:uppercase;color:#9c5f5b;font-weight:bold;border-bottom:0.8pt solid #2a2626;padding-bottom:5pt}
+.cv-mast{position:relative;font-size:150pt;line-height:.82;font-style:italic;font-weight:bold;letter-spacing:-5pt;color:#2a2626;margin:7mm 0 0 -2mm}
+.cv-issue{position:relative;font-size:11pt;letter-spacing:7pt;text-transform:uppercase;color:#9c5f5b;font-weight:bold;margin:4mm 0 0 2mm}
+.cv-kick2{font-size:8pt;letter-spacing:2.5pt;text-transform:uppercase;color:#8a807c;font-weight:bold;margin-bottom:3mm;border-top:2.5pt solid #c48a86;padding-top:4pt;display:inline-block}
+.cv-lines{position:relative;margin-top:6mm}.cv-cl{display:grid;grid-template-columns:repeat(4,1fr);gap:6mm}.cl{border-left:0.8pt solid #d9c6c0;padding-left:3mm}
+.cl b{display:block;font-size:34pt;line-height:.9;font-style:italic;color:#c48a86}
+.cl span{display:block;font-size:9.5pt;line-height:1.25;margin-top:3pt;color:#2a2626}
+.cv-rail{position:relative;height:104mm;margin-top:7mm}
+.rod{position:absolute;left:-15mm;right:-15mm;top:6mm;height:3.4pt;border-radius:3pt;background:linear-gradient(90deg,#b08a6f,#d8bfa8,#b08a6f)}
+.hang{position:absolute;top:2.2mm;width:42mm;display:flex;flex-direction:column;align-items:center}
+.hang .hg{width:34mm;height:13mm;display:block}
+.hang .garm{margin-top:-2mm;width:42mm;height:72mm;border-radius:12pt;overflow:hidden;background:#fff;box-shadow:0 10pt 22pt rgba(60,40,35,.16)}
+.hang .garm img{width:100%;height:100%;object-fit:cover;display:block}
+.h0{left:0;transform:rotate(-2.5deg);transform-origin:top center}
+.h1{left:46mm;transform:rotate(1.5deg);transform-origin:top center}
+.h2{left:92mm;transform:rotate(-1.5deg);transform-origin:top center}
+.h3{left:138mm;transform:rotate(2.5deg);transform-origin:top center}
+.h1 .garm,.h3 .garm{height:82mm}
+.h0,.h2{z-index:2}
+.ptag{margin-top:-6mm;margin-left:16mm;position:relative;font-size:8pt;font-weight:bold;padding:3pt 8pt 3pt 12pt;border-radius:3pt 10pt 10pt 3pt;box-shadow:0 3pt 8pt rgba(60,40,35,.12);transform:rotate(-6deg);white-space:nowrap}
+.ptag::before{content:"";position:absolute;left:4pt;top:50%;width:4pt;height:4pt;margin-top:-2pt;border-radius:50%;background:#f6f1ec}
+.tag-rose{background:#c48a86;color:#fff}.tag-sage{background:#e5ede3;color:#4d7a5c}.tag-butter{background:#f6eedb;color:#8a6420}.tag-sky{background:#e5ecf3;color:#3e5d80}
+.cv-bottom{position:absolute;left:0;right:0;bottom:0;height:44mm;background:#2a2626;color:#f5e6e3;display:grid;grid-template-columns:1fr 46mm;gap:8mm;padding:9mm 15mm}
+.cv-dk{font-size:8pt;letter-spacing:2.5pt;text-transform:uppercase;color:#c48a86;font-weight:bold}
+.cv-dt{font-size:22pt;font-weight:bold;line-height:1.1;margin:3pt 0 6pt;color:#fff}
+.cv-team{font-size:9pt;line-height:1.45;color:#d9cbc6}
+.cv-code{align-self:end;background:#f6f1ec;border-radius:6pt;padding:6pt 8pt 5pt;text-align:center}
+.cv-code .bars{display:flex;justify-content:center;gap:1.6pt;height:16mm}
+.cv-code .bars i{display:block;background:#2a2626;height:100%}
+.cv-code span{font-size:6.5pt;letter-spacing:1.5pt;color:#2a2626;font-weight:bold}
+figure.tall img{max-height:238mm}
