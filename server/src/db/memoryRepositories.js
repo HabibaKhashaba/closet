@@ -265,7 +265,33 @@ function memoryRepositories(S = createMemoryStore()) {
     async deletePhoto(userId) { const p = S.tryOnPhotos.find((x) => x.user_id === userId); if (!p) return null; S.tryOnPhotos = S.tryOnPhotos.filter((x) => x !== p); return { ...p }; },
   };
 
-  return { store: S, virtualTryOn, profile, wardrobe, availability, outfits, planner, shopping, intelligence, packing, assistant, activity };
+  // Admin (same shape as pgAdminRepository): accounts, counts and account-level events only.
+  const { SECURITY_ACTIONS } = require('../modules/admin/securityEvents');
+  const admin = {
+    async ping() {},
+    async users() {
+      return S.users.map((u) => {
+        const acts = S.activity.filter((a) => a.user_id === u.id);
+        return { id: u.id, email: u.email, role: u.role || 'user', account_status: u.account_status || 'active', created_at: u.created_at || now(), locked_until: u.locked_until || null, failed_logins: u.failed_logins || 0,
+          pieces: S.items.filter((i) => i.user_id === u.id).length, outfits: S.outfits.filter((o) => o.user_id === u.id).length, wears: S.wears.filter((w) => w.user_id === u.id).length,
+          try_ons: S.tryOns.filter((t) => t.user_id === u.id).length, last_active: acts.length ? acts.reduce((m, a) => (new Date(a.at) > new Date(m) ? a.at : m), acts[0].at) : null };
+      }).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    },
+    async totals() {
+      const tryOns = {}; for (const t of S.tryOns) tryOns[t.status] = (tryOns[t.status] || 0) + 1;
+      const reasons = {}; for (const d of S.deletions) reasons[d.reason] = (reasons[d.reason] || 0) + 1;
+      return { pieces: S.items.length, outfits: S.outfits.length, wears: S.wears.length, tryOns,
+        deletionReasons: Object.entries(reasons).map(([reason, n]) => ({ reason, n })).sort((a, b) => b.n - a.n) };
+    },
+    async events({ userId = null, limit = 30 } = {}) {
+      return S.activity.filter((a) => SECURITY_ACTIONS.includes(a.action) && (!userId || a.user_id === userId)).sort((a, b) => new Date(b.at) - new Date(a.at) || b.id - a.id).slice(0, limit)
+        .map((a) => ({ user_id: a.user_id, email: (S.users.find((u) => u.id === a.user_id) || {}).email, action: a.action, detail: a.detail, at: a.at }));
+    },
+    async setStatus(userId, status) { const u = S.users.find((x) => x.id === userId); if (!u) return null; u.account_status = status; return { id: u.id, email: u.email, account_status: status }; },
+    async unlock(userId) { const u = S.users.find((x) => x.id === userId); if (!u) return null; u.failed_logins = 0; u.locked_until = null; return { id: u.id, email: u.email, account_status: u.account_status || 'active' }; },
+  };
+
+  return { store: S, admin, virtualTryOn, profile, wardrobe, availability, outfits, planner, shopping, intelligence, packing, assistant, activity };
 }
 
 // The store as JSON (Maps → arrays) so the offline demo can keep state across a page refresh in the

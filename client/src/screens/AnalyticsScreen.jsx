@@ -135,27 +135,6 @@ function StillLove() {
   );
 }
 
-function Value() {
-  const v = useLoad(() => api.value(), []);
-  if (!v.data || !v.data.priced) return null;
-  const row = (x, tone) => (
-    <a key={x.piece.id} className="bar-row" href={`#/closet/${x.piece.id}`} style={{ gridTemplateColumns: '44px 1fr auto' }}>
-      <Tile piece={x.piece} status={false} /><span><b className="small">{x.piece.name}</b><br /><span className="tiny muted">{x.perWear === null ? 'Not worn yet' : `${x.wears} wears`}</span></span>
-      <b className={tone}>{x.perWear === null ? `${x.currency} ${x.price.toLocaleString('en-US')}` : `${x.currency} ${x.perWear.toLocaleString('en-US')} / wear`}</b>
-    </a>
-  );
-  return (
-    <section className="card pad-lg" style={{ marginBottom: 22 }}>
-      <div className="card-head"><div className="row"><h3>Cost per wear</h3><SprintTag n={3} short /></div><span className="tiny muted">{v.data.priced} of {v.data.of} pieces have a price · only outfits you wore count</span></div>
-      <div className="grid g2" style={{ gap: 20 }}>
-        <div><div className="eyebrow" style={{ marginBottom: 8 }}>Best value</div><div className="bars">{v.data.bestValue.map((x) => row(x, 'pos'))}</div></div>
-        <div><div className="eyebrow" style={{ marginBottom: 8 }}>Least used for its price</div><div className="bars">{v.data.underused.map((x) => row(x, ''))}</div></div>
-      </div>
-      {v.data.note && <p className="tiny muted" style={{ marginTop: 10 }}>{v.data.note}</p>}
-    </section>
-  );
-}
-
 export default function AnalyticsScreen() {
   const ins = useLoad(() => api.insights(), []);
   const closet = useLoad(() => api.items(), []);
@@ -227,7 +206,7 @@ export default function AnalyticsScreen() {
 
       <StillLove />
       {learned.data && <Learned data={learned.data} reload={() => learned.reload(true)} />}
-      <div className="grid g2" style={{ marginBottom: 22, alignItems: 'start' }}><SeasonalReview /><Value /></div>
+      <div className="grid g2" style={{ marginBottom: 22, alignItems: 'start' }}><SeasonalReview /></div>
       <History />
 
       <div className="grid g2" style={{ marginBottom: 22, alignItems: 'start' }}>

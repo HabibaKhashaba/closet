@@ -197,7 +197,6 @@ describe('Ask Closet reads the current lifecycle (no canned answers)', () => {
       ['Would black loafers add anything to my wardrobe?', 'buy_check', /Simulated/],
       ['I have a wedding tomorrow and nothing to wear.', 'event_rescue', /Not enough Available pieces for Formal/], // this small test closet has no formal pieces: an honest gap, never a canned answer
       ['Is tomorrow’s outfit still okay?', 'plan_check', /./],
-      ['What has my best cost per wear?', 'value', /./],
       ['Do I need to do laundry before Monday?', 'laundry_risk', /./],
       ["What haven't I packed?", 'unpacked', /./],
     ];

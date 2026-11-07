@@ -106,7 +106,7 @@ export default function App() {
     setProfile(p);
     setUser(u);
     refresh(); loadWeather();
-    go(p.quizCompleted ? '/' : '/quiz');
+    go(u.role === 'admin' ? '/admin' : p.quizCompleted ? '/' : '/quiz'); // an admin starts on the Admin page
   }, [refresh, loadWeather]);
 
   useEffect(() => {

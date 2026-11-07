@@ -31,6 +31,7 @@ const RULES = [
   { method: 'POST', path: /^\/intelligence\/conflicts\/[0-9a-f-]{36}\/fix$/i, action: 'Planned outfit fixed' },
   { method: 'POST', path: /^\/shopping\/list$/, action: 'Added to shopping list', detail: (req) => req.body && req.body.title },
   { method: 'PATCH', path: /^\/shopping\/list\/[0-9a-f-]{36}$/i, action: (req) => (req.body && req.body.status === 'bought' ? 'Shopping list: bought' : 'Shopping list: back to buy') },
+  { method: 'POST', path: /^\/admin\/users\/[0-9a-f-]{36}\/unlock$/i, action: 'Admin: account unlocked', detail: (_req, body) => body && body.email },
   { method: 'PATCH', path: /^\/admin\/users\/[0-9a-f-]{36}$/i, action: (req) => (req.body && req.body.status === 'suspended' ? 'Admin: account suspended' : 'Admin: account restored'), detail: (_req, body) => body && body.email },
 ];
 

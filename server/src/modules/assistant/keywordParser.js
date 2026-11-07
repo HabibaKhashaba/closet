@@ -5,7 +5,7 @@ const { OCCASIONS, STYLES, COLOURS, STATUSES } = require('../../shared/vocabular
 const FUNCTIONS = ['recommend', 'change_piece', 'set_status', 'wash_done', 'forgotten', 'style_piece', 'closet_needs', 'buy_check', 'add_to_shopping', 'similar_owned', 'weather', 'hide_piece', 'plan_event',
   // Milestone 2 final: wardrobe questions that read state, and the proactive-intelligence intents.
   'availability', 'laundry_list', 'laundry_risk', 'week_plan', 'borrowed', 'donate_candidates', 'keep_piece', 'donate_piece', 'donate_done', 'donation_list', 'care_list', 'lend_piece', 'unpacked',
-  'seasonal', 'memory', 'repeat_check', 'health', 'plan_check', 'event_rescue', 'trip_pack', 'value', 'help'];
+  'seasonal', 'memory', 'repeat_check', 'health', 'plan_check', 'event_rescue', 'trip_pack', 'help'];
 
 const OCCASION_WORDS = [
   [/\b(wedding|engagement|katb ?ketab)\b/, 'Wedding'], [/\binterview\b/, 'Interview'], [/\b(work|office|meeting|internship)\b/, 'Work'],
@@ -110,9 +110,8 @@ function parse(message, now = new Date()) {
   if (/\b(what did i wear|what i wore|wore (to|at|for|last)|similar to what i wore|like most|liked most|loved most|best rated|favourite outfits|highest rated)\b/.test(t)) return { fn: 'memory', args: { text: t.trim(), similar: /\b(similar|like what|something like)\b/.test(t), best: /\b(most|best|highest)\b/.test(t) } };
   if (/\b(repeat|wear (it|that|the same|this) again|same outfit|wore yesterday|yesterday s outfit|yesterdays outfit)\b/.test(t)) return { fn: 'repeat_check', args: { yesterday: /yesterday/.test(t) } };
 
-  // Wardrobe Health, value / cost per wear
+  // Wardrobe Health
   if (/\b(wardrobe|closet) health\b|\bhealth score\b/.test(t)) return { fn: 'health', args: {} };
-  if (/\b(cost per wear|per wear|best value|best-value|worth it|worth the money|least used expensive|least-used expensive|expensive purchase|value for money)\b/.test(t)) return { fn: 'value', args: { piece, worth: /\bworth it\b|worth the money/.test(t) } };
 
   // Planned outfit vs current weather / availability
   if (/\b(tomorrow s|tomorrows|planned|my) outfit\b.*\b(still|okay|ok|fine|weather|work)\b/.test(t) || /\bstill (ok|okay|fine)\b.*\bweather\b/.test(t)) return { fn: 'plan_check', args: {} };

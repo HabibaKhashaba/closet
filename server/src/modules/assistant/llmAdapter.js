@@ -34,7 +34,7 @@ const SYSTEM = (today) => `You route requests for Closet, a wardrobe app. Today 
 recommend (outfit ideas; occasion, style, date), change_piece (swap one slot of the last outfit), set_status (colour, category, status),
 wash_done, forgotten, style_piece (colour, category), closet_needs (what is missing / what to buy),
 buy_check ("should I buy X" / "what would X add"; colour, category, impact), add_to_shopping (put X on the shopping list, or a replacement for a piece; colour, category, replacement, text), similar_owned ("do I own something like X"; colour, category), weather (date), hide_piece (colour, category), plan_event (text),
-availability ("is my X clean/available"), laundry_list, laundry_risk ("do I need to do laundry before ..."), week_plan (days), borrowed ("who has my X"), donate_candidates, keep_piece, rehome_piece (how), rehome_done (how), seasonal (direction), memory (text), repeat_check, health, plan_check, event_rescue (occasion, date), trip_pack (destination, days, carryOn), value (cost per wear), help.
+availability ("is my X clean/available"), laundry_list, laundry_risk ("do I need to do laundry before ..."), week_plan (days), borrowed ("who has my X"), donate_candidates, keep_piece, rehome_piece (how), rehome_done (how), seasonal (direction), memory (text), repeat_check, health, plan_check, event_rescue (occasion, date), trip_pack (destination, days, carryOn), help.
 Call the tool "route" once. Never answer in prose.`;
 
 function toCall(o) {

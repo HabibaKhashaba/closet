@@ -19,9 +19,10 @@ FIX = [  # stale statements in the baseline text
     (r'\(future; the app draws a stylised avatar today\)', '(FASHN: realistic AI try-on since version 2.0, US-118; the simulated preview remains as the fallback)'),
     (r'US-30 photo-real try-on', 'US-30 photo-real try-on (now delivered by US-118, Sprint 2)'),
     (r'Photo-real try-on \(future\)', 'Photo-real try-on (US-118, Sprint 2: AI try-on, see chapter 8)'),
-    (r'Availability and laundry:</b> five statuses', 'Availability and laundry:</b> nine lifecycle states (section 4.22)'),
+    (r'(Availability and laundry:\s*(?:</b>)?\s*)five statuses', r'\1nine lifecycle states (section 4.22)'),
     (r'Figure 6-10 – Virtual try-on — choose your photo; it stays in this tab \(S3 preview\)\.', 'Figure 6-10 – Virtual try-on (current design) — choose your photo; it stays in this tab.'),
     (r'Figure 6-11 – Virtual Try-On Preview on a photo — a neutral test figure in the automated run \(S3 preview\)\.', 'Figure 6-11 – Virtual try-on (current design) — simulated preview on a neutral test figure. The realistic AI result (US-118) is added after the live provider test (T-30).'),
+    (r'exactly one of five statuses', 'exactly one of the lifecycle states (five in Sprint 1; nine since build v1.6, section 4.22)'),
     (r'\s{2,}', ' '), (r' ([,.;:)])', r'\1'), (r'\( ', '('),
 ]
 def fix(t):
@@ -208,13 +209,13 @@ REVROWS = [
     ('Team Closet', '10/26/2026', 'Revisions 2 and 3: core flow first, deletion reasons, shopping list, try-on on the user’s photo, Suggest a fix (C-01 – C-68).', '1.1 r2–r3'),
     ('Team Closet', '10/28/2026', 'Revision 4 (build v1.5): proactive wardrobe intelligence, three different looks, Ask Closet with 31 functions (C-70 – C-84).', '1.2'),
     ('Team Closet', '10/29/2026', 'Revision 5 (build v1.6): one garment lifecycle (nine states), care, borrow & lend, donation, Ask Closet with 35 functions (C-85 – C-97).', '1.3'),
-    ('Team Closet', DATE, 'Version 2.0 for the Milestone 2 submission: one consolidated document — revisions 4 and 5 merged into their sections, stale statements corrected, use case diagrams placed with the requirements, AI virtual try-on (US-118) added, unified layout.', '2.0'),
+    ('Team Closet', DATE, 'Version 2.0 for the Milestone 2 submission: one consolidated document — revisions 4 and 5 merged into their sections, stale statements corrected, use case diagrams placed with the requirements, AI virtual try-on (US-118) added, Admin console detailed (FR-118 – FR-120), cost per wear removed, unified layout.', '2.0'),
 ]
 def revhist(what):
     rows = ''.join(f'<tr><td>{a}</td><td>{b}</td><td>{c}</td><td>{d}</td></tr>' for a, b, c, d in REVROWS)
     return (f'<h1 class="nonum">Revision History</h1><table class="rh"><thead><tr><th>Author</th><th>Date</th><th>Reason for changes</th><th>Version</th></tr></thead><tbody>{rows}</tbody></table>'
             f'<p class="note"><b>How changes are tracked.</b> Earlier versions showed every edit inline (green = added, red = removed) and stacked each revision in front of the previous document. '
-            f'Version 2.0 consolidates them: every requirement now sits in its own section with its final wording. Each change keeps its ID (C-01 – C-97, C-98 – C-104) in the change log appendix, and the statements that were superseded are listed there with what replaced them, so the progression of the {what} stays visible.</p>')
+            f'Version 2.0 consolidates them: every requirement now sits in its own section with its final wording. Each change keeps its ID (C-01 – C-97, C-98 – C-107) in the change log appendix, and the statements that were superseded are listed there with what replaced them, so the progression of the {what} stays visible.</p>')
 
 def renumber(h, mapping):
     for a, b in mapping: h = h.replace(a, b)
@@ -240,6 +241,30 @@ TRYON_CH = [
  ('C-104', 'Changed', 'Revision history', 'One revision table from 0.1 to 2.0.'),
 ]
 
+ADMIN_FR = [
+ ('FR-118', 'The Admin page shall show a platform overview: accounts (admins / members), accounts active and new in the last 7 days, accounts that need attention (suspended, locked), virtual try-ons (done, failed, running), pieces stored and the average per member, saved and worn outfits, server errors, and new accounts per week for the last 6 weeks. Only totals — never a wardrobe.', 'US-80, US-81', 'S1 (built early)'),
+ ('FR-119', 'The admin shall search accounts by email and filter them (all, active, locked, suspended, admins). Opening an account shows its role, state, joined date, last activity, wrong-password count and counts of pieces, saved outfits, worn outfits and try-ons, with that account’s security events. Piece names, photos and outfits are never shown.', 'US-80, US-119', 'S1 (built early)'),
+ ('FR-120', 'A security log shall list account-level events across the platform — account created, signed in / out, profile updated and every admin action (suspended, restored, unlocked, with the account concerned). Wardrobe actions (pieces, laundry, outfits) shall never appear in it. The admin shall be able to unlock an account locked after five wrong passwords before the 15 minutes end; an admin account cannot be suspended from this page.', 'US-119, US-120', 'S1 (built early)'),
+]
+V2_CH = [
+ ('C-105', 'Removed', '4.21, 6.4, Appendix B', 'Cost per wear removed from the product at the team’s decision: FR-97, US-53 / US-108 and GET /intelligence/value are withdrawn; the piece page, Analytics and Ask Closet no longer show it (Ask Closet: 34 functions). The optional price fields stay in the data model but are not shown.'),
+ ('C-106', 'Added', '4.24', 'Admin console in detail: FR-118 – FR-120 (overview, account detail, security log, unlock), US-119 and US-120; routes GET /admin/users/:id, GET /admin/events, POST /admin/users/:id/unlock.'),
+ ('C-107', 'Changed', '1.2, 4.14', 'Requirement range FR-01 – FR-120; Ask Closet uses 34 functions everywhere.'),
+]
+REMOVED_MARK = ('FR-97', 'US-108', 'US-53', '/intelligence/value')
+def v2post(h):
+    # C-105: rows of the withdrawn cost-per-wear feature stay visible, struck through, for traceability
+    def row(m):
+        r = m.group(0)
+        if not any(k in r for k in REMOVED_MARK) or 'C-105' in r: return r
+        return r.replace('<tr>', '<tr class="removed">', 1).replace('</td>', ' <span class="rm">removed · C-105</span></td>', 1)
+    h = re.sub(r'<tr>.*?</tr>', row, h, flags=re.S)
+    for a, b in [('35 functions', '34 functions'), ('FR-01 – FR-117', 'FR-01 – FR-120'),
+                 ('purchase impact, cost per wear and donation are now built', 'purchase impact and donation are now built (cost per wear was removed in v2.0, C-105)'),
+                 ('<td>cost per wear (FR-97)</td>', '<td>optional purchase details (cost per wear removed in v2.0, C-105)</td>')]:
+        h = h.replace(a, b)
+    return h
+
 def tbl(head, rows):
     return '<table><thead><tr>' + ''.join(f'<th>{h}</th>' for h in head) + '</tr></thead><tbody>' + ''.join('<tr>' + ''.join(f'<td>{c}</td>' for c in r) + '</tr>' for r in rows) + '</tbody></table>'
 
@@ -250,6 +275,8 @@ def strip_h(h):  # drop page-break classes and "R4.x"-style labels inside rev bo
 
 def land(pg): return 'land' if pg in LAND else 'port'
 
+D29 = '/home/claude/src2/closet/docs/milestone2/diagrams/D29_use_case_v2.png'
+UC_CAP = 'Use case diagram v2.0: every use case of the product. Colours: dark rose = key use cases (Get Outfit Recommendations, Virtual Try-On); rose = user use cases; green = «extend»; yellow = shared «include» (availability, weather); blue = Virtual Try-On details; lilac = Admin. Actors marked (duplicate) are copies drawn for readability.'
 def build_srs():
     global LAND
     blocks = json.load(open(W / 'srs_base.json'))
@@ -258,7 +285,7 @@ def build_srs():
     r4 = rev_sections(REV['srs4']); r5 = rev_sections(REV['srs5'])
     g = lambda d, p: strip_h(next(v for k, v in d.items() if k.startswith(p)))
     # 2.2: put the use case overview with the product functions
-    i = find(secs, '2.2'); secs[i]['h'] = figure('01_Use_Case_Diagram.png', 'Figure 2-3 – Use case overview: User, Admin and the external services (full descriptions in Appendix B).') + secs[i]['h']
+    i = find(secs, '2.2'); secs[i]['h'] = secs[i]['h'] + figure('D29_use_case_v2.png', 'Figure 2-3 – ' + UC_CAP, 'diag tall')
     # 4.11 note about AI try-on
     i = find(secs, '4.11'); secs[i]['h'] += '<p class="note">Since version 2.0 this in-browser overlay is called “Quick fit preview”. The realistic, image-based Virtual Try-On of one piece on the user’s own photo is specified in section 4.23.</p>'
     # 4.21 – 4.23 after 4.20
@@ -272,6 +299,14 @@ def build_srs():
       '<p><b>4.23.2 Stimulus / response.</b></p><ul><li>Generate 3 looks → Virtual Try-On on a look → choose a top, jacket or dress → the Virtual Try-On screen opens with the piece.</li><li>Upload a full-body photo (or use the saved one) → tick the photo notice → Generate try-on → “Creating your virtual try-on…” → the result with Save result · Try another item · Back to outfit.</li><li>No photo, unsuitable photo or piece, provider error or time-out → a short explanation and Retry; the rest of Closet keeps working.</li></ul>'
       f'<figure class="shot"><img src="file://{VS}/v05_ready.png"/><figcaption>Figure 4-3 – The Virtual Try-On screen: the photo, the piece, the consent notice and Generate try-on.</figcaption></figure>'
       '<p><b>4.23.3 Functional requirements.</b></p>' + tbl(['ID', 'Requirement', 'Stories', 'Release'], [[f'<b>{a}</b>', b, c, d] for a, b, c, d in TRYON_FR])},
+     {'lvl': 2, 'title': '4.24 Admin console (version 2.0)', 'h':
+      '<p><b>4.24.1 Description and priority.</b> Medium (US-80, US-81, US-119, US-120). Extends 4.19: the admin manages accounts and watches the platform without ever seeing anyone’s wardrobe. Only role = admin reaches /admin (Access Control); a normal user gets 403.</p>'
+      '<p><b>4.24.2 Stimulus / response.</b></p><ul><li>Sign in as admin → Admin → the overview, sign-ups per week, the security log, the accounts table, system health.</li><li>Search or filter accounts → open one → its counts and security events.</li><li>Suspend → every session of that account ends at once; Restore → it can sign in again; Unlock → a locked account can sign in before the 15 minutes end. Each action appears in the security log.</li></ul>'
+      f'<figure class="shot"><img src="file://{VS}/adm_page.png"/><figcaption>Figure 4-4 – The Admin page: overview, sign-ups, security log and accounts (offline demo data).</figcaption></figure>'
+      f'<figure class="shot"><img src="file://{VS}/adm_detail.png"/><figcaption>Figure 4-5 – One account: counts and security events only.</figcaption></figure>'
+      '<p><b>4.24.3 Functional requirements.</b></p>' + tbl(['ID', 'Requirement', 'Stories', 'Release'], [[f'<b>{a}</b>', b, c, d] for a, b, c, d in ADMIN_FR]) +
+      tbl(['Story', 'As an admin I want to…', 'Priority', 'Acceptance'], [['US-119', 'see one account’s details and the platform security log', 'Should', 'Counts and account events only; wardrobe actions never listed'], ['US-120', 'unlock an account locked by wrong passwords', 'Could', 'After unlock the right password works at once; the unlock is logged']]) +
+      tbl(['FR', 'API', 'Tests'], [['FR-118', 'GET /admin/stats · GET /admin/health', 'AD-U02 · AD-U07 · API-AD02 · API-AD08'], ['FR-119', 'GET /admin/users · GET /admin/users/:id', 'AD-U01 · AD-U04 · API-AD05'], ['FR-120', 'GET /admin/events · POST /admin/users/:id/unlock · PATCH /admin/users/:id', 'AD-U03 · AD-U05 · AD-U06 · API-AD03 · API-AD06 · API-AD07']])},
     ]
     secs[i:i] = new
     # 5.6 after 5.5
@@ -290,12 +325,17 @@ def build_srs():
         '<p><b>Main flow:</b> generate 3 looks → Virtual Try-On on a look → choose a supported piece → upload or reuse the full-body photo → confirm the notice → Generate → wait → the AI-generated picture → Save result / Try another item / Back to outfit. <b>Alternatives:</b> unsupported piece (disabled in the list, 422 from the API), no or unsuitable photo (400 / 415 / 422), provider not set up (503), limit reached (429), provider error, time-out or empty result (try-on FAILED → Retry). <b>Relationships:</b> «extend» Get Outfit Recommendation (UC-09).</p>'})
     # Change log
     i = find(secs, 'Appendix D')
-    secs[i]['h'] += '<h3>Revision 4 (build v1.5) · C-70 – C-84</h3>' + g(r4, 'R4.6') + '<h3>Revision 5 (build v1.6) · C-85 – C-97</h3>' + g(r5, 'R5.5') + '<h3>Version 2.0 · C-98 – C-104</h3>' + tbl(['ID', 'Type', 'Section', 'Change'], TRYON_CH)
+    secs[i]['h'] += '<h3>Revision 4 (build v1.5) · C-70 – C-84</h3>' + g(r4, 'R4.6') + '<h3>Revision 5 (build v1.6) · C-85 – C-97</h3>' + g(r5, 'R5.5') + '<h3>Version 2.0 · C-98 – C-107</h3>' + tbl(['ID', 'Type', 'Section', 'Change'], TRYON_CH + V2_CH)
     secs.append({'lvl': 1, 'title': 'Appendix E: Superseded Statements', 'h': '<p>Where a later revision replaced a statement of an earlier one, the newer statement is the one in the body of this document. This appendix keeps the old wording visible.</p>' + g(r4, 'R4.1') + g(r5, 'R5.1')})
     # Remove 'proposed, not yet in Jira' wording (stories are now in Jira)
     for s in secs:
         s['h'] = re.sub(r'(are|is) <b>proposed, not yet in Jira</b>', r'\1 in Jira', s['h'])
         s['h'] = s['h'].replace('<b>not yet in Jira</b>', 'in Jira').replace('Proposed stories (not yet in Jira)', 'Stories for the proactive features')
+    for sx in secs:   # Appendix B: the v2.0 diagram replaces v1.4; the v1.4 detail stays as history
+        sx['h'] = re.sub(r'<figure class="diag"><img src="file://[^"]*srs_base_p58_0.png"/><figcaption>.*?</figcaption></figure>',
+                         lambda m: f'<figure class="diag tall"><img src="file://{D29}"/><figcaption>Figure B-1 – {UC_CAP}</figcaption></figure>', sx['h'], flags=re.S)
+        sx['h'] = sx['h'].replace('Figure B-2 – Get Outfit Recommendation and Ask Closet in detail.', 'Figure B-2 – Version 1.4 detail of Get Outfit Recommendation and Ask Closet (kept for the history of the model; Figure B-1 is current).')
+        sx['h'] = sx['h'].replace('Colour shows the sprint that delivers each use case. Figure B-2 zooms into the two use cases with the most structure.', 'Figure B-1 is the version 2.0 diagram with every use case of the product; colour shows its role (see the caption).')
     html = assemble(secs, cover('Software Requirements Specification'), revhist('requirements'), 'Software Requirements Specification · v2.0')
     return html
 
@@ -305,7 +345,7 @@ def build_sdd():
     LAND = {x['page'] for x in blocks if x['kind'] == 'img' and x['page'] not in range(69, 78)}
     secs = body_from(blocks, {20, 21, 22, 23, 24}, land)
     r4 = rev_sections(REV['sdd4']); r5 = rev_sections(REV['sdd5'])
-    i = find(secs, '3. SYSTEM'); secs[i - 1]['h'] += figure('01_Use_Case_Diagram.png', 'Figure 2-2 – Use case overview (the requirements view this design realises; details in the SRS, Appendix B).') + figure('D19_use_cases_proactive.png', 'Figure 2-3 – Use cases of the proactive features (UC-23 – UC-30).')
+    i = find(secs, '3. SYSTEM'); secs[i - 1]['h'] += figure('D29_use_case_v2.png', 'Figure 2-2 – ' + UC_CAP, 'diag tall') + figure('D19_use_cases_proactive.png', 'Figure 2-3 – Use cases of the proactive features (UC-23 – UC-30).')
     ch = {'lvl': 1, 'title': '8. Design Evolution: Builds v1.5, v1.6 and AI Try-On', 'h': '<p>This chapter records how the design changed after the Milestone 2 baseline (chapters 3 – 7). Where it supersedes an earlier section, the table in 8.1 and 8.12 says so; the newer design wins.</p>'}
     new = [ch]; n = 0
     for k, v in list(r4.items()) + list(r5.items()):
@@ -334,15 +374,26 @@ def build_sdd():
       f'<figure class="shot"><img src="file://{VS}/v06_loading.png"/><figcaption>Figure 8-C – “Creating your virtual try-on…”: the screen polls; the user may leave.</figcaption></figure>'
       f'<figure class="shot"><img src="file://{VS}/v09_failed.png"/><figcaption>Figure 8-D – A failed generation: a plain explanation and Retry.</figcaption></figure>'
       '<p><b>Privacy and security.</b> Photos are checked by their bytes (JPG, PNG, WebP only), stored privately and shown through signed, expiring URLs; every query is scoped by user; image contents are never logged; the provider’s result is copied into Closet’s storage so it is access-controlled; deleting a try-on deletes its images; deleting the account deletes all of them. <b>Future:</b> full-outfit try-on = chain the result of one garment as the person image of the next (dress, bottom, top, layer), garment background removal stored as a separate processed image, and a background worker if the provider offers webhooks. <b>Tests:</b> VT-01 – VT-27 (unit), API-VT01 – VT09 (API, PostgreSQL), e2e/virtual_tryon_journey.py (browser).</p>'})
+    n += 1
+    new.append({'lvl': 2, 'title': f'8.{n} Admin console (v2.0)', 'h':
+      '<p><b>Design.</b> <code>adminService</code> holds the rules; its data comes from an <code>AdminRepository</code> interface — <code>pgAdminRepository</code> on PostgreSQL, the in-memory repository in the offline demo and the unit tests — so all three run the same logic (Repository pattern, like the other modules). Every route sits behind <code>requireRole(\'admin\')</code>. The security log reads <code>activity.log</code> filtered to account-level actions (<code>securityEvents.js</code>); wardrobe actions and piece names are never returned.</p>' +
+      tbl(['Method', 'Route', 'Purpose', 'Response', 'Errors'], [
+          ['GET', '/admin/stats', 'overview: account states, 6 weeks of sign-ups, try-on totals, usage', '{users, active, suspended, locked, newThisWeek, activeThisWeek, tryOns, signupsByWeek, …}', '401 · 403'],
+          ['GET', '/admin/users · /admin/users/:id', 'accounts with counts · one account with its security events', '{users: […]} · {…, events}', '403 · 404'],
+          ['GET', '/admin/events?limit=', 'platform security log (1 – 100)', '{events: [{email, action, at, detail}]}', '403'],
+          ['PATCH', '/admin/users/:id', 'suspend / restore (suspend raises the token version)', '{id, email, status}', '400 · 404 · 409'],
+          ['POST', '/admin/users/:id/unlock', 'lift the five-wrong-passwords lock', '{id, email, locked: false}', '404'],
+          ['GET', '/admin/health · /admin/config', 'service status · shared lists (read-only)', '{status, services[]} · {…}', '403']]) +
+      '<p><b>Cost per wear removed (C-105).</b> <code>costPerWear</code> / <code>valueInsights</code>, <code>GET /intelligence/value</code> and the Ask Closet <code>value</code> function were deleted; the price columns of <code>wardrobe.items</code> stay (no migration) but nothing reads them.</p>'})
     i = find(secs, '8. APPENDICES')
     secs[i]['title'] = '9. APPENDICES'
     secs[i:i] = new
     i = find(secs, 'Appendix E')
-    secs[i]['h'] += '<p><b>Version 2.0.</b> Design changes of builds v1.5 and v1.6 merged into chapter 8 (previously separate front sections); Virtual Try-On module and routes /virtual-try-on added (8.' + str(n) + '); use case overview placed in chapter 2; one unified layout.</p>'
+    secs[i]['h'] += '<p><b>Version 2.0.</b> Design changes of builds v1.5 and v1.6 merged into chapter 8 (previously separate front sections); Virtual Try-On module and routes /virtual-try-on added (8.' + str(n - 1) + '); Admin console detailed and cost per wear removed (8.' + str(n) + '); use case overview placed in chapter 2; one unified layout.</p>'
     html = assemble(secs, cover('Software Design Document'), revhist('design'), 'Software Design Document · v2.0')
     return html
 
 if __name__ == '__main__':
     for name, fn in [('Closet_SRS_v2.0', build_srs), ('Closet_SDD_v2.0', build_sdd)]:
-        (OUT / f'{name}.html').write_text(fn())
+        (OUT / f'{name}.html').write_text(v2post(fn()))
         print(name)

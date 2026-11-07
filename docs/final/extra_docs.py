@@ -39,12 +39,16 @@ body += '<h1 class="nonum">2. Results</h1>'
 body += tbl(['Suite', 'Result', 'Run'], [
   ['Full suite, build v1.6 (unit + API + acceptance)', '<b>599 / 599 passed</b> · 0 failed · line coverage 97.53 %', 'GitHub Actions CI #5, 29 Oct 2026 (real Jest, PostgreSQL 16)'],
   ['Virtual Try-On unit tests VT-01 – VT-27', f'<b>{len(vt)} / {len(vt)} passed</b>', 'sandbox, 4 Nov 2026 (Node 22; Jest-compatible runner because the npm registry is blocked there)'],
-  ['Full suite after Virtual Try-On (GitHub Actions, 4 Nov)', '<b>630 / 631 passed</b> · 1 failed: OF-09 (defect D-33, fixed) · line coverage 94.53 %', 'GitHub Actions run 41865197065, real Jest + PostgreSQL 16'],
+  ['Full suite after Virtual Try-On (GitHub Actions, 4 Nov)', '630 / 631 passed · 1 failed: OF-09 (defect D-33) · line coverage 94.53 %', 'GitHub Actions run 41865197065, real Jest + PostgreSQL 16'],
+  ['<b>After the fixes (GitHub Actions CI #20, 5 Nov)</b>', '<b>all four jobs green: server (631 tests), client, e2e, offline demo</b>', 'GitHub Actions CI #20, commit 2e8ab78'],
   ['Virtual Try-On API tests API-VT01 – VT09', f'<b>{len(api)} / {len(api)} passed</b>', 'GitHub Actions run 41865197065'],
   ['e2e virtual_tryon_journey.py', e2e['virtual_tryon'], 'offline demo build, Chromium, 4 Nov 2026'],
   ['e2e lifecycle_journey.py (regression)', e2e['lifecycle'], 'offline demo build, 4 Nov 2026'],
   ['e2e stateful_journey.py (regression)', e2e['stateful'], 'offline demo build, 4 Nov 2026']])
 body += '<p class="note"><b>Honest status.</b> The old try-on tests TO-01 – TO-12 were removed with the old <code>/tryon</code> route they tested; the new Virtual Try-On replaces both. The real FASHN service has not been called yet (no API key in the sandbox): the provider was replaced by a test double and a mock. The live provider test is task T-30.</p>'
+at = [re.match(r'\s*✔ (AT-\d+) (US-\d+) (.*?) \(\d', l) for l in (EV / 'v16/test_run_v16.txt').read_text().splitlines()]
+at = [m.groups() for m in at if m]
+body += '<h2>2.0 Sprint 1 · acceptance tests, one per story (all passed, CI #5)</h2><p>Each Sprint 1 story has one acceptance test written from its acceptance criteria and run through the real HTTP API against PostgreSQL. Unit and API tests (equivalence classes, boundary values, state transitions) cover the rules behind them; see the per-file counts in Test Plan and Report v1.3.</p>' + tbl(['Test', 'Story', 'Acceptance criteria checked', 'Result'], [[a, b, H.escape(c), '✓ passed'] for a, b, c in at])
 body += '<h2>2.1 Virtual Try-On · unit tests (passed)</h2>' + tbl(['Test', 'What it shows'], [[t.split(' ', 1)[0], H.escape(t.split(' ', 1)[1])] for t in vt])
 body += '<h2>2.2 Virtual Try-On · API tests (run in CI)</h2>' + tbl(['Test', 'What it shows'], [[a, H.escape(b)] for a, b in api])
 body += '<h2>2.3 Virtual Try-On · browser journey</h2>' + tbl(['Step', 'Checked'], [
@@ -59,25 +63,38 @@ body += '<h2>2.4 Defects found in this pass (all fixed)</h2>' + tbl(['ID', 'Foun
   ['D-30', 'visual check', 'Medium', 'The garment picker opened inside the flipping outfit card and was clipped.', 'rendered into the page body (portal)'],
   ['D-31', 'e2e v08', 'Low', 'Try another item on the same piece kept the previous upload instead of the saved photo.', 'reset photo choice and consent'],
   ['D-32', 'e2e v12', 'Medium', 'Back to outfit from “Your try-ons” opened an empty Style me.', 'returns to the stored three looks'],
-  ['D-33', 'CI (OF-09)', 'Low', 'The seeded presentation plan had a fixed 24 °C; in November the seasonal estimate is 25 °C, so the “warmer forecast” alert no longer appeared.', 'plan = seasonal estimate − 6 °C, every month']])
-body += '<h2>2.5 Not verified yet</h2><ul><li>Live FASHN generation (needs the team’s API key, T-30).</li><li>The re-run of the full suite after the D-33 fix (expected 631 / 631).</li><li>Usability test with classmates (T-33) and load test (T-34) — Sprint 2.</li></ul>'
+  ['D-33', 'CI (OF-09)', 'Low', 'The seeded presentation plan had a fixed 24 °C; in November the seasonal estimate is 25 °C, so the “warmer forecast” alert no longer appeared.', 'plan = seasonal estimate − 6 °C, every month'],
+  ['D-34', 'CI (demo check)', 'Low', 'The demo check expected a seasonal-storage suggestion, which is only made in summer or winter.', 'expected only in summer / winter']])
+body += '<h2>2.5 Changes after CI #20 · Admin console and cost per wear removed</h2><p>Made after the CI #20 run. The unit tests below were run locally on the in-memory repository and passed; the API tests run on PostgreSQL in the next GitHub Actions run (results not claimed here until that run is green).</p>' + tbl(['Test', 'What it shows', 'Status'], [
+  ['AD-U01', 'Accounts carry counts and lock state, never piece names', 'Passed (local)'], ['AD-U02', 'Overview: states, new / active this week, try-on totals, 6 weeks of sign-ups', 'Passed (local)'],
+  ['AD-U03', 'Security log hides wardrobe actions; details only on admin actions', 'Passed (local)'], ['AD-U04', 'One account: its own events; unknown or malformed id → 404', 'Passed (local)'],
+  ['AD-U05', 'Suspend / restore; never yourself', 'Passed (local)'], ['AD-U06', 'Unlock clears the lock and the wrong-password count', 'Passed (local)'], ['AD-U07', 'Health lists the five services honestly', 'Passed (local)'],
+  ['IN-50', 'Cost per wear is no longer computed (C-105)', 'Passed (local)'],
+  ['API-AD05', 'One account over HTTP: counts and security events only', 'Next CI run'], ['API-AD06', 'Security log shows a suspension, never “Wash done”', 'Next CI run'],
+  ['API-AD07', 'Five wrong passwords → 423; admin unlock → sign-in works', 'Next CI run'], ['API-AD08', 'Overview numbers over HTTP', 'Next CI run'],
+  ['API-PR50', 'GET /intelligence/value → 404; a piece has no costPerWear', 'Next CI run']])
+body += '<h2>2.6 Not verified yet</h2><ul><li>Live FASHN generation (needs the team’s API key, T-30).</li><li>Usability test with classmates (T-33) and load test (T-34) — Sprint 2.</li></ul>'
 page('Closet_Test_Plan_and_Report_v2.0', 'Test Plan and Report · v2.0', body)
 
 # ---------------------------------------------------------------- Presentation script (10 minutes, 15 slides)
 from notes32 import S as _S
-ORDER = [n for n, *_ in _S]
-S = [(ORDER.index(n) + 1, who, t, about, say) for n, who, t, about, say in _S]
-body = head('Presentation script', '32 slides (doors, zooms and closing are animation steps) · about 10 minutes with the animations · Closet_M2_Presentation.pptx — the same text is in each slide’s speaker notes')
+S = [(k + 1, who, t, about, say) for k, (n, who, t, about, say) in enumerate(_S)]
+body = head('Presentation script', '35 slides (doors, zooms, the try-on steps and the closing are animation steps) · 10 minutes including a 2 min 40 s live demo · Closet_M2_Presentation.pptx — the same text is in each slide’s speaker notes')
 import collections
 words = lambda x: len(re.sub('<.*?>', '', x).split())
 part = collections.OrderedDict()
 for n, who, t, about, say in S:
     d = part.setdefault(who.title(), {'slides': [], 'sec': 0, 'about': []}); d['slides'].append(str(n)); d['sec'] += words(say) / 140 * 60 + 3; d['about'].append(about)
 body += tbl(['Speaker', 'Slides', 'Speaking time', 'Topics'], [[w, ', '.join(d['slides']), f"≈ {int(d['sec'] // 60)}:{int(d['sec'] % 60):02d}", ' · '.join(d['about'])] for w, d in part.items()])
-body += f'<p class="small muted">Total ≈ 10:00 at a calm pace (about 140 words a minute, a short pause on every click). Read it aloud once with a timer; the [stage directions] in italics are not read aloud.</p>'
+body += f'<p class="small muted">Total ≈ 10:00 including the live demo, at a calm pace (about 140 words a minute, a short pause on every click). Read it aloud once with a timer; the [stage directions] in italics are not read aloud.</p>'
 body += '<p class="note"><b>Tips.</b> One click per slide — the doors, the zooms and the counter animate by themselves. End your part with the hand-over line (the next speaker’s name). In questions, everyone answers on their own part: Habiba — process and Jira; Karim — recommendations; Youssef — Virtual Try-On and architecture; Bashar — use cases; Salma — testing.</p>'
+DEMO = ('<div class="keep"><h3 style="font-style:normal;color:#2a2626"><span class="who">KARIM + YOUSSEF</span>LIVE DEMO · 2 min 40 s (on the laptop, after slide 13)</h3><div class="say">'
+  '<b>Karim (1:20):</b> switch to the browser (already signed in as demo@closet.app). Style me → <b>University</b> → Generate 3 looks. Say: “three looks from what is really available, for today’s weather.” Click the top of LOOK 01 → pick an alternative: “only that piece changes, and the match % moves.” Press <b>Save</b>: “saved to the lookbook.” Then: “Youssef, try it on.”<br/>'
+  '<b>Youssef (1:20):</b> on LOOK 01 press <b>Virtual Try-On</b> → choose the top. “Use saved try-on photo” is already selected (Habiba’s base photo). Tick the notice → <b>Generate try-on</b>: “the server sends the photo and the piece to the AI service; we can even leave this screen.” When the result shows: <b>Save result</b> → <b>Back to outfit</b>: “and we are back to the same three looks.” Switch back to the slides.<br/>'
+  '<b>Before class:</b> start the app (How to Run), run <code>npm run seed</code>, sign in, upload Habiba’s base photo once with “Save this photo for next time”, and keep the browser open behind the slides. With a FASHN key the result is a real AI image; without it, TRYON_PROVIDER=mock shows the labelled demo result.</div></div>')
 for n, who, t, about, say in S:
     body += f'<div class="keep"><h3 style="font-style:normal;color:#2a2626"><span class="who">{who}</span>Slide {n} · {about} <span class="tiny muted">from {t}</span></h3><div class="say">{say}</div></div>'
+    if 'LIVE DEMO' in say: body += DEMO
 page('Closet_Presentation_Script', 'Presentation script', body)
 
 # ---------------------------------------------------------------- How to run (Mac)
@@ -97,6 +114,8 @@ body += tbl(['File', 'What it is'], [
   ['Closet_SDD_v2.0.pdf', 'Software Design Document (architecture, class, sequence, data; Virtual Try-On in 8.20)'],
   ['Closet_Test_Plan_and_Report_v2.0.pdf', 'Test plan, methodology and results'],
   ['Closet_M2_Presentation.pptx', 'The 10-minute presentation (Morph animations: the closet opens and closes, the diagrams zoom)'],
+  ['Closet_SRS_v1.3_tracked_changes.pdf · Closet_SDD_v1.3_tracked_changes.pdf', 'The same documents with every change marked in the text (green = added, red = removed) — the change-tracked history behind v2.0'],
+  ['Closet_Sprint1_Retrospective.pdf', 'Sprint 1 retrospective: what went well, what to improve, actions for Sprint 2'],
   ['How_to_Run_Closet.pdf', 'How to run the app locally']])
 body += tbl(['Link', ''], [['Jira (project SCRUM)', 'aucegypt-team-r73i3oon.atlassian.net/jira/software/projects/SCRUM/boards/1'], ['GitHub', 'github.com/HabibaKhashaba/closet'], ['GitHub Actions (CI)', 'github.com/HabibaKhashaba/closet/actions'], ['Demo', 'live in class from our laptop (React + Node API + PostgreSQL)']])
 body += '<p>Thank you,<br/>Team Closet — Habiba Khashaba, Salma, Bashar, Karim and Youssef</p>'

@@ -113,7 +113,7 @@ with sync_playwright() as p:
     go('/ask'); pg.wait_for_selector('text=Try asking')
     asked = []
     for q in ['What should I wear to university tomorrow?', 'Is my navy blazer clean?', 'Put the navy blazer in the wash.', 'Is my navy blazer clean?', 'Laundry is done.',
-              'Do I need beige trousers?', 'Add this to my shopping list.', 'Who has my rose wrap dress?', 'What has the best cost per wear?',
+              'Do I need beige trousers?', 'Add this to my shopping list.', 'Who has my rose wrap dress?',
               'Is tomorrow’s outfit still okay for the weather?', 'Pack me for 5 days in Paris with a carry-on', 'Tell me a joke']:
         asked.append((q, ask(q)))
     shot('s10_ask')

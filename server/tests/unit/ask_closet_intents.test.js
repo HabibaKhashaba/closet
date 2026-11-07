@@ -53,10 +53,7 @@ describe('AI-40 56 natural-language wardrobe questions route to the right functi
     ['What would these loafers add to my wardrobe?', 'buy_check'],
     ['Would this blazer be useful?', 'buy_check'],
     ['How many outfits could I make with a white skirt?', 'buy_check'],
-    ['What has the best cost per wear?', 'value'],
-    ['Was my blazer worth it?', 'value'],
-    ['What are my best-value clothes?', 'value'],
-    ['What was my least-used expensive purchase?', 'value'],
+    ['Was my blazer worth it?', 'help'], // cost per wear was removed in v2.0 (C-105)
     ['Do I actually need loafers?', 'buy_check'],
     ['Tell me a joke', 'help'],
     ['What can you do?', 'help'],

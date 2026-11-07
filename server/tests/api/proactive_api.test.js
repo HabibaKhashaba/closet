@@ -176,18 +176,10 @@ describe('Borrow tracker', () => {
   });
 });
 
-describe('Cost per wear', () => {
-  test('API-PR50 optional price; recalculated after a confirmed wear and after an edit; removable', async () => {
-    expect((await api('get', `/items/${P.loafers.id}`)).body.costPerWear).toEqual({ hasPrice: false, text: null });
-    expect((await api('patch', `/items/${P.loafers.id}`).send({ price: -5 })).status).toBe(400);
-    const e = await api('patch', `/items/${P.loafers.id}`).send({ price: 2400, currency: 'EGP' });
-    expect(e.body.costPerWear).toMatchObject({ perWear: 800, wears: 3, currency: 'EGP' });
-    await api('post', '/outfits/wear').send({ itemIds: [P.shirt.id, P.trousers.id, P.loafers.id] });
-    expect((await api('get', `/items/${P.loafers.id}`)).body.costPerWear.perWear).toBe(600);
-    await api('post', '/outfits').send({ itemIds: [P.shirt.id, P.trousers.id, P.loafers.id] }); // saving is NOT wearing
-    expect((await api('get', `/items/${P.loafers.id}`)).body.costPerWear.perWear).toBe(600);
-    expect((await api('patch', `/items/${P.loafers.id}`).send({ price: 1200 })).body.costPerWear.perWear).toBe(300);
-    expect((await api('patch', `/items/${P.loafers.id}`).send({ price: null })).body).toMatchObject({ price: null, currency: null, costPerWear: { hasPrice: false } });
+describe('Cost per wear was removed (v2.0, C-105)', () => {
+  test('API-PR50 a piece has no cost per wear and the endpoint is gone', async () => {
+    expect((await api('get', `/items/${P.loafers.id}`)).body.costPerWear).toBeUndefined();
+    expect((await api('get', '/intelligence/value')).status).toBe(404);
   });
 });
 

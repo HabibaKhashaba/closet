@@ -29,6 +29,9 @@ const PHOTOS = (typeof window !== 'undefined' && window.__CLOSET_PHOTOS__) || {}
 const DAY = 86400000;
 const USER = { id: '00000000-0000-4000-8000-00000000d3e0', email: seed.EMAIL, role: 'user' };
 const TOKEN = 'offline-demo-session';
+// The seeded admin (seedData ADMIN): its own empty account plus /admin. Like the server, /admin shows counts, never a wardrobe.
+const ADMIN = { id: '00000000-0000-4000-8000-0000000ad313', email: seed.ADMIN, role: 'admin' };
+const ADMIN_TOKEN = 'offline-demo-admin-session';
 
 function createLocalApi({ saved = null, persist = () => {} } = {}) {
   const repos = memoryRepositories(saved ? restoreStore(saved) : createMemoryStore());
@@ -40,14 +43,16 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
     async remove(key) { if (String(key).startsWith('local-')) delete PHOTOS[key]; }, signedUrl: (key) => PHOTOS[key] || '', verify: () => false, filePath: () => '',
   };
   // Virtual Try-On runs the real service with the MOCK provider (no AI, no network; labelled "Mock result" in the app).
-  const m = buildModules({ repos: { ...repos, identity: false, admin: false }, storage, weather: weatherAdapter({ mode: 'estimate' }), parser: llmAdapter({ env: {} }),
+  const m = buildModules({ repos: { ...repos, identity: false }, storage,
+    services: { env: { TRYON_PROVIDER: 'mock' }, databaseName: 'Database', databaseDetail: 'In-memory store (offline demo) · PostgreSQL on the live server', weatherStatus: 'fallback', weatherDetail: 'Seasonal estimate (offline demo) · Open-Meteo on the live server' }, weather: weatherAdapter({ mode: 'estimate' }), parser: llmAdapter({ env: {} }),
     tryOnProvider: mockProvider({ delayMs: 2500, fail: () => { const f = globalThis.__closetTryOnFailNext || null; globalThis.__closetTryOnFailNext = null; return f; } }) });
-  const uid = USER.id;
+  let uid = USER.id;
 
   // ---------- deterministic seed through the same services (data: server/src/db/seedData.js) ----------
   async function applySeed() {
-    S.users.push({ ...USER });
+    S.users.push({ ...USER, created_at: new Date(Date.now() - 41 * DAY) });
     await m.bus.publish(TOPICS.UserRegistered, { userId: uid });
+    await m.bus.publish(TOPICS.UserRegistered, { userId: ADMIN.id });
     await m.profile.service.saveQuiz(uid, { styles: ['Chic', 'Classic', 'Minimal'], colours: ['Beige', 'Navy', 'Black', 'White'], occasions: ['University', 'Work', 'Dinner', 'Wedding'], dressCode: 2, modest: false, city: 'Cairo' });
     await m.profile.service.update(uid, { displayName: 'Habiba', laundryDays: 2, laundryAutoReturn: true, laundryWeekday: 4, repeatDays: 3, reminders: true, reminderHour: 20 });
     const add = async (file, name, d) => {
@@ -70,7 +75,6 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
     for (const [d, files, rating, occasion, tempC, condition, eventTitle] of seed.WEARS) {
       await repos.outfits.wear(uid, files.map((f) => ids[f]), seed.inDays(-d), rating, { occasion, tempC, condition, eventTitle });
     }
-    for (const [file, price] of Object.entries(seed.PRICES)) await m.wardrobe.service.editPiece(uid, ids[file], { price, currency: 'EGP' });
     const save = (files, o) => m.outfits.service.save(uid, { itemIds: files.map((f) => ids[f]), ...o });
     await save(['ivory_silk_blouse', 'black_tailored_trousers', 'navy_blazer', 'black_loafers'], { occasion: 'Work', ruleScore: 100, favorite: true, reasons: ['Every piece suits Business Casual for work.', 'Colours: all neutral colours.', 'The navy blazer adds structure without feeling stiff.'] });
     await save(['breton_striped_top', 'beige_wide_leg_trousers', 'white_sneakers', 'tan_leather_tote'], { occasion: 'University', ruleScore: 100, favorite: true, reasons: ['Every piece suits Casual for university.', 'Colours: neutrals with navy stripes.', 'Comfortable for a long campus day.'] });
@@ -84,6 +88,18 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
     for (const [d, files, reason] of seed.REJECTS) S.feedback.push({ user_id: uid, kind: 'reject', item_ids: files.map((f) => ids[f]), reason, created_at: new Date(Date.now() - d * DAY) });
     await m.packing.service.save(uid, { destination: 'Paris', startDate: seed.inDays(12), endDate: seed.inDays(15), tripType: 'Travel', activities: ['Travel', 'Dinner', 'Everyday'] });
     S.activity.length = 0; // the seed is not the user's activity
+    // Demo accounts for the Admin page (seedData MEMBERS, as server/src/db/seed.js creates them): account events only.
+    const at = (d, h = 0) => new Date(Date.now() - d * DAY + h * 3600000);
+    S.users.push({ ...ADMIN, created_at: at(41, 1) });
+    S.activity.push({ id: ++S.seq.activity, user_id: uid, action: 'Account created', detail: null, at: at(41) }, { id: ++S.seq.activity, user_id: ADMIN.id, action: 'Account created', detail: null, at: at(41, 1) });
+    seed.MEMBERS.forEach(([email, days, status, locked], k) => {
+      const id = `00000000-0000-4000-8000-0000000000${String(k + 10)}`;
+      S.users.push({ id, email, role: 'user', account_status: status, created_at: at(days), failed_logins: locked ? 5 : 0, locked_until: locked ? new Date(Date.now() + 15 * 60000) : null });
+      S.activity.push({ id: ++S.seq.activity, user_id: id, action: 'Account created', detail: null, at: at(days) });
+      if (status === 'active') S.activity.push({ id: ++S.seq.activity, user_id: id, action: 'Signed in', detail: null, at: at(Math.min(days, 1 + k), 3) });
+      if (status === 'suspended') S.activity.push({ id: ++S.seq.activity, user_id: ADMIN.id, action: 'Admin: account suspended', detail: email, at: at(2) });
+    });
+    S.activity.push({ id: ++S.seq.activity, user_id: uid, action: 'Signed in', detail: null, at: at(1, 2) });
     return ids;
   }
   const ready = saved ? Promise.resolve() : applySeed();
@@ -95,15 +111,30 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   const route = (method, pattern, fn) => R.push({ method, re: new RegExp(`^${pattern.replace(/:(\w+)/g, '(?<$1>[^/]+)')}$`), fn });
   route('GET', '/health', () => ({ status: 'ok', mode: 'offline demo' }));
   route('GET', '/vocabulary', () => ({ ...vocabulary, STATUS_TRANSITIONS, STATUS_WHERE: require('../../server/src/shared/lifecycle').WHERE }));
-  route('POST', '/auth/login', ({ body }) => {
+  route('POST', '/auth/login', async ({ body }) => {
     const email = String(body.email || '').trim().toLowerCase();
-    if (email !== seed.EMAIL || body.password !== seed.PASSWORD) throw new AppError(401, 'BAD_LOGIN', 'Offline demo: sign in with demo@closet.app / Closet2026!');
+    if (body.password === seed.PASSWORD && email === seed.ADMIN) {
+      await repos.activity.insert(ADMIN.id, 'Signed in', null);
+      return { token: ADMIN_TOKEN, user: ADMIN };
+    }
+    if (email !== seed.EMAIL || body.password !== seed.PASSWORD) throw new AppError(401, 'BAD_LOGIN', 'Offline demo: sign in with demo@closet.app or admin@closet.app / Closet2026!');
+    await repos.activity.insert(USER.id, 'Signed in', null);
     return { token: TOKEN, user: USER };
   });
   route('POST', '/auth/register', () => { throw new AppError(403, 'OFFLINE', 'The offline demo uses the seeded demo account. Registration needs the live server.'); });
   route('POST', '/auth/google', () => { throw new AppError(403, 'OFFLINE', 'Google sign-in needs the live server.'); });
-  route('POST', '/auth/logout', () => null);
-  route('GET', '/auth/me', () => ({ user: USER }));
+  route('POST', '/auth/logout', async ({ auth }) => { await repos.activity.insert(auth === `Bearer ${ADMIN_TOKEN}` ? ADMIN.id : USER.id, 'Signed out', null); return null; });
+  route('GET', '/auth/me', ({ auth }) => ({ user: auth === `Bearer ${ADMIN_TOKEN}` ? ADMIN : USER }));
+  // Admin: the real admin service (server/src/modules/admin) on the in-memory store. /admin is admin-only (see handle).
+  const ad = () => m.admin.service;
+  route('GET', '/admin/users', async () => ({ users: await ad().users() }));
+  route('GET', '/admin/users/:id', ({ p }) => ad().user(p.id));
+  route('GET', '/admin/stats', () => ad().stats());
+  route('GET', '/admin/health', () => ad().health());
+  route('GET', '/admin/config', () => ad().config());
+  route('GET', '/admin/events', async ({ query }) => ({ events: await ad().events(query.limit) }));
+  route('PATCH', '/admin/users/:id', ({ p, body }) => { if (!['active', 'suspended'].includes(body.status)) throw new AppError(400, 'VALIDATION', 'status must be active or suspended'); return ad().setStatus(ADMIN.id, p.id, body.status); });
+  route('POST', '/admin/users/:id/unlock', ({ p }) => ad().unlock(p.id));
   route('GET', '/profile', () => sv().profile.get(uid));
   route('PUT', '/profile/quiz', ({ body }) => sv().profile.saveQuiz(uid, v.validate(profileSchema, body)));
   route('PUT', '/profile', ({ body }) => sv().profile.update(uid, v.validate(settingsSchema, body)));
@@ -232,7 +263,8 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
 
   // Activity log, as the server's audit step would write it (a subset of gateway/audit.js RULES).
   const AUDIT = [[/^POST \/laundry\/wash-done$/, 'Wash done'], [/^PATCH \/items\/[^/]+\/status$/, 'Status changed'], [/^POST \/outfits\/wear$/, 'Outfit worn'], [/^DELETE \/items\/[^/]+$/, 'Piece deleted'], [/^POST \/shopping\/list$/, 'Added to shopping list'],
-    [/^POST \/items\/[^/]+\/care$/, 'Needs care'], [/^POST \/items\/[^/]+\/care\/tailor$/, 'Sent to the tailor'], [/^POST \/items\/[^/]+\/care\/done$/, 'Back from care'], [/^POST \/items\/[^/]+\/lend$/, 'Lent out'], [/^POST \/items\/[^/]+\/return$/, 'Returned'], [/^POST \/items\/[^/]+\/donate$/, 'Ready to donate'], [/^POST \/items\/[^/]+\/donate\/done$/, 'Donated']];
+    [/^POST \/items\/[^/]+\/care$/, 'Needs care'], [/^POST \/items\/[^/]+\/care\/tailor$/, 'Sent to the tailor'], [/^POST \/items\/[^/]+\/care\/done$/, 'Back from care'], [/^POST \/items\/[^/]+\/lend$/, 'Lent out'], [/^POST \/items\/[^/]+\/return$/, 'Returned'], [/^POST \/items\/[^/]+\/donate$/, 'Ready to donate'], [/^POST \/items\/[^/]+\/donate\/done$/, 'Donated'],
+    [/^POST \/admin\/users\/[^/]+\/unlock$/, 'Admin: account unlocked'], [/^PATCH \/admin\/users\/[^/]+$/, (b) => (b.status === 'suspended' ? 'Admin: account suspended' : 'Admin: account restored')]];
 
   async function handle(method, url, body, authorization) {
     await ready;
@@ -241,11 +273,14 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
     const hit = R.find((r) => r.method === method && r.re.test(path));
     if (!hit) return { status: 404, data: { error: 'NOT_FOUND', message: 'No such endpoint in the offline demo.' } };
     const open = path === '/auth/login' || path === '/auth/register' || path === '/auth/google' || path === '/vocabulary' || path === '/health';
-    if (!open && authorization !== `Bearer ${TOKEN}`) return { status: 401, data: { error: 'UNAUTHORIZED', message: 'Please sign in.' } };
+    const asAdmin = authorization === `Bearer ${ADMIN_TOKEN}`;
+    if (!open && authorization !== `Bearer ${TOKEN}` && !asAdmin) return { status: 401, data: { error: 'UNAUTHORIZED', message: 'Please sign in.' } };
+    if (path.startsWith('/admin') && !asAdmin) return { status: 403, data: { error: 'FORBIDDEN', message: 'Admins only.' } };
+    uid = asAdmin ? ADMIN.id : USER.id; // one signed-in account per tab: the admin works on its own, empty account
     try {
-      const data = await hit.fn({ p: path.match(hit.re).groups || {}, body: body || {}, query });
+      const data = await hit.fn({ p: path.match(hit.re).groups || {}, body: body || {}, query, auth: authorization });
       const a = AUDIT.find(([re]) => re.test(`${method} ${path}`));
-      if (a) await sv().activity.record(uid, a[1], null);
+      if (a) { if (path.startsWith('/admin')) await repos.activity.insert(uid, typeof a[1] === 'function' ? a[1](body || {}) : a[1], data && data.email); else await sv().activity.record(uid, a[1], null); }
       if (method !== 'GET') persist(serializeStore(S));
       return { status: data === null || data === undefined ? 204 : method === 'POST' && /^\/(items|events|outfits\/wear|packing\/trips)$/.test(path) ? 201 : 200, data };
     } catch (e) {
@@ -257,4 +292,4 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   return { handle, ready, store: S, modules: m };
 }
 
-module.exports = { createLocalApi, TOKEN, USER };
+module.exports = { createLocalApi, TOKEN, USER, ADMIN, ADMIN_TOKEN };

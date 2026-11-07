@@ -51,7 +51,7 @@ function buildModules(deps = {}) {
   const rec = registerRecommendation({ wardrobe: () => wardrobe.service, profile: profile.service, outfits: () => outfits.service, weather });
   const planner = registerPlanner({ db: pool, repo: repos.planner, rec: () => rec.service, outfits: () => outfits.service, wardrobe: () => wardrobe.service, availability: availability.service });
   const shopping = registerShopping({ db: pool, repo: repos.shopping, bus, wardrobe: () => wardrobe.service, profile: profile.service });
-  const admin = repos.admin === false ? null : registerAdmin({ db: pool, services: deps.services });
+  const admin = repos.admin === false ? null : registerAdmin({ db: pool, repo: repos.admin, services: deps.services });
   const activity = registerActivity({ db: pool, repo: repos.activity });
   const packing = registerPacking({ db: pool, repo: repos.packing, wardrobe: () => wardrobe.service, profile: profile.service, weather, planner: () => planner.service, availability: availability.service, outfits: () => outfits.service });
   const intelligence = registerIntelligence({

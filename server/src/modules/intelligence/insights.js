@@ -11,7 +11,6 @@
 //   memoryMatches         outfit memory: what was worn, where, at what temperature, how rated
 //   memorySignals         a bounded ranking boost from highly rated looks in a similar context
 //   weatherShift          a planned outfit whose forecast changed materially
-//   costPerWear / valueInsights
 //   gapConfidence         HIGH / MEDIUM / LOW with reasons, never a gap the user already covers
 //   purchaseImpact        what a piece you might buy adds — simulated, never saved
 //   tripCapsule           a compact packing list with intentional reuse and a baggage limit
@@ -229,25 +228,6 @@ function weatherShift(planned, current, pieces) {
       : `It’s now expected to be ${current.tempC} °C instead of ${planned.tempC} °C — ${Math.abs(diff)} °C ${dir}. ${advice}` };
 }
 
-// ---------- 7. cost per wear (confirmed wears only) ----------
-function costPerWear(p) {
-  if (p.price === null || p.price === undefined || p.price === '') return { hasPrice: false, text: null };
-  const price = Number(p.price);
-  if (!p.wearCount) return { hasPrice: true, price, currency: p.currency || 'EGP', wears: 0, perWear: null, text: 'Cost per wear will appear after the first wear.' };
-  const perWear = Math.round((price / p.wearCount) * 100) / 100;
-  return { hasPrice: true, price, currency: p.currency || 'EGP', wears: p.wearCount, perWear, text: `${p.currency || 'EGP'} ${fmt(perWear)} per wear (${fmt(price)} ÷ ${p.wearCount} wears)` };
-}
-const fmt = (n) => (Math.round(n) === n ? n.toLocaleString('en-US') : n.toLocaleString('en-US', { maximumFractionDigits: 2 }));
-function valueInsights(pieces) {
-  const priced = pieces.filter((p) => p.price !== null && p.price !== undefined).map((p) => ({ piece: p, ...costPerWear(p) }));
-  const worn = priced.filter((x) => x.perWear !== null && x.wears >= 3).sort((a, b) => a.perWear - b.perWear);
-  const prices = priced.map((x) => x.price).sort((a, b) => a - b);
-  const median = prices.length ? prices[Math.floor(prices.length / 2)] : 0;
-  const under = priced.filter((x) => x.price >= median).sort((a, b) => (b.perWear ?? b.price) - (a.perWear ?? a.price));
-  return { priced: priced.length, of: pieces.length, bestValue: worn.slice(0, 3), underused: under.slice(0, 3),
-    note: priced.length < 5 ? 'Add prices to more pieces for a fuller picture — a few prices are not enough for strong conclusions.' : null };
-}
-
 // ---------- 8. wardrobe gaps with confidence ----------
 // HIGH  = nothing (0) at a level the user dresses for most AND pieces in the other groups are waiting for it
 // MEDIUM = only one piece, or a secondary level
@@ -359,5 +339,5 @@ function explainHealth(h) {
 module.exports = {
   seasonFromWeather, seasonFromMonth, inSeason, forgottenCandidates, INACTIVITY_DAYS, NEW_PIECE_DAYS,
   seasonalRotation, SEASONAL_NOTE, laundryRisk, planDays, similarLook, repeatInsight, memoryMatches, memorySignals,
-  weatherShift, TEMP_SHIFT, costPerWear, valueInsights, gapConfidence, purchaseImpact, tripCapsule, LIMITS, explainHealth,
+  weatherShift, TEMP_SHIFT, gapConfidence, purchaseImpact, tripCapsule, LIMITS, explainHealth,
 };

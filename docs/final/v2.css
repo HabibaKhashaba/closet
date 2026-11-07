@@ -83,3 +83,7 @@ table.rh td:nth-child(2){white-space:nowrap}
 .cv-code .bars{display:flex;justify-content:center;gap:1.6pt;height:16mm}
 .cv-code .bars i{display:block;background:#2a2626;height:100%}
 .cv-code span{font-size:6.5pt;letter-spacing:1.5pt;color:#2a2626;font-weight:bold}
+figure.tall img{max-height:238mm}
+
+tr.removed td{color:#9a9090;text-decoration:line-through;text-decoration-color:#c9a1a1}
+tr.removed td .rm{text-decoration:none;display:inline-block;margin-left:4pt;font-size:7.5pt;font-weight:bold;color:#a6463e;background:#f6dedb;border-radius:6pt;padding:0 4pt}

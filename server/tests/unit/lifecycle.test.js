@@ -58,7 +58,6 @@ describe('LF-10 v1.6 Ask Closet prompts route to the function that owns the ques
     ['Do I need to do laundry before Monday?', 'laundry_risk'],
     ['Is tomorrow’s outfit still okay?', 'plan_check'],
     ['What did I wear to Salma’s birthday?', 'memory'],
-    ['What has my best cost per wear?', 'value'],
     ['Would black loafers add anything to my wardrobe?', 'buy_check'],
     ['I have a wedding tomorrow and nothing to wear.', 'event_rescue'],
     ['Lend my black blazer to Nour until Friday', 'lend_piece'],

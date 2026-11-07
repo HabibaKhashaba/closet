@@ -66,7 +66,7 @@ Milestone 1 deliverables (requirements and architecture PDF, UML diagrams, click
 
 **Build v1.6 adds one garment lifecycle** (`server/src/shared/lifecycle.js`: 9 states, 21 moves): Care (Laundry · Repairs & alterations, the tailor with a return reminder), Borrow & lend, a donate-only Donation area and a Wardrobe status on Home; see `CORRECTION_AUDIT.md` and `FINAL_ACCEPTANCE_CHECKLIST.md`.
 
-**Build v1.5 added proactive wardrobe intelligence** (Sprint 3 preview, no new sidebar items): Still love it? (style · keep · donate), donate (v1.6: donate only), seasonal rotation, laundry risk and laundry-aware multi-day plans, repeat intelligence and outfit memory, one planned-outfit monitor (weather + availability), borrow tracker, explainable Wardrobe Health, duplicate check on add, gap confidence, trip capsule, event rescue, cost per wear, purchase impact and one Notification Center — all from one pure rule layer, `server/src/modules/intelligence/insights.js`.
+**Build v1.5 added proactive wardrobe intelligence** (Sprint 3 preview, no new sidebar items): Still love it? (style · keep · donate), donate (v1.6: donate only), seasonal rotation, laundry risk and laundry-aware multi-day plans, repeat intelligence and outfit memory, one planned-outfit monitor (weather + availability), borrow tracker, explainable Wardrobe Health, duplicate check on add, gap confidence, trip capsule, event rescue, purchase impact and one Notification Center — all from one pure rule layer, `server/src/modules/intelligence/insights.js`. *(Cost per wear was removed in v2.0.)*
 
 ## Run it
 

@@ -75,12 +75,6 @@ const REMOVED = [
   ['light_wash_jeans', 'Cargo joggers', { category: 'Bottom', colour: 'Green', fabric: 'Cotton', season: 'All seasons', size: 'M', styles: ['Streetwear', 'Comfortable'], dressCodes: [1] }, 2, 'No longer my style'],
 ];
 
-// Optional purchase prices (demo values, EGP) for cost per wear. Price is never required.
-const PRICES = {
-  white_sneakers: 2200, black_loafers: 2400, navy_blazer: 3200, black_blazer: 2900, white_fitted_tee: 450, light_wash_jeans: 1300,
-  ivory_silk_blouse: 1900, navy_silk_midi_dress: 4200, denim_jacket: 1600, nude_heels: 2100, structured_black_bag: 3500, beige_trench_coat: 3800,
-};
-
 // The app's "today" is the UTC day (every module uses isoDay(Date.now())); the seed uses the same day so dates
 // near midnight cannot disagree (found in the v1.6 run at 01:00 Cairo time: events were a day further away).
 // The seasonal estimate for a day (same table the weather adapter uses), minus 6 °C.
@@ -98,7 +92,17 @@ const EVENTS = [
 ];
 
 
-module.exports = { EMAIL: 'demo@closet.app', ADMIN: 'admin@closet.app', PASSWORD: 'Closet2026!', PIECES, STATUSES, WEARS, REJECTS, REMOVED, EVENTS, PRICES, inDays };
+// Extra demo accounts (no wardrobe content) so the Admin page has real cases to manage:
+// [email, joined days ago, account status, locked after five wrong passwords]
+const MEMBERS = [
+  ['salma.demo@closet.app', 34, 'active', false],
+  ['karim.demo@closet.app', 19, 'active', false],
+  ['youssef.demo@closet.app', 9, 'active', true],
+  ['spam.signup@closet.app', 3, 'suspended', false],
+  ['bashar.demo@closet.app', 2, 'active', false],
+];
+
+module.exports = { MEMBERS, EMAIL: 'demo@closet.app', ADMIN: 'admin@closet.app', PASSWORD: 'Closet2026!', PIECES, STATUSES, WEARS, REJECTS, REMOVED, EVENTS, inDays };
 
 // The seeded closet as domain pieces (the shape IWardrobe.allPieces returns), for pure tests and the
 // offline demo. ids are stable, readable keys (the file name of the photo).
@@ -113,7 +117,7 @@ function demoPieces(today = new Date()) {
     care: status[file] && /^Needs /.test(status[file].s) ? { kind: status[file].s === 'Needs repair' ? 'repair' : 'alteration', reason: status[file].note, notes: null, tailor: null, sentOn: null, expectedBack: null, cost: null, closedOn: null, outcome: null } : null,
     statusSince: status[file] ? new Date(today.getTime() - status[file].daysAgo * DAY).toISOString() : null,
     statusUntil: status[file] && status[file].until !== undefined ? new Date(today.getTime() + status[file].until * DAY).toISOString().slice(0, 10) : null,
-    price: PRICES[file] ?? null, currency: PRICES[file] ? 'EGP' : null,
+    price: null, currency: null,
     wearCount: worn, lastWornAt: worn && lastDays !== null ? new Date(today.getTime() - lastDays * DAY).toISOString() : null,
     createdAt: new Date(today.getTime() - 400 * DAY).toISOString(),
   }));

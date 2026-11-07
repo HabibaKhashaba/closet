@@ -32,11 +32,11 @@ const ADMIN = 'admin@closet.app';
 const PASSWORD = 'Closet2026!';
 const PHOTOS = path.join(__dirname, '..', '..', 'seed', 'photos');
 
-const { PIECES, STATUSES, WEARS, REJECTS, REMOVED, EVENTS, PRICES, inDays } = require('./seedData');
+const { MEMBERS, PIECES, STATUSES, WEARS, REJECTS, REMOVED, EVENTS, inDays } = require('./seedData');
 
 async function main() {
   await migrate();
-  await pool.query('DELETE FROM accounts.users WHERE email = ANY($1)', [[EMAIL, ADMIN, 'salma.demo@closet.app']]);
+  await pool.query('DELETE FROM accounts.users WHERE email = ANY($1)', [[EMAIL, ADMIN, ...MEMBERS.map((x) => x[0])]]);
   const server = http.createServer(createApp()).listen(0);
   const base = `http://127.0.0.1:${server.address().port}/api/v1`;
   const call = async (method, url, body, token, form) => {
@@ -87,7 +87,6 @@ async function main() {
     for (const [d, files, rating, occasion, tempC, condition, eventTitle] of WEARS) {
       await pool.query("INSERT INTO outfits.wears (user_id, item_ids, worn_on, rating, occasion, temp_c, conditions, event_title) VALUES ($1, $2, CURRENT_DATE - ($3 || ' days')::interval, $4, $5, $6, $7, $8)", [user.id, files.map((f) => ids[f]), String(d), rating, occasion, tempC, condition, eventTitle || null]);
     }
-    for (const [file, price] of Object.entries(PRICES)) await call('PATCH', `/items/${ids[file]}`, { price, currency: 'EGP' }, token);
     const save = (files, o) => call('POST', '/outfits', { itemIds: files.map((f) => ids[f]), ...o }, token);
     await save(['ivory_silk_blouse', 'black_tailored_trousers', 'navy_blazer', 'black_loafers'], { occasion: 'Work', ruleScore: 100, favorite: true, reasons: ['Every piece suits Business Casual for work.', 'Colours: all neutral colours.', 'The navy blazer adds structure without feeling stiff.'] });
     await save(['breton_striped_top', 'beige_wide_leg_trousers', 'white_sneakers', 'tan_leather_tote'], { occasion: 'University', ruleScore: 100, favorite: true, reasons: ['Every piece suits Casual for university.', 'Colours: neutrals with navy stripes.', 'Comfortable for a long campus day.'] });
@@ -110,6 +109,12 @@ async function main() {
     // Admin account (Sprint 3 early start: Admin page)
     const a = await call('POST', '/auth/register', { email: ADMIN, password: PASSWORD });
     await pool.query("UPDATE accounts.users SET role = 'admin' WHERE id = $1", [a.user.id]);
+    // Demo accounts for the Admin page: back-dated, one locked, one suspended (no wardrobe content).
+    for (const [email, days, status, locked] of MEMBERS) {
+      const m = await call('POST', '/auth/register', { email, password: PASSWORD });
+      await pool.query(`UPDATE accounts.users SET created_at = now() - ($2 || ' days')::interval, account_status = $3,
+        failed_logins = CASE WHEN $4 THEN 5 ELSE 0 END, locked_until = CASE WHEN $4 THEN now() + interval '15 minutes' ELSE NULL END WHERE id = $1`, [m.user.id, String(days), status, locked]);
+    }
 
     console.log(`Seeded ${PIECES.length} pieces, ${REMOVED.length} deleted with reasons, ${WEARS.length} worn outfits, ${REJECTS.length} rejections, ${EVENTS.length} events (2 planned), 4 saved outfits, 1 packing list for ${EMAIL} / ${PASSWORD}; admin ${ADMIN}`);
   } finally {

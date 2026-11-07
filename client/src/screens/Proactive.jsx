@@ -174,18 +174,6 @@ export function SeasonalReview() {
   );
 }
 
-// Cost per wear on the piece page: optional price, only confirmed wears count.
-export function CostPerWear({ piece }) {
-  const c = piece.costPerWear;
-  if (!c || !c.hasPrice) return <p className="tiny muted">Add a purchase price (optional) to see cost per wear. Only outfits you actually wore count.</p>;
-  return (
-    <div className="cpw">
-      <b>{c.perWear === null ? '—' : `${c.currency} ${c.perWear.toLocaleString('en-US')}`}</b>
-      <span className="small muted">{c.perWear === null ? c.text : `per wear · ${c.currency} ${c.price.toLocaleString('en-US')} ÷ ${c.wears} wears`}</span>
-    </div>
-  );
-}
-
 export function BorrowInfo({ piece, onChanged }) {
   const { toast } = useApp();
   if (piece.status !== 'Borrowed') return null;

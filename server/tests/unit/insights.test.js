@@ -156,20 +156,10 @@ describe('Planned outfit vs weather (monitor)', () => {
   });
 });
 
-describe('Cost per wear (confirmed wears only)', () => {
-  test('IN-50 price ÷ wears; zero wears never divides; no price works normally', () => {
-    expect(ins.costPerWear({ price: 2400, currency: 'EGP', wearCount: 12 })).toMatchObject({ perWear: 200, text: 'EGP 200 per wear (2,400 ÷ 12 wears)' });
-    expect(ins.costPerWear({ price: 2400, wearCount: 0 })).toMatchObject({ perWear: null, text: 'Cost per wear will appear after the first wear.' });
-    expect(ins.costPerWear({ price: null, wearCount: 9 })).toEqual({ hasPrice: false, text: null });
-  });
-  test('IN-51 currency is shown as stored; an edit recalculates', () => {
-    expect(ins.costPerWear({ price: 90, currency: 'USD', wearCount: 3 }).text).toBe('USD 30 per wear (90 ÷ 3 wears)');
-    expect(ins.costPerWear({ price: 120, currency: 'USD', wearCount: 3 }).perWear).toBe(40);
-  });
-  test('IN-52 best value needs at least 3 wears; few prices give a cautious note', () => {
-    const v = ins.valueInsights([piece({ price: 2200, wearCount: 22 }), piece({ price: 450, wearCount: 2 }), piece({ price: null })]);
-    expect(v.bestValue).toHaveLength(1);
-    expect(v.note).toMatch(/not enough for strong conclusions/);
+describe('Cost per wear was removed (v2.0, C-105)', () => {
+  test('IN-50 the insights no longer compute cost per wear', () => {
+    expect(ins.costPerWear).toBeUndefined();
+    expect(ins.valueInsights).toBeUndefined();
   });
 });
 

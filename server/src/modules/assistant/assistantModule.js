@@ -8,7 +8,7 @@ const { canMove } = require('../availability/statusMachine');
 const { CATEGORIES, COLOURS } = require('../../shared/vocabulary');
 
 const UUID = /^[0-9a-f-]{36}$/i;
-const SUGGESTIONS = ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'What needs repair?', 'Who has my black blazer?', 'What clothes are ready to donate?', 'Do I need beige trousers?', 'What could I donate?', 'Do I need to do laundry before Monday?', 'Pack me for 5 days in Paris', 'Who has my rose wrap dress?', 'What has the best cost per wear?', 'Why is my wardrobe health low?', 'What is missing from my wardrobe?'];
+const SUGGESTIONS = ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'What needs repair?', 'Who has my black blazer?', 'What clothes are ready to donate?', 'Do I need beige trousers?', 'What could I donate?', 'Do I need to do laundry before Monday?', 'Pack me for 5 days in Paris', 'Who has my rose wrap dress?', 'Why is my wardrobe health low?', 'What is missing from my wardrobe?'];
 const NOUN = { Top: 'top', Dress: 'dress', Bottom: 'bottom', Layer: 'layer', Shoes: 'shoes', Bag: 'bag', Extra: 'accessory' };
 const label = (p) => p.name || [p.colour, p.fabric && p.fabric !== 'Other' ? p.fabric.toLowerCase() : null, NOUN[p.category]].filter(Boolean).join(' ');
 const lower = (p) => label(p).toLowerCase();
@@ -365,22 +365,9 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
       const p = await packing().plan(userId, trip);
       return { reply: `${a.destination ? `${a.destination}, ` : ''}${days} days${a.carryOn ? ', carry-on' : ''}: ${p.summary}${p.fitsLimit === false ? ' It does not fit the luggage limit — open Packing to remove a piece.' : ''}${p.reuse.length ? ` Pieces worn more than once: ${p.reuse.slice(0, 3).map((x) => x.name.toLowerCase()).join(', ')}.` : ''}`, pieces: p.items, piecesTitle: 'Packing list', link: '#/packing' };
     },
-    async value(userId, a, ctx, pieceId) {
-      if (a.piece) {
-        const r = await resolve(userId, a.piece, pieceId);
-        if (r.none) return notFound(a);
-        if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
-        const c = r.piece.costPerWear;
-        if (!c || !c.hasPrice) return { reply: `Add a purchase price to your ${lower(r.piece)} to see its cost per wear.`, context: { pieceId: r.piece.id } };
-        return { reply: c.perWear === null ? `Your ${lower(r.piece)} hasn’t been worn yet, so there’s no cost per wear.` : `Your ${lower(r.piece)}: ${c.text}.`, pieces: [r.piece], context: { pieceId: r.piece.id } };
-      }
-      const v2 = await proactive().value(userId);
-      if (!v2.bestValue.length) return { reply: 'Add purchase prices to a few pieces (optional) and wear them — cost per wear counts only outfits you actually wore.' };
-      return { reply: `Best value so far:\n• ${v2.bestValue.map((x) => `${x.piece.name}: ${x.text}`).join('\n• ')}${v2.underused[0] ? `\nLeast used for its price: ${v2.underused[0].piece.name}${v2.underused[0].perWear ? ` (${v2.underused[0].text})` : ' (not worn yet)'}.` : ''}${v2.note ? `\n${v2.note}` : ''}` };
-    },
     async help(userId, a = {}) {
       if (a.outOfScope) return { reply: `${SCOPE} Try one of these:`, suggestions: SUGGESTIONS.slice(0, 5) };
-      return { reply: 'I can suggest outfits, style or change one piece, move pieces to the laundry or back, tell you what’s clean or lent out, plan several days or a trip, find pieces you haven’t worn (to style, keep or donate), explain your Wardrobe Health and cost per wear, check what a purchase would add, and keep your shopping list. Try one of these:', suggestions: SUGGESTIONS };
+      return { reply: 'I can suggest outfits, style or change one piece, move pieces to the laundry or back, tell you what’s clean or lent out, plan several days or a trip, find pieces you haven’t worn (to style, keep or donate), explain your Wardrobe Health, check what a purchase would add, and keep your shopping list. Try one of these:', suggestions: SUGGESTIONS };
     },
   };
 

@@ -38,15 +38,6 @@ export default function PieceForm({ value, onChange, errors }) {
         <Chips options={vocab.STYLES} value={value.styles} onChange={set('styles')} />
       </div>
       <Toggle label="Modest piece" sub="Covered shoulders, longer hemline" value={value.modest} onChange={set('modest')} />
-      <details className="purchase" open={Boolean(value.price)}>
-        <summary className="small">Purchase details <span className="muted">(optional · for cost per wear)</span></summary>
-        <div className="grid g3" style={{ gap: '0 12px', marginTop: 10 }}>
-          <Field label="Price" error={err('price')}><input type="number" min="0" step="0.01" inputMode="decimal" value={value.price ?? ''} onChange={(e) => set('price')(e.target.value)} placeholder="2400" /></Field>
-          <Field label="Currency" error={err('currency')}><select value={value.currency || 'EGP'} onChange={(e) => set('currency')(e.target.value)}>{(vocab.CURRENCIES || ['EGP']).map((c) => <option key={c}>{c}</option>)}</select></Field>
-          <Field label="Bought on" error={err('purchaseDate')}><input type="date" value={value.purchaseDate || ''} max={new Date().toISOString().slice(0, 10)} onChange={(e) => set('purchaseDate')(e.target.value)} /></Field>
-        </div>
-        <p className="tiny muted">Private to you. Leave empty if you prefer; you can remove it any time.</p>
-      </details>
     </>
   );
 }

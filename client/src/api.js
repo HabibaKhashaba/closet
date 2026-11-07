@@ -176,7 +176,6 @@ export const api = {
   ignoreAlert: (key) => call('POST', '/intelligence/monitor/ignore', { key }),
   borrowed: () => call('GET', '/intelligence/borrowed'),
   remindLater: (id, days = 3) => call('POST', `/intelligence/borrowed/${id}/remind`, { days }),
-  value: () => call('GET', '/intelligence/value'),
   memory: (q, best) => call('GET', `/intelligence/memory?${new URLSearchParams({ ...(q && { q }), ...(best && { best: 'true' }) })}`),
   repeat: (itemIds) => call('POST', '/intelligence/repeat', { itemIds }),
   smartGaps: () => call('GET', '/intelligence/gaps'),
@@ -185,6 +184,9 @@ export const api = {
   adminHealth: () => call('GET', '/admin/health'),
   adminConfig: () => call('GET', '/admin/config'),
   adminUsers: () => call('GET', '/admin/users'),
+  adminUser: (id) => call('GET', `/admin/users/${id}`),
+  adminEvents: (limit = 30) => call('GET', `/admin/events?limit=${limit}`),
+  adminUnlock: (id) => call('POST', `/admin/users/${id}/unlock`),
   adminStats: () => call('GET', '/admin/stats'),
   adminSetStatus: (id, status) => call('PATCH', `/admin/users/${id}`, { status }),
 

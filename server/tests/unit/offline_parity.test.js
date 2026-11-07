@@ -56,8 +56,8 @@ describe('Offline demo = real services on in-memory data', () => {
     expect(r2.function).toBe('add_to_shopping');
     expect((await get('/shopping/list')).items.some((i) => i.title === 'Beige trousers' && i.source === 'ask')).toBe(true);
     const fns = [];
-    for (const q of ['Is my blazer clean?', 'What could I donate?', 'Who has my rose wrap dress?', 'What has the best cost per wear?', 'Tell me a joke']) fns.push((await say(q)).function);
-    expect(fns).toEqual(['availability', 'donate_candidates', 'borrowed', 'value', 'help']);
+    for (const q of ['Is my blazer clean?', 'What could I donate?', 'Who has my rose wrap dress?', 'Tell me a joke']) fns.push((await say(q)).function);
+    expect(fns).toEqual(['availability', 'donate_candidates', 'borrowed', 'help']);
   });
   test('OF-07 Donate: mark → done → gone from the closet, no replacement, history kept', async () => {
     const denim = await byName('Denim jacket');

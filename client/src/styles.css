@@ -1022,3 +1022,18 @@ button.link { background: none; border: 0; padding: 0; cursor: pointer; text-dec
 .vto-hist-img img { width: 100%; height: 100%; object-fit: cover; }
 .vto-empty { display: flex; gap: 14px; align-items: center; }
 .vto-empty p { margin: 4px 0 0; }
+
+/* Admin */
+.admin-kpi h2 { font-size: 30px; }
+.admin-kpi .rose-text { color: var(--rose, #b0574f); }
+.admin-bars { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; height: 170px; align-items: end; }
+.admin-bar { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; height: 100%; gap: 6px; }
+.admin-bar i { align-self: end; width: 70%; border-radius: 8px 8px 3px 3px; background: linear-gradient(180deg, #d9a9a2, #b97a72); }
+.admin-events { list-style: none; margin: 0; padding: 0; }
+.admin-events li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line-2); font-size: 14px; }
+.admin-events li i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-2); }
+.admin-events li i.rose { background: #f6dedb; color: #a6463e; }
+.admin-events li i.ok { background: var(--ok-soft); }
+.admin-scroll { max-height: 300px; overflow-y: auto; }
+.admin-search { border: 1px solid var(--line); border-radius: 999px; padding: 9px 16px; min-width: 240px; background: #fff; font: inherit; }
+.admin-table tbody tr:hover { background: var(--bg-2); }

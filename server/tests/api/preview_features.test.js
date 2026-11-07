@@ -342,4 +342,39 @@ describe('Admin (Sprint 3 early start, US-80)', () => {
     const a = await admin();
     expect((await request(app).patch(`/api/v1/admin/users/${a.user.id}`).set(auth(a.token)).send({ status: 'suspended' })).status).toBe(409);
   });
+  test('API-AD05 one account: counts and security events only — no piece names, photos or outfits', async () => {
+    const a = await admin();
+    const r = await request(app).get(`/api/v1/admin/users/${u.user.id}`).set(auth(a.token));
+    expect(r.status).toBe(200);
+    expect(r.body).toMatchObject({ email: u.email, pieces: 9, status: 'active', locked: false });
+    expect(r.body.events.every((e) => ['Account created', 'Signed in', 'Signed in with Google', 'Signed out', 'Profile updated'].includes(e.action) || e.action.startsWith('Admin:'))).toBe(true);
+    expect(JSON.stringify(r.body)).not.toMatch(/photo|password|Piece added|itemIds/i);
+    expect((await request(app).get('/api/v1/admin/users/not-a-uuid').set(auth(a.token))).status).toBe(404);
+  });
+  test('API-AD06 security log shows the suspension with the account, never wardrobe actions', async () => {
+    const a = await admin();
+    await request(app).post('/api/v1/laundry/wash-done').set(auth(u.token));
+    await request(app).patch(`/api/v1/admin/users/${u.user.id}`).set(auth(a.token)).send({ status: 'suspended' });
+    let r; // the audit step writes after the response is sent, so wait for it briefly
+    for (let k = 0; k < 20; k += 1) { r = await request(app).get('/api/v1/admin/events?limit=50').set(auth(a.token)); if (r.body.events[0] && r.body.events[0].action === 'Admin: account suspended') break; await new Promise((ok) => setTimeout(ok, 50)); }
+    expect(r.body.events[0]).toMatchObject({ action: 'Admin: account suspended', detail: u.email });
+    expect(r.body.events.some((e) => e.action === 'Wash done')).toBe(false);
+    await request(app).patch(`/api/v1/admin/users/${u.user.id}`).set(auth(a.token)).send({ status: 'active' });
+  });
+  test('API-AD07 an admin can lift the five-wrong-passwords lock early', async () => {
+    const a = await admin();
+    for (let k = 0; k < 5; k += 1) await request(app).post('/api/v1/auth/login').send({ email: u.email, password: 'wrong-password-1' });
+    expect((await request(app).post('/api/v1/auth/login').send({ email: u.email, password: u.password })).status).toBe(423);
+    const list = await request(app).get('/api/v1/admin/users').set(auth(a.token));
+    expect(list.body.users.find((x) => x.email === u.email)).toMatchObject({ locked: true, failedLogins: 5 });
+    expect((await request(app).post(`/api/v1/admin/users/${u.user.id}/unlock`).set(auth(a.token))).body).toMatchObject({ locked: false });
+    expect((await request(app).post('/api/v1/auth/login').send({ email: u.email, password: u.password })).status).toBe(200);
+  });
+  test('API-AD08 overview: account states, sign-ups per week and try-on totals', async () => {
+    const a = await admin();
+    const s = (await request(app).get('/api/v1/admin/stats').set(auth(a.token))).body;
+    expect(s).toMatchObject({ users: 2, admins: 1, active: 2, suspended: 0, locked: 0, newThisWeek: 2, pieces: 9, tryOns: { total: 0 } });
+    expect(s.signupsByWeek).toHaveLength(6);
+    expect(s.signupsByWeek[5].signups).toBe(2);
+  });
 });

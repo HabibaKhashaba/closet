@@ -5,7 +5,7 @@ import { api, ApiError } from '../api.js';
 import { CATEGORY_ONE, Field, Icon, Modal, PageHead, Spinner, SprintTag, STATUS_LABEL, statusClass, Tile, daysSince, dressName, fmtDate, pieceName, useApp, useLoad, COLOUR_SWATCH } from '../ui.jsx';
 import { go } from '../App.jsx';
 import PieceForm, { cleanDetails } from './PieceForm.jsx';
-import { CostPerWear, DonateFlow } from './Proactive.jsx';
+import { DonateFlow } from './Proactive.jsx';
 import { LendModal, LifecycleInfo, RepairModal, TailorModal } from './Lifecycle.jsx';
 
 // Allowed moves come from the server's state machine (GET /vocabulary → STATUS_TRANSITIONS): one source of truth.
@@ -148,9 +148,6 @@ export default function PieceScreen({ id }) {
                 <div className="stat" style={{ background: 'rgba(255,255,255,.6)' }}><b>{since === null ? '—' : since === 0 ? 'Today' : `${since}d`}</b><span>since last worn</span></div>
               </div>
               {since !== null && since >= 40 && <p className="small" style={{ marginTop: 12 }}>Not worn for {since} days — <a className="link" href={`#/outfits?fixed=${p.id}`}>style it</a>{p.status === 'Available' && <> or <button type="button" className="link" onClick={() => setDonating(true)}>donate it</button></>}.</p>}
-              <div className="divider" />
-              <div className="eyebrow" style={{ marginBottom: 6 }}>Cost per wear</div>
-              <CostPerWear piece={p} />
               <div className="divider" />
               <button type="button" className="btn line sm" onClick={hide}><Icon name="eyeoff" size={15} />{hidden ? 'Show in suggestions again' : 'Hide from suggestions for 7 days'}</button>
               <p className="tiny muted" style={{ marginTop: 8 }}>Hiding does not count as a dislike. <SprintTag n={2} short /></p>

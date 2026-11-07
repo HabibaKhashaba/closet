@@ -13,7 +13,6 @@
 //   POST /intelligence/monitor/:eventId/adjust       change only the affected piece
 //   GET  /intelligence/borrowed                      who has what, since when, overdue
 //   POST /intelligence/borrowed/:itemId/remind       remind me later (default 3 days)
-//   GET  /intelligence/value                         cost per wear
 //   GET  /intelligence/memory?q=&best=               outfit memory
 //   POST /intelligence/repeat                        repeat insight for a look
 //   GET  /intelligence/gaps                          wardrobe gaps with confidence
@@ -178,7 +177,6 @@ function proactiveService({ repo, wardrobe, outfits, profile, planner, rec, avai
       const p = await own(userId, itemId);
       return { itemId: p.id, until: await snooze(userId, `borrow:${p.id}`, days, 'Remind me later') };
     },
-    async value(userId) { return ins.valueInsights(await wardrobe().allPieces(userId)); },
     async memory(userId, { q = '', best = false } = {}) {
       const h = await outfits().history(userId, {});
       return { matches: ins.memoryMatches(h.wears, q, { today: new Date(), best }), total: h.total };
@@ -218,7 +216,6 @@ function proactiveRoutes(svc) {
   r.post('/rescue', v.body({ occasion: { type: 'enum', values: Object.keys(OCCASIONS), required: true, label: 'Occasion' }, date: { type: 'date', label: 'Date' } }), h((req) => svc.rescue(req.user.id, req.valid)));
   r.get('/tailor', h((req) => svc.tailorDue(req.user.id)));
   r.post('/tailor/:itemId/remind', v.body({ days: { type: 'int', min: 1, max: 30 } }), h((req) => svc.tailorLater(req.user.id, req.params.itemId, req.valid.days)));
-  r.get('/value', h((req) => svc.value(req.user.id)));
   r.get('/memory', v.query({ q: { type: 'string', max: 120 }, best: { type: 'bool' } }), h((req) => svc.memory(req.user.id, req.validQuery)));
   r.post('/repeat', h((req) => {
     const ids = req.body.itemIds;

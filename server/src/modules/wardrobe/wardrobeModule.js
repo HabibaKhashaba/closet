@@ -6,7 +6,6 @@ const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
 const { isOwned } = require('../../shared/lifecycle');
 const { CATEGORIES, COLOURS, FABRICS, SEASONS, STYLES, STATUSES, DELETE_REASONS, CURRENCIES, DONATED } = require('../../shared/vocabulary');
-const { costPerWear } = require('../intelligence/insights');
 const { TOPICS } = require('../../events/eventBus');
 const { sniffType } = require('./photoStorage');
 const { closetGaps } = require('./closetGaps');
@@ -23,7 +22,7 @@ const detailsSchema = {
   styles: { type: 'enumArray', values: STYLES, max: STYLES.length },
   dressCodes: { type: 'enumArray', values: [1, 2, 3, 4, 5], min: 1, max: 5, required: true, label: 'At least one dress-code level' },
   modest: { type: 'bool' },
-  // v1.5 cost per wear — optional personal data
+  // optional purchase details (kept in the data model; not shown in the app since v2.0)
   price: { type: 'number', min: 0, max: 1000000, label: 'Price' },
   currency: { type: 'enum', values: CURRENCIES, label: 'Currency' },
   purchaseDate: { type: 'date', label: 'Purchase date' },
@@ -58,7 +57,6 @@ function toApi(row, info, storage) {
     price: row.price === null || row.price === undefined ? null : Number(row.price),
     currency: row.price === null || row.price === undefined ? null : (row.currency || 'EGP'),
     purchaseDate: row.purchase_date ? String(row.purchase_date).slice(0, 10) : null,
-    costPerWear: costPerWear({ price: row.price === null || row.price === undefined ? null : Number(row.price), currency: row.currency, wearCount: row.wear_count }),
     care: st.care || null,   // open repair / alteration (Care)
     loan: st.loan || null,   // open loan (Borrow & lend)
     photoUrl: storage.signedUrl(row.photo_key),

@@ -128,7 +128,6 @@ with sync_playwright() as p:
     click('.conflict button:has-text("Adjust outfit")'); wait(1.6); cap('Adjust outfit — only the blazer changes', 2.2)
     # 11 ANALYTICS
     nav('Analytics & insights'); wait(.8); scroll_to('text=What lowers it'); cap('Wardrobe Health — explained: what raises it, what lowers it', 3)
-    scroll_to('text=Cost per wear'); cap('Cost per wear — only confirmed wears count', 2.6)
     scroll_to('input[aria-label="Search outfit memory"]'); type_in('input[aria-label="Search outfit memory"]', 'Salma'); click('button:has-text("Find")'); wait(1.2)
     cap('Outfit memory — Salma’s birthday, 27 °C, ★★★★★ · Wear again · Create a variation', 3.2)
     # 12 ASK CLOSET — real state
