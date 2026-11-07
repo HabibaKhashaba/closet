@@ -95,7 +95,7 @@ const EVENTS = [
 // Extra demo accounts (no wardrobe content) so the Admin page has real cases to manage:
 // [email, joined days ago, account status, locked after five wrong passwords]
 const MEMBERS = [
-  ['salma.demo@closet.app', 34, 'active', false],
+  ['nour.demo@closet.app', 34, 'active', false],
   ['karim.demo@closet.app', 19, 'active', false],
   ['youssef.demo@closet.app', 9, 'active', true],
   ['spam.signup@closet.app', 3, 'suspended', false],

@@ -36,7 +36,7 @@ const { MEMBERS, PIECES, STATUSES, WEARS, REJECTS, REMOVED, EVENTS, inDays } = r
 
 async function main() {
   await migrate();
-  await pool.query('DELETE FROM accounts.users WHERE email = ANY($1)', [[EMAIL, ADMIN, ...MEMBERS.map((x) => x[0])]]);
+  await pool.query('DELETE FROM accounts.users WHERE email = ANY($1)', [[EMAIL, ADMIN, 'salma.demo@closet.app', ...MEMBERS.map((x) => x[0])]]);
   const server = http.createServer(createApp()).listen(0);
   const base = `http://127.0.0.1:${server.address().port}/api/v1`;
   const call = async (method, url, body, token, form) => {
