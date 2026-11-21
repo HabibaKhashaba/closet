@@ -9,7 +9,7 @@ import { GarmentPicker } from './VirtualTryOnScreen.jsx';
 
 export const REJECT_REASONS = ['Too formal', 'Too casual', 'Don’t like these colours', 'Not comfortable', 'Wore this recently', 'Don’t like one piece', 'Not in the mood today'];
 
-export default function OutfitCard({ outfit, occasion, style, date, index, onSwap, onReject, compact, saved, onChanged, extra, showBreakdown, hideActions, weather, flash }) {
+export default function OutfitCard({ outfit, occasion, style, date, index, onSwap, onReject, compact, saved, onChanged, extra, showBreakdown, hideActions, weather, flash, stylist }) {
   const { toast, refresh } = useApp();
   const [savedId, setSavedId] = useState(saved ? outfit.id : null);
   const [fav, setFav] = useState(Boolean(outfit.favorite));
@@ -98,6 +98,7 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
             : outfit.ruleScore !== undefined && outfit.ruleScore !== null && <div className="match-pill"><b>{outfit.ruleScore}</b><span>rule score</span></div>}
           <Look pieces={outfit.pieces} onSwap={onSwap} labels highlight={flash?.id} />
           {outfit.explanation && <p className="why-line">{outfit.explanation}</p>}
+          {stylist && <p className="stylist-line" title={`Written by AI (${stylist.by}) from the pieces in this look`}><Icon name="wand" size={14} /><span><b>AI stylist</b> · {stylist.note}</span></p>}
           {extra}
           {repeat && !repeatDone && !worn && !hideActions && (
             <div className={`notice ${repeat.kind === 'loved' ? 'ok' : 'info'} repeat-note`} role="status">

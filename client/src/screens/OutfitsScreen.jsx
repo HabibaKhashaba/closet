@@ -60,6 +60,7 @@ export default function OutfitsScreen({ query }) {
   const [fixedPiece, setFixedPiece] = useState(null);
   const [requested, setRequested] = useState(Boolean(back.current || query.occasion || query.fixed || query.piece || query.style));
   const [result, setResult] = useState(null);
+  const [notes, setNotes] = useState(null); // v2.1 AI stylist notes { by, map: itemIds → note }
   const [loading, setLoading] = useState(false);
   const [changed, setChanged] = useState(false);
   const [phase, setPhase] = useState('');
@@ -76,7 +77,9 @@ export default function OutfitsScreen({ query }) {
     const timer = setInterval(() => { k = Math.min(steps.length - 1, k + 1); setPhase(steps[k]); }, 520);
     try {
       const [r] = await Promise.all([api.recommend({ occasion, ...(style && { style }), ...(level && { level }), date, ...(fixed && { fixedId: fixed }) }), new Promise((ok) => setTimeout(ok, 1600))]);
-      setResult(r); setChanged(false);
+      setResult(r); setChanged(false); setNotes(null);
+      // v2.1 AI stylist notes arrive after the looks (never block them); none without an AI key.
+      if (r.outfits && r.outfits.length) api.stylist(r.outfits.map((o) => o.itemIds), occasion, date).then((x) => { if (x.notes) setNotes({ by: x.by, map: Object.fromEntries(r.outfits.map((o, i) => [o.itemIds.join(), x.notes[i]])) }); }).catch(() => {});
     } catch (e) { toast(e.message, true); } finally { clearInterval(timer); setLoading(false); }
   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -192,7 +195,7 @@ export default function OutfitsScreen({ query }) {
             <div className="grid g3 looks" style={{ alignItems: 'stretch' }}>
               {result.outfits.map((o, i) => (
                 <div key={o.title} className="look-in" style={{ animationDelay: `${i * 260}ms` }}>
-                  <OutfitCard key={o.itemIds.join()} outfit={o} index={i} occasion={occasion} style={style || undefined} date={`${result.levelName} · ${result.weather.tempC}°`} weather={result.weather} showBreakdown
+                  <OutfitCard key={o.itemIds.join()} outfit={o} index={i} occasion={occasion} style={style || undefined} date={`${result.levelName} · ${result.weather.tempC}°`} weather={result.weather} showBreakdown stylist={notes && notes.map[o.itemIds.join()] ? { note: notes.map[o.itemIds.join()], by: notes.by } : null}
                     onSwap={(slot) => swap(i, slot)} onReject={() => drop(i)} flash={flash && flash.i === i ? flash : null} />
                 </div>
               ))}

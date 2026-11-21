@@ -22,6 +22,9 @@ function BagItem({ item, onBought, onRemove }) {
         {item.warning && (
           <button type="button" className="dup-chip" onClick={() => setOpen(!open)} aria-expanded={open}><Icon name="alert" size={13} />{item.warning}</button>
         )}
+        {item.status === 'bought' && item.category && (
+          <a className="btn line sm" style={{ marginTop: 8, alignSelf: 'flex-start' }} href={`#/closet/new?category=${encodeURIComponent(item.category)}${item.colour ? `&colour=${encodeURIComponent(item.colour)}` : ''}&name=${encodeURIComponent(item.title)}`}><Icon name="plus" size={14} />Add to my closet</a>
+        )}
         {open && <div className="mini-tiles" style={{ marginTop: 6 }}>{item.similarOwned.map((p) => <a key={p.id} href={`#/closet/${p.id}`} title={`${pieceName(p)} · ${p.similarity}% similar`}><Tile piece={p} status={false} /></a>)}</div>}
       </div>
       <div className="bag-actions">
@@ -108,7 +111,7 @@ export default function ShoppingScreen() {
   const sug = useLoad(() => api.shopping(), []);
   const reload = () => { list.reload(true); sug.reload(true); };
   async function bought(item) {
-    try { await api.setListStatus(item.id, item.status === 'bought' ? 'to_buy' : 'bought'); toast(item.status === 'bought' ? 'Back in your bag' : 'Bought — add it to your closet when it arrives'); reload(); } catch (e) { toast(e.message, true); }
+    try { await api.setListStatus(item.id, item.status === 'bought' ? 'to_buy' : 'bought'); toast(item.status === 'bought' ? 'Back in your bag' : 'Bought — use “Add to my closet” when it arrives'); reload(); } catch (e) { toast(e.message, true); }
   }
   async function remove(item) { try { await api.removeFromList(item.id); toast('Removed from your bag'); reload(); } catch (e) { toast(e.message, true); } }
   async function add(s) {

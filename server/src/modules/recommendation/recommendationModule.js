@@ -8,10 +8,12 @@ const { OCCASIONS, STYLES } = require('../../shared/vocabulary');
 const engine = require('./engine');
 const { memorySignals } = require('../intelligence/insights');
 const { checkIds } = require('../outfits/outfitsModule');
+const { stylistNotes } = require('../ai/aiFeatures');
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
-function recommendationService({ wardrobe, profile, outfits, weather }) {
+function recommendationService(deps) {
+  const { wardrobe, profile, outfits, weather } = deps;
   async function context(userId, { date, tempC } = {}) {
     const prefs = await profile.preferences(userId);
     const day = date || todayStr();
@@ -72,6 +74,20 @@ function recommendationService({ wardrobe, profile, outfits, weather }) {
         note: r.outfit ? null : 'No other Available piece fits this slot.',
       };
     },
+    // v2.1 AI stylist: one sentence per look about its real pieces (null without a model; the rule reasons stay).
+    async stylist(userId, { looks, occasion, date }) {
+      const llm = deps.llm;
+      if (!llm || !llm.enabled) return { notes: null, by: null };
+      const ctx = await context(userId, { date });
+      const outfits = looks.map((ids) => {
+        const ps = ids.map((id) => ctx.pieces.find((p) => p.id === id));
+        if (ps.some((p) => !p)) throw errors.notFound('Piece');
+        return { pieces: ps.map((p) => p.name || `${p.colour} ${p.category.toLowerCase()}`) };
+      });
+      const w = ctx.weather ? `${ctx.weather.tempC} °C${ctx.weather.condition ? `, ${ctx.weather.condition}` : ''}` : null;
+      const notes = await stylistNotes(llm, { occasion, weather: w, outfits });
+      return { notes, by: notes ? llm.label : null };
+    },
     async check(userId, { itemIds, occasion, style, date, tempC, level }) {
       const ctx = await context(userId, { date, tempC });
       const chosen = itemIds.map((id) => ctx.pieces.find((p) => p.id === id));
@@ -99,6 +115,13 @@ function recommendationRoutes({ rec }) {
   });
   r.post('/swap', v.body({ ...optionsSchema, slot: { type: 'int', min: 0, max: 3, required: true } }), async (req, res, next) => {
     try { res.json(await rec.swap(req.user.id, { ...req.valid, itemIds: checkIds(req.body.itemIds, 2, 4) })); } catch (e) { next(e); }
+  });
+  r.post('/stylist', v.body({ occasion: optionsSchema.occasion, date: optionsSchema.date }), async (req, res, next) => {
+    try {
+      const looks = Array.isArray(req.body.looks) ? req.body.looks : null;
+      if (!looks || !looks.length || looks.length > 3) throw errors.validation([{ field: 'looks', message: 'Send 1–3 looks' }]);
+      res.json(await rec.stylist(req.user.id, { looks: looks.map((l) => checkIds(l, 1, 4)), occasion: req.valid.occasion, date: req.valid.date }));
+    } catch (e) { next(e); }
   });
   r.post('/check', v.body(optionsSchema), async (req, res, next) => {
     try { res.json(await rec.check(req.user.id, { ...req.valid, itemIds: checkIds(req.body.itemIds, 1, 4) })); } catch (e) { next(e); }

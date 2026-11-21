@@ -5,7 +5,8 @@ const multer = require('multer');
 const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
 const { isOwned } = require('../../shared/lifecycle');
-const { CATEGORIES, COLOURS, FABRICS, SEASONS, STYLES, STATUSES, DELETE_REASONS, CURRENCIES, DONATED } = require('../../shared/vocabulary');
+const { CATEGORIES, COLOURS, FABRICS, SEASONS, STYLES, STATUSES, DELETE_REASONS, CURRENCIES, DONATED, DONATE_REASONS } = require('../../shared/vocabulary');
+const { tagPhoto } = require('../ai/aiFeatures');
 const { TOPICS } = require('../../events/eventBus');
 const { sniffType } = require('./photoStorage');
 const { closetGaps } = require('./closetGaps');
@@ -141,7 +142,7 @@ function wardrobeRepository(db) {
   };
 }
 
-function wardrobeService({ repo, storage, bus, availability, profile }) {
+function wardrobeService({ repo, storage, bus, availability, profile, llm = null }) {
   async function withStatus(userId, rows) {
     const info = await availability.infoMap(userId);
     return rows.map((r) => toApi(r, info.get(r.id), storage));
@@ -204,14 +205,22 @@ function wardrobeService({ repo, storage, bus, availability, profile }) {
       return { deleted: true, reason, effect: effectOf(reason).effect, addedToShoppingList: reactions.find((x) => x.listItem)?.listItem || null };
     },
     async deletions(userId) { return repo.deletions(userId); },
+    async analyzePhoto(buffer, mime) {
+      if (!llm || !llm.enabled) return { suggestion: null, by: null, message: 'Photo tagging needs a language-model key on the server (see the README). Fill the details by hand.' };
+      if (mime === 'image/heic') return { suggestion: null, by: llm.label, message: 'The AI can’t read HEIC photos. Fill the details by hand, or upload a JPG or PNG.' };
+      const suggestion = await tagPhoto(llm, { base64: buffer.toString('base64'), mime });
+      if (!suggestion) return { suggestion: null, by: llm.label, message: 'The AI could not read this photo. Fill the details by hand.' };
+      if (suggestion.isClothing === false) return { suggestion: null, by: llm.label, message: 'This photo does not look like a single piece of clothing.' };
+      return { suggestion, by: llm.label };
+    },
 
     // v1.6 Donation (donate only): two steps, the user stays in control.
     //   donate → status Ready to donate: still in the closet, left out of new outfits, listed under Donation
     //   done   → archived with reason Donated: leaves the active closet, wear history kept, NO replacement
     //   cancel → Available again
-    async donate(userId, id) {
+    async donate(userId, id, reason) {
       const p = await this.getPiece(userId, id);
-      if (p.status !== 'Ready to donate') await availability.setStatus(userId, id, 'Ready to donate');
+      if (p.status !== 'Ready to donate') await availability.setStatus(userId, id, 'Ready to donate', reason ? { note: reason } : {});
       return this.getPiece(userId, id);
     },
     async cancelDonation(userId, id) {
@@ -223,17 +232,17 @@ function wardrobeService({ repo, storage, bus, availability, profile }) {
     async donationDone(userId, id) {
       const p = await this.getPiece(userId, id);
       if (p.status !== 'Ready to donate') throw errors.conflict('NOT_MARKED', 'Mark the piece as ready to donate first.');
-      return { ...(await this.deletePiece(userId, id, DONATED)), piece: { id: p.id, name: p.name, category: p.category, colour: p.colour } };
+      return { ...(await this.deletePiece(userId, id, DONATED, p.statusNote || null)), piece: { id: p.id, name: p.name, category: p.category, colour: p.colour } };
     },
     // Donation area: what is waiting to be taken, and what has been donated (history, newest first).
     async donation(userId) {
       const pieces = await this.allPieces(userId);
       const ready = pieces.filter((p) => p.status === 'Ready to donate').map((p) => ({
-        ...p, markedOn: p.statusSince ? new Date(p.statusSince).toISOString().slice(0, 10) : null,
+        ...p, reason: p.statusNote || null, markedOn: p.statusSince ? new Date(p.statusSince).toISOString().slice(0, 10) : null,
         daysSinceWorn: p.lastWornAt ? Math.floor((Date.now() - new Date(p.lastWornAt)) / 86400000) : null,
       })).sort((a, b) => String(a.markedOn).localeCompare(String(b.markedOn)));
       const donated = (await repo.deletions(userId)).filter((d) => d.reason === DONATED);
-      return { ready, donated: donated.map((d) => ({ name: d.name, category: d.category, colour: d.colour, wearCount: d.wearCount, donatedAt: d.deletedAt })), count: donated.length };
+      return { ready, donated: donated.map((d) => ({ name: d.name, category: d.category, colour: d.colour, wearCount: d.wearCount, reason: d.note || null, donatedAt: d.deletedAt })), count: donated.length };
     },
 
     async gaps(userId) {
@@ -296,12 +305,21 @@ function wardrobeRoutes({ wardrobe }) {
       res.status(201).json(await wardrobe.addPiece(req.user.id, req.file, details));
     } catch (e) { next(e); }
   });
+  // v2.1 AI photo tagging: the model reads the photo and PROPOSES the details; nothing is saved here.
+  r.post('/analyze', single, async (req, res, next) => {
+    try {
+      if (!req.file) throw errors.validation([{ field: 'photo', message: 'Choose a photo first' }]);
+      const mime = sniffType(req.file.buffer);
+      if (!mime) throw errors.unsupportedMedia();
+      res.json(await wardrobe.analyzePhoto(req.file.buffer, mime));
+    } catch (e) { next(e); }
+  });
   // v1.5 duplicate check before adding (structured metadata, no computer vision): "You already own 3 black fitted tops."
   r.post('/similar', v.body({ ...Object.fromEntries(Object.entries(detailsSchema).map(([k, x]) => [k, { ...x, required: ['category', 'colour'].includes(k) }])), dressCodes: { ...detailsSchema.dressCodes, required: false } }), async (req, res, next) => {
     try { res.json(await wardrobe.similar(req.user.id, req.valid)); } catch (e) { next(e); }
   });
-  r.post('/:id/donate', async (req, res, next) => {
-    try { res.json(await wardrobe.donate(req.user.id, req.params.id)); } catch (e) { next(e); }
+  r.post('/:id/donate', v.body({ reason: { type: 'enum', values: DONATE_REASONS, label: 'Reason' } }), async (req, res, next) => {
+    try { res.json(await wardrobe.donate(req.user.id, req.params.id, req.valid.reason)); } catch (e) { next(e); }
   });
   r.delete('/:id/donate', async (req, res, next) => {
     try { res.json(await wardrobe.cancelDonation(req.user.id, req.params.id)); } catch (e) { next(e); }
@@ -342,9 +360,9 @@ function photoRoutes({ storage }) {
   return r;
 }
 
-function registerWardrobe({ db, repo: givenRepo, bus, storage, availability, profile }) {
+function registerWardrobe({ db, repo: givenRepo, bus, storage, availability, profile, llm }) {
   const repo = givenRepo || wardrobeRepository(db);
-  const service = wardrobeService({ repo, storage, bus, availability, profile });
+  const service = wardrobeService({ repo, storage, bus, availability, profile, llm });
   bus.subscribe(TOPICS.AccountDeleted, ({ userId }) => service.deletePhotosOf(userId));
   const gapsRouter = express.Router();
   gapsRouter.get('/', async (req, res, next) => {

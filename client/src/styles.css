@@ -1037,3 +1037,6 @@ button.link { background: none; border: 0; padding: 0; cursor: pointer; text-dec
 .admin-scroll { max-height: 300px; overflow-y: auto; }
 .admin-search { border: 1px solid var(--line); border-radius: 999px; padding: 9px 16px; min-width: 240px; background: #fff; font: inherit; }
 .admin-table tbody tr:hover { background: var(--bg-2); }
+.spinner.sm { width: 16px; height: 16px; border-width: 2px; margin: 0; flex: none; display: inline-block; }
+.stylist-line { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: var(--lilac-soft, #f1ecf6); font-size: 13px; line-height: 1.4; color: var(--ink); }
+.stylist-line svg { flex: none; margin-top: 2px; color: #7a5c99; }

@@ -5,7 +5,8 @@ const express = require('express');
 const v = require('../../shared/validate');
 const { errors } = require('../../shared/errors');
 const { canMove } = require('../availability/statusMachine');
-const { CATEGORIES, COLOURS } = require('../../shared/vocabulary');
+const { CATEGORIES, COLOURS, DELETE_REASONS } = require('../../shared/vocabulary');
+const { composeReply } = require('../ai/aiFeatures');
 
 const UUID = /^[0-9a-f-]{36}$/i;
 const SUGGESTIONS = ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'What needs repair?', 'Who has my black blazer?', 'What clothes are ready to donate?', 'Do I need beige trousers?', 'What could I donate?', 'Do I need to do laundry before Monday?', 'Pack me for 5 days in Paris', 'Who has my rose wrap dress?', 'Why is my wardrobe health low?', 'What is missing from my wardrobe?'];
@@ -34,7 +35,7 @@ function assistantRepository(db) {
   };
 }
 
-function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe, availability, planner, shopping, proactive, intelligence, packing, profile }) {
+function assistantService({ db, repo: givenRepo, parser, llm = null, rec, outfits, wardrobe, availability, planner, shopping, proactive, intelligence, packing, profile }) {
   const repo = givenRepo || assistantRepository(db);
   async function logAction(userId, fn, undo) { return repo.log(userId, fn, undo); }
   async function resolve(userId, query, pieceId, filter = () => true) {
@@ -365,6 +366,21 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
       const p = await packing().plan(userId, trip);
       return { reply: `${a.destination ? `${a.destination}, ` : ''}${days} days${a.carryOn ? ', carry-on' : ''}: ${p.summary}${p.fitsLimit === false ? ' It does not fit the luggage limit — open Packing to remove a piece.' : ''}${p.reuse.length ? ` Pieces worn more than once: ${p.reuse.slice(0, 3).map((x) => x.name.toLowerCase()).join(', ')}.` : ''}`, pieces: p.items, piecesTitle: 'Packing list', link: '#/packing' };
     },
+    // v2.1 Remove a piece: destructive, so Ask Closet only asks. Nothing is deleted until the user
+    // presses Remove (DELETE /items/:id with a reason) in the confirmation the client shows.
+    async remove_piece(userId, a, ctx, pieceId) {
+      const r = await pieceFor(userId, a, ctx, pieceId);
+      if (r.missing) return { reply: 'Which piece should I remove? Name it, for example “the red cropped tee”.' };
+      if (r.none) return notFound(a);
+      if (r.choices) return { reply: `Which ${describe(a.piece)}?`, choices: r.choices };
+      const p = r.piece;
+      const reason = DELETE_REASONS.includes(a.reason) ? a.reason : null;
+      return {
+        reply: `Remove your ${lower(p)} from your closet?${reason ? ` Reason: ${reason.toLowerCase()}.` : ' Pick a reason below.'} Nothing is removed until you confirm; its wear history is kept. If it is still wearable, you can donate it instead.`,
+        pieces: [p], context: { pieceId: p.id },
+        confirmDelete: { pieceId: p.id, name: label(p), reason, reasons: DELETE_REASONS },
+      };
+    },
     async help(userId, a = {}) {
       if (a.outOfScope) return { reply: `${SCOPE} Try one of these:`, suggestions: SUGGESTIONS.slice(0, 5) };
       return { reply: 'I can suggest outfits, style or change one piece, move pieces to the laundry or back, tell you what’s clean or lent out, plan several days or a trip, find pieces you haven’t worn (to style, keep or donate), explain your Wardrobe Health, check what a purchase would add, and keep your shopping list. Try one of these:', suggestions: SUGGESTIONS };
@@ -372,10 +388,21 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
   };
 
   return {
-    async chat(userId, { message, context, pieceId }) {
-      const intent = await parser.interpret(message);
+    async chat(userId, { message, context, pieceId, history = [] }) {
+      const intent = await parser.interpret(message, history);
       const result = await run[intent.fn](userId, intent.args || {}, context, pieceId);
-      return { function: intent.fn, args: intent.args, via: intent.via, ...result };
+      const out = { function: intent.fn, args: intent.args, via: intent.via, ...result, replyBy: 'Closet rules' };
+      // v2.1: with a language model, the reply is rewritten in natural language FROM the facts the
+      // function returned (grounded). Confirmations stay word for word: they ask before deleting.
+      if (llm && llm.enabled && result.reply && !result.confirmDelete) {
+        const facts = {
+          pieces: (result.pieces || []).map(label),
+          outfits: (result.outfits || []).map((o) => (o.pieces || []).map(label).join(' + ')),
+        };
+        const ai = await composeReply(llm, { message, history, draft: result.reply, facts });
+        if (ai) Object.assign(out, { ruleReply: result.reply, reply: ai, replyBy: llm.label });
+      }
+      return out;
     },
     async undo(userId, id) {
       if (!UUID.test(id)) throw errors.notFound('Action');
@@ -398,7 +425,7 @@ function assistantService({ db, repo: givenRepo, parser, rec, outfits, wardrobe,
 function registerAssistant(deps) {
   const service = assistantService(deps);
   const r = express.Router();
-  r.get('/', (req, res) => res.json({ suggestions: SUGGESTIONS, languageModel: deps.parser.provider || 'keyword parser' }));
+  r.get('/', (req, res) => res.json({ suggestions: SUGGESTIONS, languageModel: deps.parser.provider || 'keyword parser', replies: deps.llm && deps.llm.enabled ? deps.llm.label : 'Closet rules' }));
   r.post('/', v.body({ message: { type: 'string', required: true, min: 1, max: 500, label: 'Message' }, pieceId: { type: 'string', max: 36 } }), async (req, res, next) => {
     try {
       const ctx = req.body.context && typeof req.body.context === 'object' ? req.body.context : null;
@@ -407,7 +434,11 @@ function registerAssistant(deps) {
       // A remembered “do I need …?” item may only name values from the shared vocabulary.
       if (ctx && ctx.buy && (!CATEGORIES.includes(ctx.buy.category) || (ctx.buy.colour && !COLOURS.includes(ctx.buy.colour)))) delete ctx.buy;
       if (ctx && ctx.pieceId !== undefined && !UUID.test(String(ctx.pieceId))) delete ctx.pieceId;
-      res.json(await service.chat(req.user.id, { message: req.valid.message, context: ctx, pieceId: req.valid.pieceId }));
+      // Recent turns (max 6, text only) let the model resolve "it" / "this"; they are never stored.
+      const history = Array.isArray(req.body.history) ? req.body.history.slice(-6)
+        .filter((h) => h && typeof h.text === 'string' && (h.who === 'ai' || h.who === 'me'))
+        .map((h) => ({ who: h.who, text: h.text.slice(0, 500) })) : [];
+      res.json(await service.chat(req.user.id, { message: req.valid.message, context: ctx, pieceId: req.valid.pieceId, history }));
     } catch (e) { next(e); }
   });
   r.post('/undo/:id', async (req, res, next) => {

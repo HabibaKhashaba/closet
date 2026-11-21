@@ -5,7 +5,7 @@ const { OCCASIONS, STYLES, COLOURS, STATUSES } = require('../../shared/vocabular
 const FUNCTIONS = ['recommend', 'change_piece', 'set_status', 'wash_done', 'forgotten', 'style_piece', 'closet_needs', 'buy_check', 'add_to_shopping', 'similar_owned', 'weather', 'hide_piece', 'plan_event',
   // Milestone 2 final: wardrobe questions that read state, and the proactive-intelligence intents.
   'availability', 'laundry_list', 'laundry_risk', 'week_plan', 'borrowed', 'donate_candidates', 'keep_piece', 'donate_piece', 'donate_done', 'donation_list', 'care_list', 'lend_piece', 'unpacked',
-  'seasonal', 'memory', 'repeat_check', 'health', 'plan_check', 'event_rescue', 'trip_pack', 'help'];
+  'seasonal', 'memory', 'repeat_check', 'health', 'plan_check', 'event_rescue', 'trip_pack', 'remove_piece', 'help'];
 
 const OCCASION_WORDS = [
   [/\b(wedding|engagement|katb ?ketab)\b/, 'Wedding'], [/\binterview\b/, 'Interview'], [/\b(work|office|meeting|internship)\b/, 'Work'],
@@ -67,6 +67,14 @@ function parse(message, now = new Date()) {
   const days = (t.match(/\b(\d{1,2}|two|three|four|five|six|seven)\s+days?\b/) || [])[1];
   const NUM = { two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7 };
   const nDays = days ? (NUM[days] || Number(days)) : null;
+
+  // v2.1 Remove a piece (destructive): the assistant only ASKS; the user confirms with a button and a reason.
+  if (/\b(remove|delete|get rid of|throw (away|out)|bin)\b/.test(t) && (piece || it) && !/\b(shopping|list|bag|laundry|basket)\b/.test(t)) {
+    const reason = /\b(no longer fits?|doesnt fit|does not fit|too small|too tight|outgrew)\b/.test(t) ? 'Became too small'
+      : /\b(torn|ripped|damaged|broken|stain(ed)?|hole)\b/.test(t) ? 'Torn / damaged'
+        : /\b(not my style|dont like|do not like|no longer like|out of style)\b/.test(t) ? 'No longer my style' : null;
+    return { fn: 'remove_piece', args: { piece, reason, useContext: !piece } };
+  }
 
   // Donation (v1.6: donate only; the user always decides): what is waiting, candidates, keep, mark, donated.
   const marking = /\b(mark|set|put)\b.*\b(for donation|to donate|as donation|for donating|ready to donate|donation pile)\b/.test(t);

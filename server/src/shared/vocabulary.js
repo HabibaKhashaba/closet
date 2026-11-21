@@ -26,6 +26,8 @@ const DELETE_REASONS = ['Torn / damaged', 'No longer my style', 'Became too smal
 // v1.6: Donation is the only intentional exit (Ready to donate → Mark as donated). Never a replacement.
 const DONATED = 'Donated';
 const EXIT_REASONS = [...DELETE_REASONS, DONATED];
+// v2.1 why a piece is donated (kept as the note of the Ready to donate status and of the donation record).
+const DONATE_REASONS = ['No longer fits', 'Not my style anymore', 'Rarely worn', 'Have a similar piece', 'Other'];
 const CURRENCIES = ['EGP', 'USD', 'EUR', 'GBP', 'SAR', 'AED'];
 
 const FABRICS = ['Cotton', 'Linen', 'Wool', 'Denim', 'Silk', 'Polyester', 'Leather', 'Knit', 'Other'];
@@ -49,4 +51,4 @@ const OCCASION_TEMPLATES = [
   { key: 'interview', label: 'Interview', occasion: 'Interview', level: 3, style: 'Classic', weather: 'indoor', icon: 'briefcase' },
 ];
 
-module.exports = { DONATED, STATUS_LABELS, STATUS_GROUPS, EXIT_REASONS, CURRENCIES, DRESS_CODES, OCCASIONS, STYLES, COLOURS, CATEGORIES, DELETE_REASONS, FABRICS, SEASONS, STATUSES, OCCASION_TEMPLATES };
+module.exports = { DONATE_REASONS, DONATED, STATUS_LABELS, STATUS_GROUPS, EXIT_REASONS, CURRENCIES, DRESS_CODES, OCCASIONS, STYLES, COLOURS, CATEGORIES, DELETE_REASONS, FABRICS, SEASONS, STATUSES, OCCASION_TEMPLATES };

@@ -14,8 +14,8 @@ Closet is an AI-powered wardrobe assistant. You photograph each piece once; Clos
 | Member | Role and Sprint 1 work |
 | --- | --- |
 | Habiba | Scrum Master · research and requirements · 4 Sprint 1 stories (US-04, 15, 16, 64) · SRS / SDD / Test Plan & Report · acceptance tests · retrospective · demo script and video · presentation |
-| Youssef | Code tasks: repo and CI, validation, JWT and access control, UI screens (T-01, T-05 – T-09) · deployment (T-02, in progress) |
-| Bashar | 3 stories (US-02 style quiz, US-03 dress code and modest preference, US-08 add a piece by photo) · UI: calendar and closet gaps (T-10) · ER / class / sequence / state diagrams (T-11) · use case model (T-12) · component diagram (T-13) · review prep: SDD check, present the System station (SCRUM-65, in progress) |
+| Youssef | Code tasks: repo and CI, validation, JWT and access control, UI screens (T-01, T-05 – T-09) · component diagram (T-13) · deployment (T-02, in progress) |
+| Bashar | 3 stories (US-02 style quiz, US-03 dress code and modest preference, US-08 add a piece by photo) · UI: calendar and closet gaps (T-10) · ER / class / sequence / state diagrams (T-11) · use case model (T-12) · review prep: SDD check, present the System station (SCRUM-65, in progress) |
 | Karim | 4 stories (US-01 login and register, US-06 delete account, US-09 piece details, US-46 events and calendar) · database schema, migrations and seed (T-03) · security pipeline (T-04) · review prep: demo preflight, drive the live demo (SCRUM-66, in progress) |
 | Salma | 4 stories (US-11 review before saving, US-12 browse and filter, US-56 status per piece, US-71 edit a piece later) · test plan and test cases (T-14) · unit and API tests with coverage (T-15) · review prep: PowerPoint check, manual re-test (SCRUM-67, in progress) |
 
@@ -108,6 +108,19 @@ The full checklist with the expected values is `docs/milestone2/DEMO_PREFLIGHT.m
 ## Offline demo and backup video
 
 `bash tools/offline_demo/build.sh` builds `Closet_Demo.html`: the built web app plus the **real services and rules running on in-memory repositories** (same seed), in one file that opens with a double-click; state lasts for the browser session and the Reset badge restores the seed (`npm run demo:offline`). `tools/record_demo_video.py` records `Closet_Demo_FINAL.mp4` (the 13 demo steps, 5:33) from a fresh seed: `TRYON_PHOTO=avatar` uses the stylised avatar, or pass a consenting team member’s full-body photo. The recording is embedded in both presentation files.
+
+## AI features (v2.1) — what the language model does
+
+Set **one** key in `server/.env` (never commit it): `ANTHROPIC_API_KEY` (default model `claude-haiku-4-5`) or `OPENAI_API_KEY` (default `gpt-4o-mini`); `LLM_MODEL` overrides. Restart the server. `GET /api/v1/ai` shows which model is live.
+
+| Feature | With a key | Without a key |
+| --- | --- | --- |
+| Ask Closet | The model understands the message (with the last turns), picks one of 36 Closet functions, the function runs on your real data, then the model writes the answer **only from those results** | Keyword parser + template wording, labelled “Closet rules” |
+| AI stylist | One sentence per look about its real pieces; rejected if it names nothing in the look | Rule-based “Recommended because…” only |
+| Add a piece | The model reads the photo and proposes category, colour, fabric, season, styles, dress codes and a name (only Closet's vocabulary); you check before saving | You fill the details by hand |
+| Remove via Ask Closet | Always asks first: you pick a reason and press Remove | Same |
+
+The model never sees the database or other users' data; the server sends it only the facts it needs.
 
 ## Virtual Try-On (US-118) — image-based, one piece at a time
 

@@ -126,7 +126,7 @@ export default function App() {
   const q = route.query;
   let screen;
   if (section === 'quiz') screen = <QuizScreen />;
-  else if (section === 'closet' && id === 'new') screen = <AddPieceScreen />;
+  else if (section === 'closet' && id === 'new') screen = <AddPieceScreen query={q} />;
   else if (section === 'closet' && id) screen = <PieceScreen id={id} />;
   else if (section === 'closet') screen = <ClosetScreen key={q.status || ''} query={q} />;
   else if (section === 'laundry') screen = <CareScreen tab="laundry" />;

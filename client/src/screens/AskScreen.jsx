@@ -7,7 +7,7 @@ import { Icon, SprintNote, SprintTag, Tile, pieceName, useApp } from '../ui.jsx'
 import OutfitCard from './OutfitCard.jsx';
 
 const EXAMPLES = ['What should I wear to university tomorrow?', 'Is my blazer clean?', 'Do I need beige trousers?', 'Add this to my shopping list', 'What could I donate?', 'Do I need to do laundry before Monday?', 'Is tomorrow’s outfit still okay for the weather?', 'Pack me for 5 days in Paris with a carry-on', 'What did I wear to Salma’s birthday?', 'Who has my rose wrap dress?', 'I have a wedding tomorrow and nothing to wear'];
-const FN_LABEL = { recommend: 'Recommendation Engine', change_piece: 'Recommendation Engine · swap', set_status: 'Availability', wash_done: 'Availability · wash done', forgotten: 'Analytics · forgotten', style_piece: 'Recommendation Engine · style a piece', closet_needs: 'Smart Shopping', buy_check: 'Smart Shopping · do I need it?', add_to_shopping: 'Smart Shopping · shopping list', similar_owned: 'Wardrobe · similar pieces', weather: 'Weather adapter', hide_piece: 'Outfits · hide', plan_event: 'Planner', availability: 'Availability · status', laundry_list: 'Availability · laundry', laundry_risk: 'Laundry intelligence', week_plan: 'Planner · several days', borrowed: 'Borrow tracker', donate_candidates: 'Wardrobe insights · still love it?', keep_piece: 'Wardrobe insights · keep', rehome_piece: 'Wardrobe · donate', rehome_done: 'Wardrobe · donated', seasonal: 'Seasonal rotation', memory: 'Outfit memory', repeat_check: 'Repeat insight', health: 'Wardrobe Health', plan_check: 'Planned-outfit monitor', event_rescue: 'Event rescue', trip_pack: 'Packing Mode', help: 'Help' };
+const FN_LABEL = { recommend: 'Recommendation Engine', change_piece: 'Recommendation Engine · swap', set_status: 'Availability', wash_done: 'Availability · wash done', forgotten: 'Analytics · forgotten', style_piece: 'Recommendation Engine · style a piece', closet_needs: 'Smart Shopping', buy_check: 'Smart Shopping · do I need it?', add_to_shopping: 'Smart Shopping · shopping list', similar_owned: 'Wardrobe · similar pieces', weather: 'Weather adapter', hide_piece: 'Outfits · hide', plan_event: 'Planner', availability: 'Availability · status', laundry_list: 'Availability · laundry', laundry_risk: 'Laundry intelligence', week_plan: 'Planner · several days', borrowed: 'Borrow tracker', donate_candidates: 'Wardrobe insights · still love it?', keep_piece: 'Wardrobe insights · keep', rehome_piece: 'Wardrobe · donate', rehome_done: 'Wardrobe · donated', seasonal: 'Seasonal rotation', memory: 'Outfit memory', repeat_check: 'Repeat insight', health: 'Wardrobe Health', plan_check: 'Planned-outfit monitor', event_rescue: 'Event rescue', trip_pack: 'Packing Mode', remove_piece: 'Wardrobe · remove (asks first)', help: 'Help' };
 
 function Pieces({ list, styleIt, onStyle }) {
   return (
@@ -23,18 +23,39 @@ function Pieces({ list, styleIt, onStyle }) {
   );
 }
 
+// v2.1 Removing a piece is destructive: Ask Closet only proposes it; the user picks a reason and confirms here.
+function ConfirmRemove({ c, onDone }) {
+  const { toast } = useApp();
+  const [reason, setReason] = useState(c.reason || '');
+  const [busy, setBusy] = useState(false);
+  async function go() {
+    setBusy(true);
+    try { await api.deleteItem(c.pieceId, reason); toast(`${c.name} removed`); onDone(`Removed · ${reason}`); } catch (e) { toast(e.message, true); setBusy(false); }
+  }
+  return (
+    <div className="notice" style={{ marginTop: 10, display: 'block' }}>
+      <div className="chips" style={{ marginBottom: 8 }}>{c.reasons.map((r) => <button type="button" key={r} className={`chip ${reason === r ? 'on' : ''}`} onClick={() => setReason(r)}>{r}</button>)}</div>
+      <div className="row">
+        <button type="button" className="btn sm" disabled={!reason || busy} onClick={go}><Icon name="trash" size={14} />Remove {c.name.toLowerCase()}</button>
+        <a className="btn line sm" href={`#/closet/${c.pieceId}`}>Donate instead</a>
+        <button type="button" className="btn ghost sm" onClick={() => onDone('Kept — nothing removed')}>Keep it</button>
+      </div>
+    </div>
+  );
+}
+
 export default function AskScreen({ query }) {
   const { toast, refresh } = useApp();
   const [log, setLog] = useState([{ who: 'ai', reply: 'Hi! I know your closet, what’s in the laundry, the weather and your calendar. Ask me anything about what to wear.' }]);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [ctx, setCtx] = useState(null);
-  const [model, setModel] = useState(null);
+  const [model, setModel] = useState(null); // e.g. "Anthropic · claude-haiku-4-5", or null = rules
   const end = useRef(null);
   const hour = new Date().getHours();
   const contextual = [hour >= 16 ? 'What should I wear tonight?' : 'What should I wear today?', 'Do I need beige trousers?', 'Put beige trousers on my shopping list', 'Style my navy blazer', 'What haven’t I worn lately?'];
 
-  useEffect(() => { api.chatInfo().then((r) => setModel(r.languageModel)).catch(() => {}); }, []);
+  useEffect(() => { api.chatInfo().then((r) => setModel(r.replies && r.replies !== 'Closet rules' ? r.replies : null)).catch(() => {}); }, []);
   useEffect(() => { const el = end.current?.parentElement; if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, [log, busy]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (query.q) send(query.q); }, []);
@@ -45,7 +66,8 @@ export default function AskScreen({ query }) {
     setText('');
     setBusy(true);
     try {
-      const r = await api.chat(message, ctx, pieceId);
+      const history = log.slice(-6).map((m) => ({ who: m.who, text: m.who === 'me' ? m.text : m.reply })).filter((h) => h.text);
+      const r = await api.chat(message, ctx, pieceId, history);
       if (r.outfits && r.outfits[0]) setCtx({ itemIds: r.outfits[0].itemIds, ...(r.context || {}) });
       else if (r.context) setCtx((c) => ({ ...(c || {}), ...r.context }));
       setLog((l) => [...l, { who: 'ai', ...r }]);
@@ -92,7 +114,9 @@ export default function AskScreen({ query }) {
                 {m.alerts && <div style={{ marginTop: 10 }}><a className="btn line sm" href="#/planner"><Icon name="calendar" size={14} />Open the Planner to adjust</a></div>}
                 {m.link && !m.alerts && <div style={{ marginTop: 10 }}><a className="btn line sm" href={m.link}><Icon name="arrow" size={14} />Open</a></div>}
                 {m.undoId && <div style={{ marginTop: 10 }}>{m.undone ? <span className="tag plain">Undone</span> : <button type="button" className="btn line sm" onClick={() => undo(m.undoId, i)}><Icon name="undo" size={14} />Undo</button>}</div>}
-                {m.function && <span className="via">→ {FN_LABEL[m.function] || m.function} · understood by {m.via}</span>}
+                {m.confirmDelete && <ConfirmRemove c={m.confirmDelete} onDone={(txt) => { setLog((l) => l.map((x, j) => (j === i ? { ...x, confirmDelete: null, removed: txt } : x))); refresh(); }} />}
+                {m.removed && <div style={{ marginTop: 10 }}><span className="tag plain">{m.removed}</span></div>}
+                {m.function && <span className="via">→ {FN_LABEL[m.function] || m.function} · understood by {m.via}{m.replyBy && m.replyBy !== 'Closet rules' ? <> · reply written by AI ({m.replyBy}) from your closet data</> : ' · reply from Closet rules'}</span>}
               </div>
             )))}
             {busy && <div className="msg ai"><span className="typing"><i /><i /><i /></span></div>}
@@ -110,8 +134,8 @@ export default function AskScreen({ query }) {
           </section>
           <section className="card pad tint-lilac">
             <div className="eyebrow" style={{ marginBottom: 8 }}>How it works</div>
-            <p className="small">The <b>language model</b> only picks one of 35 Closet functions and fills in its details. It never sees your photos or the database, and it can’t invent pieces.</p>
-            <p className="small" style={{ marginTop: 8 }}>Now answering: <b>{model === 'anthropic' || model === 'openai' ? `${model} model` : 'keyword parser'}</b>{model && model !== 'anthropic' && model !== 'openai' ? ' (no API key set — same functions, simpler understanding).' : '.'}</p>
+            <p className="small">1. The <b>language model</b> understands your message and picks one of 36 Closet functions. 2. That function runs on your real closet data. 3. The model writes the answer from those results only — it never sees your photos or the database and can’t invent pieces. Removing a piece always asks you first.</p>
+            <p className="small" style={{ marginTop: 8 }}>Now answering: <b>{model || 'Closet rules (keyword parser)'}</b>{model ? '.' : ' — no AI key on the server, so answers come from the same functions with template wording.'}</p>
           </section>
           <SprintNote n={3} />
         </aside>

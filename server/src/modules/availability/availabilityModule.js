@@ -169,7 +169,7 @@ function availabilityService({ repo, profile, wardrobe }) {
       const current = await repo.get(userId, itemId);
       if (!current) throw errors.notFound('Piece');
       const from = current.status;
-      if (['Available', 'Laundry', 'Ready to donate'].includes(to)) { until = null; note = null; }
+      if (['Available', 'Laundry', 'Ready to donate'].includes(to)) { until = null; if (to !== 'Ready to donate') note = null; } // v2.1 a donation keeps its reason as the note
       const backDated = (to === 'Borrowed' && loan.lentOn) || (to === 'At tailor' && care.sentOn); // recording a loan / repair that started earlier
       if (until && until < today() && !backDated) throw errors.validation([{ field: 'until', message: 'The return date cannot be in the past' }]);
       if (to === 'Borrowed') note = (loan.person || note || 'Someone').slice(0, 60);

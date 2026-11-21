@@ -23,6 +23,7 @@ const SCHEMA = {
     destination: { type: 'string' },
     carryOn: { type: 'boolean' },
     how: { type: 'string', enum: ['donate', 'give', 'sell'] },
+    reason: { type: 'string', enum: ['Torn / damaged', 'No longer my style', 'Became too small', 'Other'], description: 'remove_piece: why the piece leaves' },
     direction: { type: 'string', enum: ['pack', 'bring_back'] },
     impact: { type: 'boolean', description: 'buy_check: "what would it add"' },
     useContext: { type: 'boolean', description: 'the message says it / this / that' },
@@ -35,13 +36,14 @@ recommend (outfit ideas; occasion, style, date), change_piece (swap one slot of 
 wash_done, forgotten, style_piece (colour, category), closet_needs (what is missing / what to buy),
 buy_check ("should I buy X" / "what would X add"; colour, category, impact), add_to_shopping (put X on the shopping list, or a replacement for a piece; colour, category, replacement, text), similar_owned ("do I own something like X"; colour, category), weather (date), hide_piece (colour, category), plan_event (text),
 availability ("is my X clean/available"), laundry_list, laundry_risk ("do I need to do laundry before ..."), week_plan (days), borrowed ("who has my X"), donate_candidates, keep_piece, rehome_piece (how), rehome_done (how), seasonal (direction), memory (text), repeat_check, health, plan_check, event_rescue (occasion, date), trip_pack (destination, days, carryOn), help.
-Call the tool "route" once. Never answer in prose.`;
+remove_piece (the user wants a piece deleted from the closet; colour, category, name, reason) — it only asks for confirmation.
+Use the recent conversation to resolve it / this / that. Call the tool "route" once. Never answer in prose.`;
 
 function toCall(o) {
   const piece = o.colour || o.category ? { ...(o.colour && { colour: o.colour }), ...(o.category && { category: o.category }) } : undefined;
   const piece2 = piece && o.name ? { ...piece, name: o.name } : piece;
   const args = { occasion: o.occasion, style: o.style, date: o.date, slot: o.slot, status: o.status, text: o.text, piece: piece2, replacement: o.replacement,
-    days: o.days, destination: o.destination, carryOn: o.carryOn, how: o.how, direction: o.direction, impact: o.impact, useContext: o.useContext };
+    days: o.days, destination: o.destination, reason: o.reason, carryOn: o.carryOn, how: o.how, direction: o.direction, impact: o.impact, useContext: o.useContext };
   Object.keys(args).forEach((k) => args[k] === undefined && delete args[k]);
   if ((o.fn === 'recommend' || o.fn === 'event_rescue') && !args.occasion) args.occasion = 'Everyday';
   return { fn: FUNCTIONS.includes(o.fn) ? o.fn : 'help', args };
@@ -49,7 +51,9 @@ function toCall(o) {
 
 function llmAdapter({ env = process.env, fetchImpl = (...a) => fetch(...a), timeoutMs = 8000 } = {}) {
   const provider = env.ANTHROPIC_API_KEY ? 'anthropic' : env.OPENAI_API_KEY ? 'openai' : null;
-  async function ask(message) {
+  async function ask(message, history = []) {
+    const earlier = history.slice(-4).map((h) => `${h.who === 'ai' ? 'Closet' : 'User'}: ${String(h.text || '').slice(0, 300)}`).join('\n');
+    const content = earlier ? `Recent conversation:\n${earlier}\n\nNew message: ${message}` : message;
     const today = new Date().toISOString().slice(0, 10);
     const signal = AbortSignal.timeout(timeoutMs);
     if (provider === 'anthropic') {
@@ -58,7 +62,7 @@ function llmAdapter({ env = process.env, fetchImpl = (...a) => fetch(...a), time
         headers: { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({ model: env.LLM_MODEL || 'claude-haiku-4-5', max_tokens: 200, system: SYSTEM(today),
           tools: [{ name: 'route', description: 'Route the request to a Closet function', input_schema: SCHEMA }], tool_choice: { type: 'tool', name: 'route' },
-          messages: [{ role: 'user', content: message }] }),
+          messages: [{ role: 'user', content }] }),
       });
       const data = await res.json();
       const use = (data.content || []).find((c) => c.type === 'tool_use');
@@ -68,7 +72,7 @@ function llmAdapter({ env = process.env, fetchImpl = (...a) => fetch(...a), time
     const res = await fetchImpl('https://api.openai.com/v1/chat/completions', {
       method: 'POST', signal,
       headers: { 'content-type': 'application/json', authorization: `Bearer ${env.OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: env.LLM_MODEL || 'gpt-4o-mini', messages: [{ role: 'system', content: SYSTEM(today) }, { role: 'user', content: message }],
+      body: JSON.stringify({ model: env.LLM_MODEL || 'gpt-4o-mini', messages: [{ role: 'system', content: SYSTEM(today) }, { role: 'user', content }],
         tools: [{ type: 'function', function: { name: 'route', parameters: SCHEMA } }], tool_choice: { type: 'function', function: { name: 'route' } } }),
     });
     const data = await res.json();
@@ -79,9 +83,9 @@ function llmAdapter({ env = process.env, fetchImpl = (...a) => fetch(...a), time
   return {
     provider,
     // IIntentParser
-    async interpret(message) {
+    async interpret(message, history = []) {
       if (!provider) return { ...parse(message), via: 'keyword parser' };
-      try { return { ...(await ask(message)), via: provider }; } catch (e) { return { ...parse(message), via: 'keyword parser (language model unavailable)' }; }
+      try { return { ...(await ask(message, history)), via: provider }; } catch (e) { return { ...parse(message), via: 'keyword parser (language model unavailable)' }; }
     },
   };
 }

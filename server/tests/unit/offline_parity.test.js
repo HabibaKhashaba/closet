@@ -16,9 +16,9 @@ const byName = async (name) => (await get('/items')).items.find((p) => p.name ==
 beforeEach(async () => { local = createLocalApi(); await local.ready; });
 
 describe('Offline demo = real services on in-memory data', () => {
-  test('OF-01 seeded like npm run seed: 31 pieces, 3 in the laundry, 1 waiting for a repair, the denim jacket forgotten for 104 days', async () => {
+  test('OF-01 seeded like npm run seed: 34 pieces, 3 in the laundry, 1 waiting for a repair, the denim jacket forgotten for 104 days', async () => {
     const items = await get('/items');
-    expect(items.total).toBe(31);
+    expect(items.total).toBe(34);
     expect(items.counts.status.Laundry).toBe(3);
     expect(items.counts.status['Needs repair']).toBe(1);
     expect((await get('/intelligence/forgotten')).top).toMatchObject({ days: 104, piece: { name: 'Denim jacket' } });
@@ -76,7 +76,7 @@ describe('Offline demo = real services on in-memory data', () => {
     const saved = serializeStore(local.store);
     local = createLocalApi({ saved }); await local.ready;
     expect((await byName('Navy blazer')).status).toBe('Laundry');
-    expect((await get('/items')).total).toBe(31);
+    expect((await get('/items')).total).toBe(34);
   });
   test('OF-09 the planned-outfit monitor sees the warmer forecast on the seeded presentation outfit', async () => {
     const a = (await get('/intelligence/monitor')).alerts;

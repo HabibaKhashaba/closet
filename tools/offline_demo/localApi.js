@@ -33,7 +33,7 @@ const TOKEN = 'offline-demo-session';
 const ADMIN = { id: '00000000-0000-4000-8000-0000000ad313', email: seed.ADMIN, role: 'admin' };
 const ADMIN_TOKEN = 'offline-demo-admin-session';
 
-function createLocalApi({ saved = null, persist = () => {} } = {}) {
+function createLocalApi({ saved = null, persist = () => {}, llm = null } = {}) {
   const repos = memoryRepositories(saved ? restoreStore(saved) : createMemoryStore());
   const S = repos.store;
   const storage = {
@@ -43,7 +43,9 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
     async remove(key) { if (String(key).startsWith('local-')) delete PHOTOS[key]; }, signedUrl: (key) => PHOTOS[key] || '', verify: () => false, filePath: () => '',
   };
   // Virtual Try-On runs the real service with the MOCK provider (no AI, no network; labelled "Mock result" in the app).
-  const m = buildModules({ repos: { ...repos, identity: false }, storage,
+  // No language model in the browser (a key must never ship to the client): llm stays null here and the
+  // app shows "Closet rules"; tests pass a fake llm to check the AI paths on the same real services.
+  const m = buildModules({ llm, repos: { ...repos, identity: false }, storage,
     services: { env: { TRYON_PROVIDER: 'mock' }, databaseName: 'Database', databaseDetail: 'In-memory store (offline demo) · PostgreSQL on the live server', weatherStatus: 'fallback', weatherDetail: 'Seasonal estimate (offline demo) · Open-Meteo on the live server' }, weather: weatherAdapter({ mode: 'estimate' }), parser: llmAdapter({ env: {} }),
     tryOnProvider: mockProvider({ delayMs: 2500, fail: () => { const f = globalThis.__closetTryOnFailNext || null; globalThis.__closetTryOnFailNext = null; return f; } }) });
   let uid = USER.id;
@@ -155,7 +157,9 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   route('POST', '/items/:id/hide', ({ p }) => sv().outfits.hide(uid, p.id, 7));
   route('DELETE', '/items/:id/hide', ({ p }) => sv().outfits.unhide(uid, p.id));
   // v1.6 Donation, Care, Borrow & lend — same services and request schemas as the server
-  route('POST', '/items/:id/donate', ({ p }) => sv().wardrobe.donate(uid, p.id));
+  route('POST', '/items/:id/donate', ({ p, body }) => sv().wardrobe.donate(uid, p.id, v.validate({ reason: { type: 'enum', values: vocabulary.DONATE_REASONS, label: 'Reason' } }, body).reason));
+  route('POST', '/items/analyze', ({ body }) => { const mm = /^data:([^;,]+);base64,(.*)$/s.exec(String(body.photo || '')); if (!mm) throw new AppError(400, 'VALIDATION', 'Choose a photo first'); return sv().wardrobe.analyzePhoto(Buffer.from(mm[2], 'base64'), mm[1]); });
+  route('GET', '/ai', () => ({ languageModel: m.llm && m.llm.enabled ? m.llm.label : null }));
   route('DELETE', '/items/:id/donate', ({ p }) => sv().wardrobe.cancelDonation(uid, p.id));
   route('POST', '/items/:id/donate/done', ({ p }) => sv().wardrobe.donationDone(uid, p.id));
   route('GET', '/donation', () => sv().wardrobe.donation(uid));
@@ -185,6 +189,7 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   route('GET', '/weather', ({ query }) => sv().rec.weather(uid, query.date));
   route('POST', '/recommendations', ({ body }) => sv().rec.recommend(uid, { ...v.validate({ ...optionsSchema, occasion: { ...optionsSchema.occasion, required: true } }, body), fixedId: body.fixedId }));
   route('POST', '/recommendations/swap', ({ body }) => sv().rec.swap(uid, { ...v.validate({ ...optionsSchema, slot: { type: 'int', min: 0, max: 3, required: true } }, body), itemIds: ids(body.itemIds, 2, 4) }));
+  route('POST', '/recommendations/stylist', ({ body }) => sv().rec.stylist(uid, { looks: (Array.isArray(body.looks) ? body.looks : []).slice(0, 3).map((l) => ids(l, 1, 4)), occasion: body.occasion, date: body.date }));
   route('POST', '/recommendations/check', ({ body }) => sv().rec.check(uid, { ...v.validate(optionsSchema, body), itemIds: ids(body.itemIds, 1, 4) }));
   // outfits
   route('GET', '/outfits', async ({ query }) => ({ outfits: await sv().outfits.list(uid, query.favorites === 'true') }));
@@ -213,7 +218,8 @@ function createLocalApi({ saved = null, persist = () => {} } = {}) {
   route('DELETE', '/virtual-try-on/:id', ({ p }) => vto().remove(uid, p.id));
   // Ask Closet
   route('GET', '/chat', () => ({ suggestions: [], languageModel: 'keyword parser' }));
-  route('POST', '/chat', ({ body }) => sv().assistant.chat(uid, { message: String(body.message || '').slice(0, 500), context: body.context || null, pieceId: body.pieceId }));
+  route('POST', '/chat', ({ body }) => sv().assistant.chat(uid, { message: String(body.message || '').slice(0, 500), context: body.context || null, pieceId: body.pieceId,
+    history: Array.isArray(body.history) ? body.history.slice(-6).filter((h) => h && typeof h.text === 'string').map((h) => ({ who: h.who === 'ai' ? 'ai' : 'me', text: h.text.slice(0, 500) })) : [] }));
   route('POST', '/chat/undo/:id', ({ p }) => sv().assistant.undo(uid, p.id));
   // shopping
   route('GET', '/shopping/list', () => sv().shopping.list(uid));

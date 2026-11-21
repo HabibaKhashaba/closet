@@ -8,14 +8,17 @@ import PieceForm, { cleanDetails, emptyDetails } from './PieceForm.jsx';
 const MAX = 10 * 1024 * 1024;
 const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
-export default function AddPieceScreen() {
+export default function AddPieceScreen({ query = {} }) {
   const { vocab, toast } = useApp();
+  // v2.1 coming from a bought shopping-list item: the details it already knows are filled in.
+  const fromList = query.category ? { ...emptyDetails, ...(query.category && { category: query.category }), ...(query.colour && { colour: query.colour }), ...(query.name && { name: query.name }) } : null;
   const [step, setStep] = useState(0);
   const [similar, setSimilar] = useState(null);
   const [showSimilar, setShowSimilar] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [photoError, setPhotoError] = useState(null);
-  const [details, setDetails] = useState(emptyDetails);
+  const [details, setDetails] = useState(fromList || emptyDetails);
+  const [ai, setAi] = useState(null); // { state: 'reading' | 'done' | 'none', by, message, fields }
   const [errors, setErrors] = useState([]);
   const [busy, setBusy] = useState(false);
   const input = useRef(null);
@@ -27,7 +30,16 @@ export default function AddPieceScreen() {
     if (file.size > MAX) return setPhotoError('Photos can be up to 10 MB.');
     setPhotoError(null);
     setPhoto(file);
-    return setStep(1);
+    setStep(1);
+    // v2.1 AI photo tagging: the model PROPOSES details from the photo; the user checks them before saving.
+    setAi({ state: 'reading' });
+    api.analyzePhoto(file).then((r) => {
+      if (!r.suggestion) return setAi({ state: 'none', by: r.by, message: r.message });
+      const sug = r.suggestion;
+      const fields = ['name', 'category', 'colour', 'fabric', 'season', 'styles', 'dressCodes'].filter((k) => sug[k] !== undefined && !(Array.isArray(sug[k]) && !sug[k].length));
+      setDetails((cur) => ({ ...cur, ...Object.fromEntries(fields.map((k) => [k, sug[k]])) }));
+      return setAi({ state: 'done', by: r.by, fields });
+    }).catch(() => setAi({ state: 'none', message: 'Could not reach the AI. Fill the details by hand.' }));
   }
 
   function review() {
@@ -79,6 +91,9 @@ export default function AddPieceScreen() {
           {step === 1 && (
             <>
               <h2 style={{ marginBottom: 16 }}>2 · Details</h2>
+              {ai && ai.state === 'reading' && <div className="notice info small" style={{ marginBottom: 14 }}><span className="spinner sm" aria-hidden="true" />Reading your photo with AI…</div>}
+              {ai && ai.state === 'done' && <div className="notice ok small" style={{ marginBottom: 14 }}><Icon name="wand" size={16} /><span><b>Filled in by AI from your photo</b> ({ai.by}): {ai.fields.join(', ')}. Check every field — you can change anything before saving.</span></div>}
+              {ai && ai.state === 'none' && <div className="notice small" style={{ marginBottom: 14 }}><Icon name="edit" size={16} /><span>{ai.message}</span></div>}
               <PieceForm value={details} onChange={setDetails} errors={errors} />
               <div className="row end" style={{ marginTop: 22 }}>
                 <button type="button" className="btn" onClick={review}>Review</button>

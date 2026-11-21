@@ -10,13 +10,14 @@ const KEEP_REASONS = ['Still love it', 'Sentimental', 'Seasonal', 'Special occas
 // "Donate this item?" — v1.6: donation is the only way a piece is passed on. Two steps: Ready to donate
 // (still in the closet, listed under Donation, left out of outfits) → Mark as donated (archived, no replacement).
 export function DonateFlow({ piece, onClose, onChanged }) {
-  const { toast, refresh } = useApp();
+  const { toast, refresh, vocab } = useApp();
   const [current, setCurrent] = useState(piece);
+  const [reason, setReason] = useState('');
   const ready = current.status === 'Ready to donate';
   const [busy, setBusy] = useState(false);
   async function mark() {
     setBusy(true);
-    try { const p = await api.donate(piece.id); setCurrent(p); toast(`${pieceName(p)} is ready to donate — it’s waiting under Donation`); refresh(); onChanged && onChanged(p); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+    try { const p = await api.donate(piece.id, reason || undefined); setCurrent(p); toast(`${pieceName(p)} is ready to donate — it’s waiting under Donation`); refresh(); onChanged && onChanged(p); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
   }
   async function done() {
     setBusy(true);
@@ -34,6 +35,8 @@ export function DonateFlow({ piece, onClose, onChanged }) {
       </div>
       {!ready ? (
         <>
+          <div className="eyebrow" style={{ margin: '4px 0 8px' }}>Why are you donating it? <span className="muted">(optional)</span></div>
+          <div className="chips" style={{ marginBottom: 12 }}>{(vocab?.DONATE_REASONS || []).map((r) => <button type="button" key={r} className={`chip ${reason === r ? 'on' : ''}`} onClick={() => setReason(reason === r ? '' : r)}>{r}</button>)}</div>
           <div className="reason-cards" role="group" aria-label="Donate">
             <button type="button" className="reason-card" disabled={busy || !(current.status === 'Available' || /^Needs /.test(current.status))} onClick={mark}><i><Icon name="heart" size={18} /></i><b>Donate</b><span>To someone who may need it</span></button>
           </div>

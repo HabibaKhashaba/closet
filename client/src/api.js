@@ -53,6 +53,7 @@ export const api = {
     return call('GET', `/items${q ? `?${q}` : ''}`);
   },
   item: (id) => call('GET', `/items/${id}`),
+  analyzePhoto: (photo) => { const form = new FormData(); form.append('photo', photo); return call('POST', '/items/analyze', form, { form: true }); },
   addItem: (photo, details) => {
     const form = new FormData();
     form.append('photo', photo);
@@ -121,7 +122,9 @@ export const api = {
   insights: () => call('GET', '/insights'),
 
   chatInfo: () => call('GET', '/chat'),
-  chat: (message, context, pieceId) => call('POST', '/chat', { message, ...(context && { context }), ...(pieceId && { pieceId }) }),
+  chat: (message, context, pieceId, history) => call('POST', '/chat', { message, ...(context && { context }), ...(pieceId && { pieceId }), ...(history && history.length && { history }) }),
+  ai: () => call('GET', '/ai'),
+  stylist: (looks, occasion, date) => call('POST', '/recommendations/stylist', { looks, ...(occasion && { occasion }), ...(date && { date }) }),
   undo: (id) => call('POST', `/chat/undo/${id}`),
 
   shopping: () => call('GET', '/shopping'),
@@ -152,7 +155,7 @@ export const api = {
   // v1.5 proactive intelligence
   similarPieces: (d) => call('POST', '/items/similar', d),
   // v1.6 Donation (donate only), Care, Borrow & lend
-  donate: (id) => call('POST', `/items/${id}/donate`, {}),
+  donate: (id, reason) => call('POST', `/items/${id}/donate`, reason ? { reason } : {}),
   cancelDonation: (id) => call('DELETE', `/items/${id}/donate`),
   donationDone: (id) => call('POST', `/items/${id}/donate/done`, {}),
   donation: () => call('GET', '/donation'),

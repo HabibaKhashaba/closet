@@ -29,7 +29,7 @@ export default function DonationScreen() {
                 <a href={`#/closet/${p.id}`} className="care-pic"><Tile piece={p} status={false} /></a>
                 <div className="grow">
                   <a href={`#/closet/${p.id}`}><b>{pieceName(p)}</b></a>
-                  <div className="small muted">{p.daysSinceWorn === null ? 'Never worn' : `Last worn ${p.daysSinceWorn} days ago`} · marked {fmtDate(p.markedOn, { day: 'numeric', month: 'long' })}</div>
+                  <div className="small muted">{p.daysSinceWorn === null ? 'Never worn' : `Last worn ${p.daysSinceWorn} days ago`} · marked {fmtDate(p.markedOn, { day: 'numeric', month: 'long' })}{p.reason ? ` · ${p.reason.toLowerCase()}` : ''}</div>
                 </div>
                 <div className="row wrap end">
                   <button type="button" className="btn line sm" onClick={() => cancel(p)}>Cancel donation</button>
@@ -42,7 +42,7 @@ export default function DonationScreen() {
           {d.data.donated.length > 0 && (
             <section className="card pad">
               <h3 style={{ marginBottom: 8 }}>Donated</h3>
-              {d.data.donated.map((x, i) => <div key={i} className="row between small" style={{ padding: '6px 0', borderTop: i ? '1px solid var(--line)' : 0 }}><span><b>{x.name || `${x.colour} ${x.category}`.toLowerCase()}</b> · worn {x.wearCount}×</span><span className="muted">{fmtDate(x.donatedAt)}</span></div>)}
+              {d.data.donated.map((x, i) => <div key={i} className="row between small" style={{ padding: '6px 0', borderTop: i ? '1px solid var(--line)' : 0 }}><span><b>{x.name || `${x.colour} ${x.category}`.toLowerCase()}</b> · worn {x.wearCount}×{x.reason ? ` · ${x.reason.toLowerCase()}` : ''}</span><span className="muted">{fmtDate(x.donatedAt)}</span></div>)}
             </section>
           )}
         </div>

@@ -30,6 +30,7 @@ const { audit } = require('./gateway/audit');
 const vocabulary = require('./shared/vocabulary');
 const { ALLOWED: STATUS_TRANSITIONS } = require('./modules/availability/statusMachine');
 const lifecycle = require('./shared/lifecycle');
+const { createLlm } = require('./shared/llm');
 
 // Module wiring (shared by the HTTP server and the offline demo). `repos` lets a caller replace the
 // PostgreSQL repositories (the offline demo passes in-memory ones); every service and rule is the same.
@@ -37,6 +38,8 @@ function buildModules(deps = {}) {
   const { pool, transaction } = deps.db || (deps.repos ? {} : require('./db/pool'));
   const repos = deps.repos || {};
   const bus = deps.bus || new EventBus();
+  // v2.1 one language-model client for Ask Closet replies, the AI stylist and photo tagging (null-safe).
+  const llm = deps.llm !== undefined ? deps.llm : createLlm();
   const storage = deps.storage || localPhotoStorage({ dir: config.photoDir, secret: config.photoUrlSecret });
   const googleVerifier = deps.googleVerifier !== undefined ? deps.googleVerifier : googleTokenVerifier(config.googleClientId);
 
@@ -45,10 +48,10 @@ function buildModules(deps = {}) {
   const profile = registerProfile({ db: pool, repo: repos.profile, bus });
   let wardrobe; // Availability and Wardrobe use each other's interfaces, so bind lazily.
   const availability = registerAvailability({ db: pool, transaction, repo: repos.availability, bus, wardrobe: () => wardrobe.service, profile: () => profile.service });
-  wardrobe = registerWardrobe({ db: pool, repo: repos.wardrobe, bus, storage, availability: availability.service, profile: profile.service });
+  wardrobe = registerWardrobe({ db: pool, repo: repos.wardrobe, bus, storage, availability: availability.service, profile: profile.service, llm });
   const outfits = registerOutfits({ db: pool, repo: repos.outfits, bus, wardrobe: () => wardrobe.service });
   const weather = deps.weather || weatherAdapter();
-  const rec = registerRecommendation({ wardrobe: () => wardrobe.service, profile: profile.service, outfits: () => outfits.service, weather });
+  const rec = registerRecommendation({ llm, wardrobe: () => wardrobe.service, profile: profile.service, outfits: () => outfits.service, weather });
   const planner = registerPlanner({ db: pool, repo: repos.planner, rec: () => rec.service, outfits: () => outfits.service, wardrobe: () => wardrobe.service, availability: availability.service });
   const shopping = registerShopping({ db: pool, repo: repos.shopping, bus, wardrobe: () => wardrobe.service, profile: profile.service });
   const admin = repos.admin === false ? null : registerAdmin({ db: pool, repo: repos.admin, services: deps.services });
@@ -60,17 +63,17 @@ function buildModules(deps = {}) {
   });
   const privacy = identity ? registerPrivacy({ bus, identity }) : null;
   const assistant = registerAssistant({
-    db: pool, repo: repos.assistant, parser: deps.parser || llmAdapter(), rec: () => rec.service, outfits: () => outfits.service,
+    db: pool, repo: repos.assistant, llm, parser: deps.parser || llmAdapter(), rec: () => rec.service, outfits: () => outfits.service,
     wardrobe: () => wardrobe.service, availability: availability.service, planner: () => planner.service, shopping: () => shopping.service,
     proactive: () => intelligence.service.proactive, intelligence: () => intelligence.service, packing: () => packing.service, profile: profile.service,
   });
   const tryOn = registerVirtualTryOn({ db: pool, repo: repos.virtualTryOn, bus, wardrobe: () => wardrobe.service, outfits: () => outfits.service, storage,
     provider: deps.tryOnProvider, settings: deps.tryOnSettings, fetchImpl: deps.fetchImpl });
-  return { tryOn, bus, storage, identity, profile, availability, wardrobe, outfits, weather, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant };
+  return { llm, tryOn, bus, storage, identity, profile, availability, wardrobe, outfits, weather, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant };
 }
 
 function createApp(deps = {}) {
-  const { tryOn, identity, profile, availability, wardrobe, outfits, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant } = buildModules(deps);
+  const { llm, tryOn, identity, profile, availability, wardrobe, outfits, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant } = buildModules(deps);
 
   // API Gateway
   const app = express();
@@ -111,6 +114,8 @@ function createApp(deps = {}) {
   api.use('/virtual-try-on', tryOn.routes); // US-118 image-based Virtual Try-On (one garment, external provider)
   api.use('/admin', admin.routes); // Access Control: requireRole('admin')
   api.use('/account', privacy.routes);
+  // v2.1 which AI is live, so the app labels AI output honestly ("AI · Anthropic …" or "Closet rules").
+  api.get('/ai', (_req, res) => res.json({ languageModel: llm && llm.enabled ? llm.label : null }));
 
   app.use('/api/v1', api);
   if (deps.webDir) {
