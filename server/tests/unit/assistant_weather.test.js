@@ -94,6 +94,15 @@ describe('Weather Adapter (IWeather)', () => {
     expect((await weatherAdapter({ fetchImpl: api([]) }).forDate('Cairo', '2098-05-01')).note).toBe('More than 16 days ahead');
     expect(fallback('2026-12-01', 'x').tempC).toBe(21);
   });
+  test('WA-07 estimates use the DESTINATION city: Paris in December is cold, Hurghada warm, an unknown city says Cairo was used', async () => {
+    const w = weatherAdapter({ fetchImpl: api([]), mode: 'estimate' });
+    expect(await w.forDate('Paris', '2026-12-10')).toMatchObject({ tempC: 7, place: 'Paris', source: 'estimate' });
+    expect((await w.forDate('Hurghada, Egypt', '2026-12-10')).tempC).toBe(22);
+    expect((await w.forDate('Sahel', '2026-07-10')).tempC).toBe(29);
+    expect(await w.forDate('Reykjavik', '2026-12-10')).toMatchObject({ tempC: 21, note: expect.stringMatching(/no climate data for Reykjavik, Cairo average used/) });
+    const far = await weatherAdapter({ fetchImpl: api([]) }).forDate('London', '2098-01-15');
+    expect(far).toMatchObject({ tempC: 8, note: 'More than 16 days ahead' });
+  });
   test('WA-06 demo mode (WEATHER_MODE=estimate): never calls the service; the same estimate every run, labelled', async () => {
     const calls = [];
     const w = weatherAdapter({ fetchImpl: api(calls), mode: 'estimate' });

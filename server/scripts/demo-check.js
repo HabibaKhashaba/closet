@@ -32,7 +32,7 @@ async function call(token, method, url, body, form) {
   const T = login.data.token; const api = (m, u, b) => call(T, m, u, b);
   const items = (await api('GET', '/items')).data.items;
   const by = (n) => items.find((p) => p.name === n);
-  ok(items.length === 31, 'the seeded closet has 31 pieces', `${items.length}`);
+  ok(items.length === 34, 'the seeded closet has 34 pieces', `${items.length}`);
   for (const n of ['Navy blazer', 'Silk scarf', 'Denim jacket', 'Red cropped tee', 'Beige wide-leg trousers', 'Breton striped top', 'Ivory silk blouse'])
     ok(Boolean(by(n)), `piece “${n}” exists`);
   ok(by('Navy blazer')?.status === 'Available', 'Navy blazer is Available (Act 2 moves it to the laundry)', by('Navy blazer')?.status);
