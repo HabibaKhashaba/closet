@@ -149,28 +149,14 @@ with sync_playwright() as p:
     shot('41_change_piece')
     pg.locator('.looks .flip').first.locator('.why-btn').click(); pg.wait_for_timeout(800); shot('40b_why')
     pg.locator('.looks .flip').first.locator('button:has-text("Back to the look")').click(); pg.wait_for_timeout(600)
-    pg.locator('.looks .flip').first.locator('.toolbar button:has-text("Preview")').click()   # quick fit preview (simulated)
-    pg.wait_for_selector('text=See this look on you'); shot('42a_tryon_choose_photo')
-    pg.set_input_files('input[aria-label="Choose my photo"]', TRYON)
-    pg.wait_for_selector('.on-photo .me'); pg.wait_for_timeout(2200)
-    n_worn = pg.locator('.on-photo .worn').count(); n_pieces = pg.locator('.fitting-card .hanger-row').count()
-    assert n_worn == n_pieces, f'{n_worn} pieces drawn on the photo, look has {n_pieces}'
-    expect(pg.locator('.on-photo .worn').first).to_have_attribute('alt', after)   # the changed piece is worn
-    expect(pg.locator('.sim-chip')).to_contain_text('Virtual Try-On Preview')
-    shot('42_tryon')
-    saved0 = len(api('/outfits')['outfits'])
-    pg.click('.fitting-card button:has-text("Save")'); pg.wait_for_timeout(700)
-    pg.click('.fitting-card button:has-text("Favourite")'); pg.wait_for_timeout(700)
-    outs = api('/outfits')['outfits']
-    assert len(outs) >= saved0 + 1 and any(o['favorite'] for o in outs[:2]), 'Save / Favourite did not store the look'
-    pg.click('.stage button[aria-label="Next look"]'); pg.wait_for_timeout(1800); shot('42b_tryon_next')
-    expect(pg.locator('.on-photo .worn').first).to_be_visible()
-    worn_ids = sorted(x['id'] for x in api('/items')['items'] if x['name'] in pg.locator('.fitting-card .hanger-row b').all_inner_texts())
-    pg.click('.fitting-card button:has-text("Wear this today")'); pg.wait_for_selector('text=Worn today'); pg.wait_for_timeout(500)
-    wears = api('/outfits/history')['wears']
-    assert any(sorted(p['id'] for p in w['pieces']) == worn_ids for w in wears), 'Wear this did not record this look'
-    pg.click('.stage button[aria-label="Previous look"]'); pg.wait_for_timeout(1000)
-    pg.click('.fitting-card button:has-text("Change a piece")'); pg.wait_for_selector('text=LOOK 03')
+    # Virtual Try-On is the ONE try-on (the old simulated overlay preview was removed): look → pick a piece → try-on screen
+    pg.locator('.looks .flip').first.locator('button:has-text("Virtual Try-On")').click()
+    pg.wait_for_selector('text=Which item do you want to try on?'); shot('42a_tryon_pick')
+    rows = pg.locator('.vto-pick-row'); enabled = [k for k in range(rows.count()) if rows.nth(k).is_enabled()]
+    assert enabled, 'no piece of the look can be tried on'
+    rows.nth(enabled[0]).click(); pg.wait_for_selector('.vto'); shot('42_tryon')
+    expect(pg.locator('.looks .flip')).to_have_count(0)
+    pg.click('.tryon-head button:has-text("Back to outfit")'); pg.wait_for_selector('text=LOOK 03')
     expect(pg.locator('.looks .flip').first.locator('.look-piece img').first).to_have_attribute('alt', after)  # the changed look is kept
     assert not big_posts, f'the try-on photo must never be sent to the server: {big_posts}'
 

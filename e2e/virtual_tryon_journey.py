@@ -41,7 +41,7 @@ with sync_playwright() as p:
     expect(cards).to_have_count(3)
     titles = [cards.nth(k).locator('h3').inner_text() for k in range(3)]
     for k in range(3):   # the Try-On action is on every look, and the other actions are still there
-        for label in ('Virtual Try-On', 'Wear this', 'Save', 'Not for me', 'Preview'):
+        for label in ('Virtual Try-On', 'Wear this', 'Save', 'Not for me'):
             expect(cards.nth(k).locator(f'button:has-text("{label}")')).to_have_count(1)
     shot('v01_three_looks_with_try_on')
 
