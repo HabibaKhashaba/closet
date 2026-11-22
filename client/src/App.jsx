@@ -16,7 +16,6 @@ import ProfileScreen from './screens/ProfileScreen.jsx';
 import OutfitsScreen from './screens/OutfitsScreen.jsx';
 import MixMatchScreen from './screens/MixMatchScreen.jsx';
 import SavedScreen from './screens/SavedScreen.jsx';
-import TryOnScreen from './screens/TryOnScreen.jsx';
 import VirtualTryOnScreen from './screens/VirtualTryOnScreen.jsx';
 import AskScreen from './screens/AskScreen.jsx';
 import AnalyticsScreen from './screens/AnalyticsScreen.jsx';
@@ -44,7 +43,7 @@ export const go = (path) => { window.location.hash = path; };
 const NAV = [
   ['Today', [['/', 'home', 'Home', null]]],
   ['Wardrobe', [['/closet', 'closet', 'Closet', 1], ['/care', 'laundry', 'Care', 1], ['/lending', 'user', 'Borrow & lend', 3], ['/donation', 'heart', 'Donation', 3]]],
-  ['Style', [['/outfits', 'sparkle', 'Style me · 3 looks', 2], ['/mix', 'grid', 'Mix & Match', 2], ['/virtual-try-on', 'mirror', 'Virtual try-on', 2], ['/tryon', 'grid', 'Quick fit preview', 3], ['/saved', 'bookmark', 'Lookbook', 2]]],
+  ['Style', [['/outfits', 'sparkle', 'Style me · 3 looks', 2], ['/mix', 'grid', 'Mix & Match', 2], ['/virtual-try-on', 'mirror', 'Virtual try-on', 2], ['/saved', 'bookmark', 'Lookbook', 2]]],
   ['Assistant', [['/ask', 'brain', 'Ask Closet', 3]]],
   ['Plan', [['/planner', 'calendar', 'Planner', 1], ['/packing', 'suitcase', 'Packing', 4]]],
   ['Insights', [['/analytics', 'chart', 'Analytics & insights', 3], ['/shopping', 'bag', 'Shopping bag', 3]]],
@@ -122,6 +121,29 @@ export default function App() {
   if (!user) return <AppContext.Provider value={ctx}><AuthScreen onSignedIn={signedIn} />{toastView}</AppContext.Provider>;
 
   if (!profile) return <Spinner />;
+  // The admin is not a wardrobe user: only the Admin console, no closet, outfits or other user features.
+  if (user.role === 'admin') {
+    return (
+      <AppContext.Provider value={ctx}>
+        <div className="shell">
+          <aside className="side">
+            <a className="logo" href="#/admin">closet<i /><small>Admin</small></a>
+            <div className="nav-group"><span>Admin</span><nav className="nav"><a href="#/admin" className="on"><Icon name="shield" size={18} />Admin console</a></nav></div>
+            <div className="side-foot"><div className="me"><span className="avatar">A</span><span className="grow"><b style={{ fontSize: 14 }}>Admin</b><br /><span className="tiny muted">{user.email}</span></span></div></div>
+          </aside>
+          <div className="main">
+            <header className="topbar">
+              <span className="logo" style={{ padding: 0, fontSize: 24 }} data-mobile-only>closet<i /></span>
+              <span className="grow" />
+              <button type="button" className="iconbtn" aria-label="Sign out" title="Sign out" onClick={signOut}><Icon name="logout" /></button>
+            </header>
+            <main className="page"><AdminScreen /></main>
+          </div>
+        </div>
+        {toastView}
+      </AppContext.Provider>
+    );
+  }
   const [section, id] = route.parts;
   const q = route.query;
   let screen;
@@ -138,7 +160,7 @@ export default function App() {
   else if (section === 'outfits') screen = <OutfitsScreen key={JSON.stringify(q)} query={q} />;
   else if (section === 'mix') screen = <MixMatchScreen key={q.ids || ''} query={q} />;
   else if (section === 'saved') screen = <SavedScreen />;
-  else if (section === 'tryon') screen = <TryOnScreen key={q.ids || ''} query={q} />;
+  else if (section === 'tryon') screen = <VirtualTryOnScreen key={`${q.ids || ''}`} query={q} />; // old links: one Virtual try-on
   else if (section === 'virtual-try-on') screen = <VirtualTryOnScreen key={`${q.item || ''}${q.id || ''}`} query={q} />;
   else if (section === 'ask') screen = <AskScreen query={q} />;
   else if (section === 'analytics') screen = <AnalyticsScreen />;
