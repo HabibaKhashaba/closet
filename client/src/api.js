@@ -197,11 +197,11 @@ export const api = {
 
   // v3.0 Studio (Milestone 3): ten features on one shared CompatibilityService
   studioFeatures: () => call('GET', '/studio/features'),
-  buyCheck: (b) => call('POST', '/studio/buy/check', b),
+  studioBuy: (b) => call('POST', '/studio/buy/check', b),
   buyDonate: (itemId) => call('POST', '/studio/buy/donate', { itemId }),
   cherSpin: (b) => call('POST', '/cher-mode/spin', b),
   cherFeedback: (b) => call('POST', '/cher-mode/feedback', b),
-  rescue: (b) => call('POST', '/studio/rescue', b),
+  emergencyRescue: (b) => call('POST', '/studio/rescue', b),
   inviteDecode: (b) => call('POST', '/studio/invitation/decode', b),
   inviteConfirm: (card) => call('POST', '/studio/invitation/confirm', { card }),
   moods: () => call('GET', '/studio/mood'),

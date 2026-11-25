@@ -20,7 +20,7 @@ export default function RescueScreen() {
 
   async function run() {
     setBusy(true); setRes(null);
-    try { setRes(await api.rescue({ itemIds: ids, problem, occasion, apply })); if (apply) { refresh(); closet.reload(true); } } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+    try { setRes(await api.emergencyRescue({ itemIds: ids, problem, occasion, apply })); if (apply) { refresh(); closet.reload(true); } } catch (e) { toast(e.message, true); } finally { setBusy(false); }
   }
   async function wear() { try { await api.wear(res.fix.itemIds, null, { occasion, note: 'Emergency rescue' }); toast('Saved as today’s outfit'); refresh(); } catch (e) { toast(e.message, true); } }
   return (

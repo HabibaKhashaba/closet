@@ -35,7 +35,7 @@ export default function BuyScreen() {
 
   async function run() {
     setBusy(true); setRes(null);
-    try { setRes(mode === 'buy' ? await api.buyCheck({ piece, ...(photo && { photo: { base64: photo.base64, mime: photo.mime } }) }) : await api.buyDonate(donateId)); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+    try { setRes(mode === 'buy' ? await api.studioBuy({ piece, ...(photo && { photo: { base64: photo.base64, mime: photo.mime } }) }) : await api.buyDonate(donateId)); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
   }
   const owned = (closet.data?.items || []).filter((p) => !['Ready to donate'].includes(p.status));
   return (
