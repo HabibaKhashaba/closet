@@ -1,0 +1,22 @@
+sequenceDiagram
+  autonumber
+  actor U as User
+  participant MM as Mix & Match (CherMode.jsx)
+  participant GW as API gateway (auth)
+  participant CH as Cher feature (studio/features/cher.js)
+  participant CS as CompatibilityService
+  participant EN as Recommendation engine
+  participant WR as Wardrobe / Profile / Weather
+  U->>MM: Spin (occasion, locks, rediscovery)
+  MM->>GW: POST /api/v1/cher-mode/spin
+  GW->>CH: spin(userId, body)
+  CH->>WR: allPieces(userId), preferences, forecast
+  CH->>CS: enumerateOutfits(Available pieces, locked, modest, dress code)
+  CS->>EN: filterPieces · combine · criteria · breakdown
+  EN-->>CS: candidate looks + rule scores
+  CS-->>CH: valid looks (score ≥ 66)
+  CH->>CH: weighted pick w = (score/100)^8 × (1 + 3·forgotten)
+  CH-->>MM: outfit, score, reasons, verdict, rings
+  MM->>MM: rings turn to returned pieces (stagger 0.4 s)
+  U->>MM: Try it on / Fine-tune / Spin again
+  MM->>GW: POST /api/v1/cher-mode/feedback (accepted · fine_tuned · rejected)

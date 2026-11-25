@@ -26,7 +26,7 @@ function Launch({ items }) {
     ['#/outfits', 'Style me', '3 looks · change · try on', 2, pick('Top', 4) || pick('Top'), 'var(--rose-soft)'],
     ['#/ask', 'Ask Closet', 'Your wardrobe’s brain', 3, null, '#2b2626'],
     ['#/mix', 'Mix & Match', 'A styling table', 2, pick('Shoes', 1) || pick('Shoes'), 'var(--butter)'],
-    ['#/tryon', 'Virtual try-on', 'The dressing room', 3, pick('Dress') || pick('Top'), '#f3e1dc'],
+    ['#/virtual-try-on', 'Virtual try-on', 'One piece on your photo', 2, pick('Dress') || pick('Top'), '#f3e1dc'],
     ['#/planner', 'Planner', 'Outfits on your calendar', 1, pick('Layer') || pick('Top'), 'var(--sky)'],
     ['#/analytics', 'Wear analytics', 'What you really wear', 3, pick('Bottom', 2) || pick('Bottom'), 'var(--sage)'],
     ['#/shopping', 'Shopping bag', 'Replacements · gaps · Ask Closet', 3, pick('Bag') || pick('Extra'), 'var(--lilac)'],
@@ -128,7 +128,7 @@ export default function HomeScreen() {
                 <p className="serif" style={{ fontSize: 15, lineHeight: 1.5 }}>{outfit.explanation}</p>
                 <div className="row">
                   <button type="button" className="btn" onClick={wear}><Icon name="check" size={15} />Wear this</button>
-                  <button type="button" className="btn line" onClick={() => go(`/tryon?ids=${outfit.itemIds.join(',')}`)}><Icon name="mirror" size={15} />Try on</button>
+                  <button type="button" className="btn line" onClick={() => go(`/virtual-try-on?ids=${outfit.itemIds.join(',')}`)}><Icon name="mirror" size={15} />Try on</button>
                   <a className="btn ghost" href={`#/outfits?occasion=${encodeURIComponent(occasion)}`}>Style me · 3 looks <Icon name="arrow" size={14} /></a>
                 </div>
               </>

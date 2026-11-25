@@ -22,6 +22,15 @@ import AnalyticsScreen from './screens/AnalyticsScreen.jsx';
 import ShoppingScreen from './screens/ShoppingScreen.jsx';
 import AdminScreen from './screens/AdminScreen.jsx';
 import PackingScreen from './screens/PackingScreen.jsx';
+import BuyScreen from './screens/studio/BuyScreen.jsx';
+import RescueScreen from './screens/studio/RescueScreen.jsx';
+import InvitationScreen from './screens/studio/InvitationScreen.jsx';
+import MoodScreen from './screens/studio/MoodScreen.jsx';
+import RecreateScreen from './screens/studio/RecreateScreen.jsx';
+import FitCheckScreen from './screens/studio/FitCheckScreen.jsx';
+import BattleScreen from './screens/studio/BattleScreen.jsx';
+import WrappedScreen from './screens/studio/WrappedScreen.jsx';
+import FriendsScreen from './screens/studio/FriendsScreen.jsx';
 
 function readRoute() {
   const raw = window.location.hash.replace(/^#/, '') || '/';
@@ -44,6 +53,7 @@ const NAV = [
   ['Today', [['/', 'home', 'Home', null]]],
   ['Wardrobe', [['/closet', 'closet', 'Closet', 1], ['/care', 'laundry', 'Care', 1], ['/lending', 'user', 'Borrow & lend', 3], ['/donation', 'heart', 'Donation', 3]]],
   ['Style', [['/outfits', 'sparkle', 'Style me · 3 looks', 2], ['/mix', 'grid', 'Mix & Match', 2], ['/virtual-try-on', 'mirror', 'Virtual try-on', 2], ['/saved', 'bookmark', 'Lookbook', 2]]],
+  ['Studio', [['/mix?mode=spin', 'sparkle', 'Cher mode', 5], ['/mood', 'smile', 'Mood styling', 5], ['/rescue', 'bolt', 'Emergency rescue', 5], ['/fit-check', 'camera', 'Fit check', 5], ['/recreate', 'wand', 'Recreate this look', 5], ['/battle', 'trophy', 'Stylist battle', 5], ['/invitation', 'mail', 'Invitation decoder', 5], ['/buy', 'bag', 'Should I buy this?', 5], ['/friends', 'users', 'Friends’ closet', 5], ['/wrapped', 'gift', 'Closet wrapped', 5]]],
   ['Assistant', [['/ask', 'brain', 'Ask Closet', 3]]],
   ['Plan', [['/planner', 'calendar', 'Planner', 1], ['/packing', 'suitcase', 'Packing', 4]]],
   ['Insights', [['/analytics', 'chart', 'Analytics & insights', 3], ['/shopping', 'bag', 'Shopping bag', 3]]],
@@ -158,7 +168,7 @@ export default function App() {
   else if (section === 'planner') screen = <PlannerScreen query={q} />;
   else if (section === 'profile') screen = <ProfileScreen />;
   else if (section === 'outfits') screen = <OutfitsScreen key={JSON.stringify(q)} query={q} />;
-  else if (section === 'mix') screen = <MixMatchScreen key={q.ids || ''} query={q} />;
+  else if (section === 'mix') screen = <MixMatchScreen key={`${q.ids || ''}${q.mode || ''}`} query={q} />;
   else if (section === 'saved') screen = <SavedScreen />;
   else if (section === 'tryon') screen = <VirtualTryOnScreen key={`${q.ids || ''}`} query={q} />; // old links: one Virtual try-on
   else if (section === 'virtual-try-on') screen = <VirtualTryOnScreen key={`${q.item || ''}${q.id || ''}`} query={q} />;
@@ -166,11 +176,20 @@ export default function App() {
   else if (section === 'analytics') screen = <AnalyticsScreen />;
   else if (section === 'shopping') screen = <ShoppingScreen />;
   else if (section === 'packing') screen = <PackingScreen />;
+  else if (section === 'buy') screen = <BuyScreen />;
+  else if (section === 'rescue') screen = <RescueScreen />;
+  else if (section === 'invitation') screen = <InvitationScreen />;
+  else if (section === 'mood') screen = <MoodScreen />;
+  else if (section === 'recreate') screen = <RecreateScreen />;
+  else if (section === 'fit-check') screen = <FitCheckScreen />;
+  else if (section === 'battle') screen = <BattleScreen />;
+  else if (section === 'wrapped') screen = <WrappedScreen />;
+  else if (section === 'friends') screen = <FriendsScreen />;
   else if (section === 'admin' && user.role === 'admin') screen = <AdminScreen />;
   else screen = <HomeScreen />;
 
   const current = `/${section || ''}`;
-  const isOn = (path) => (path === '/' ? current === '/' : current === path || (path === '/care' && current === '/laundry'));
+  const isOn = (path) => (path === '/' ? current === '/' : path === '/mix?mode=spin' ? current === '/mix' && route.query.mode === 'spin' : path === '/mix' && route.query.mode === 'spin' ? false : current === path || (path === '/care' && current === '/laundry'));
   const name = profile?.displayName || user.email.split('@')[0];
   if (section === 'quiz') return <AppContext.Provider value={ctx}>{screen}{toastView}</AppContext.Provider>;
 

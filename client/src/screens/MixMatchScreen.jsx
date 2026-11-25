@@ -3,7 +3,8 @@
 // check and one paragraph of explanation. "Suggest a fix" swaps the weakest piece.
 import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
-import { CATEGORY_ONE, Chips, CountUp, Criteria, Icon, Meters, Modal, PageHead, SprintNote, Tile, WeatherPill, matchWord, pieceName, useApp, useLoad } from '../ui.jsx';
+import { CATEGORY_ONE, Chips, CountUp, Criteria, Icon, Meters, Modal, PageHead, SprintNote, Tabs, Tile, WeatherPill, matchWord, pieceName, useApp, useLoad } from '../ui.jsx';
+import CherMode from './CherMode.jsx';
 import { go } from '../App.jsx';
 
 const SLOTS = [
@@ -24,6 +25,7 @@ export default function MixMatchScreen({ query }) {
   const [result, setResult] = useState(null);
   const [fixing, setFixing] = useState(false);
   const [fixed, setFixed] = useState(null);   // { from, to, changes } — shown after Suggest a fix
+  const [mode, setMode] = useState(query.mode === 'spin' ? 'spin' : 'build'); // v3.0 Cher mode
 
   useEffect(() => {
     if (!closet.data || !query.ids) return;
@@ -105,7 +107,16 @@ export default function MixMatchScreen({ query }) {
   return (
     <>
       <PageHead title="Mix & Match" sprint={2} sub="Lay pieces on the styling table. Closet checks the look live and tells you exactly what works and what to change." actions={<WeatherPill w={result?.forecast} />} />
-      <div className="studio">
+      <div className="row between" style={{ marginBottom: 16 }}>
+        <Tabs options={[['build', 'Build it myself'], ['spin', 'Spin for me']]} value={mode} onChange={setMode} />
+        {mode === 'spin' && <Chips options={Object.keys(vocab.OCCASIONS)} value={occasion} multiple={false} onChange={(v) => setOccasion(v || occasion)} />}
+      </div>
+      {mode === 'spin' && <CherMode key={occasion} occasion={occasion} onFineTune={(pieces) => {
+        const next = [null, null, null, null];
+        for (const p of pieces) { const s = slotOf(p); if (s >= 0 && next[s] === null) next[s] = p; }
+        setSlots(next); setMode('build');
+      }} />}
+      {mode === 'build' && <div className="studio">
         <section className="table-board">
           <div className="row between" style={{ marginBottom: 18 }}>
             <Chips options={Object.keys(vocab.OCCASIONS)} value={occasion} multiple={false} onChange={(v) => setOccasion(v || occasion)} />
@@ -125,7 +136,7 @@ export default function MixMatchScreen({ query }) {
           </div>
           <div className="row" style={{ marginTop: 22 }}>
             <button type="button" className="btn" disabled={chosen.length < 2 || (result && result.unavailable.length > 0)} onClick={wear}><Icon name="check" size={15} />Wear this</button>
-            <button type="button" className="btn line" disabled={chosen.length < 2} onClick={() => go(`/tryon?ids=${ids.join(',')}`)}><Icon name="mirror" size={15} />Try it on</button>
+            <button type="button" className="btn line" disabled={chosen.length < 2} onClick={() => go(`/virtual-try-on?ids=${ids.join(',')}`)}><Icon name="mirror" size={15} />Try it on</button>
             <button type="button" className="btn line" disabled={chosen.length < 2 || !result} onClick={() => save(false)}><Icon name="bookmark" size={15} />Save</button>
             <button type="button" className="btn line" disabled={chosen.length < 2 || !result} onClick={() => save(true)}><Icon name="heart" size={15} />Favourite</button>
             <span className="grow" />
@@ -158,8 +169,8 @@ export default function MixMatchScreen({ query }) {
             </div>
           )}
         </section>
-      </div>
-      <div style={{ marginTop: 20 }}><SprintNote n={2} /></div>
+      </div>}
+      <div style={{ marginTop: 20 }}><SprintNote n={mode === 'spin' ? 5 : 2}>{mode === 'spin' ? 'Cher mode: the server picks the look first (weighted by the rule score), then the rails turn to it.' : undefined}</SprintNote></div>
 
       {picking !== null && (
         <Modal wide title={`Choose ${SLOTS[picking][0].toLowerCase()}`} sub={SLOTS[picking][1].map((x) => CATEGORY_ONE[x]).join(' · ')} onClose={() => setPicking(null)}>

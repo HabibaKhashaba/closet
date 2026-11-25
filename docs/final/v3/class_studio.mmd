@@ -1,0 +1,43 @@
+classDiagram
+  class StudioModule { +registerStudio(deps) +table +run(entry, req) +flags }
+  class CompatibilityService { +scoreOutfit(items, c) +enumerateOutfits(pieces, c) +countValidOutfits(pieces, c, occasions) +virtualCloset(pieces, add, remove) }
+  class ClaudeJSON { +callClaudeJSON(llm, schema, allowedIds) +checkSchema() }
+  class StudioRepository { +friendships() +setLendable() +createBorrow() +decideBorrow() +vote() +cherFeedback() }
+  class BuyFeature { +check() +donate() }
+  class CherFeature { +spin() +feedback() }
+  class RescueFeature { +rescue() }
+  class InvitationFeature { +decode() +confirm() }
+  class MoodFeature { +style() +restyle() }
+  class RecreateFeature { +recreate() +addMissing() }
+  class FitCheckFeature { +check() +save() }
+  class BattleFeature { +battle() +vote() }
+  class WrappedFeature { +wrapped() }
+  class FriendsFeature { +request() +accept() +closet() +borrow() +decide() }
+  class RecommendationEngine
+  class LLMAdapter
+  StudioModule --> BuyFeature
+  StudioModule --> CherFeature
+  StudioModule --> RescueFeature
+  StudioModule --> InvitationFeature
+  StudioModule --> MoodFeature
+  StudioModule --> RecreateFeature
+  StudioModule --> FitCheckFeature
+  StudioModule --> BattleFeature
+  StudioModule --> WrappedFeature
+  StudioModule --> FriendsFeature
+  BuyFeature ..> CompatibilityService
+  CherFeature ..> CompatibilityService
+  RescueFeature ..> CompatibilityService
+  MoodFeature ..> CompatibilityService
+  RecreateFeature ..> CompatibilityService
+  FitCheckFeature ..> CompatibilityService
+  BattleFeature ..> CompatibilityService
+  CompatibilityService ..> RecommendationEngine
+  RescueFeature ..> ClaudeJSON
+  InvitationFeature ..> ClaudeJSON
+  RecreateFeature ..> ClaudeJSON
+  FitCheckFeature ..> ClaudeJSON
+  ClaudeJSON ..> LLMAdapter
+  FriendsFeature ..> StudioRepository
+  BattleFeature ..> StudioRepository
+  CherFeature ..> StudioRepository

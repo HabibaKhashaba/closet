@@ -64,7 +64,6 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
   // Virtual Try-On (image-based, one piece): choose the piece, then the try-on screen opens.
   const tryOn = () => setPicking(true);
   const tryPiece = (p) => { setPicking(false); go(`/virtual-try-on?item=${p.id}&ids=${ids.join(',')}${index !== undefined ? `&look=${index}` : ''}${savedId ? `&outfit=${savedId}` : ''}`); };
-  const quickPreview = () => go(`/tryon?ids=${ids.join(',')}${index !== undefined ? `&look=${index}` : ''}`);
   const hasMatch = outfit.compatibility !== undefined;
 
   if (compact) {
@@ -126,7 +125,6 @@ export default function OutfitCard({ outfit, occasion, style, date, index, onSwa
                 <button type="button" className={savedId ? 'on' : ''} onClick={save} aria-label="Save"><Icon name="bookmark" size={15} fill={savedId ? 'currentColor' : 'none'} />{savedId ? 'Saved' : 'Save'}</button>
                 <button type="button" className={fav ? 'on' : ''} onClick={favourite} aria-label="Favourite"><Icon name="heart" size={15} fill={fav ? 'currentColor' : 'none'} /></button>
                 <button type="button" onClick={() => setFlipped(true)} className="why-btn"><Icon name="sparkle" size={15} />Why?</button>
-                <button type="button" onClick={quickPreview} title="Quick fit preview (simulated, stays in your browser)"><Icon name="grid" size={14} />Preview</button>
                 {onReject !== false && <button type="button" onClick={() => setRejecting(true)} style={{ marginLeft: 'auto' }}><Icon name="x" size={14} />Not for me</button>}
               </div>
             </>

@@ -291,7 +291,8 @@ function memoryRepositories(S = createMemoryStore()) {
     async unlock(userId) { const u = S.users.find((x) => x.id === userId); if (!u) return null; u.failed_logins = 0; u.locked_until = null; return { id: u.id, email: u.email, account_status: u.account_status || 'active' }; },
   };
 
-  return { store: S, admin, virtualTryOn, profile, wardrobe, availability, outfits, planner, shopping, intelligence, packing, assistant, activity };
+  const studio = require("../modules/studio/studioRepository").memoryStudioRepository(S);
+  return { store: S, studio, admin, virtualTryOn, profile, wardrobe, availability, outfits, planner, shopping, intelligence, packing, assistant, activity };
 }
 
 // The store as JSON (Maps → arrays) so the offline demo can keep state across a page refresh in the

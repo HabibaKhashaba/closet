@@ -464,6 +464,11 @@ ITEMS = [
     lambda: scarf('silk_scarf'),
     lambda: earrings('gold_hoop_earrings'),
     lambda: sunglasses('tortoise_sunglasses'),
+    # v3.0 Friends' closet: pieces in the demo friend's (Nour's) closet
+    lambda: blazer('olive_blazer', '#5f6b3e'),
+    lambda: heels('silver_heels', '#c9ccd2'),
+    lambda: bag('red_clutch', '#b3263a'),
+    lambda: midi_dress('black_slip_dress', '#232126'),
 ]
 if __name__ == '__main__':
     for f in ITEMS: f()

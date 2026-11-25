@@ -26,6 +26,7 @@ const { registerIntelligence } = require('./modules/intelligence/intelligenceMod
 const { registerPacking } = require('./modules/packing/packingModule');
 const { registerActivity } = require('./modules/activity/activityModule');
 const { registerVirtualTryOn } = require('./modules/tryon/tryonModule');
+const { registerStudio } = require('./modules/studio/studioModule');
 const { audit } = require('./gateway/audit');
 const vocabulary = require('./shared/vocabulary');
 const { ALLOWED: STATUS_TRANSITIONS } = require('./modules/availability/statusMachine');
@@ -69,11 +70,14 @@ function buildModules(deps = {}) {
   });
   const tryOn = registerVirtualTryOn({ db: pool, repo: repos.virtualTryOn, bus, wardrobe: () => wardrobe.service, outfits: () => outfits.service, storage,
     provider: deps.tryOnProvider, settings: deps.tryOnSettings, fetchImpl: deps.fetchImpl });
-  return { llm, tryOn, bus, storage, identity, profile, availability, wardrobe, outfits, weather, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant };
+  // v3.0 Studio: ten features on one shared CompatibilityService (modules/studio)
+  const studio = registerStudio({ db: pool, repo: repos.studio, env: deps.env, llm, weather, profile: profile.service, wardrobe: () => wardrobe.service, outfits: () => outfits.service,
+    shopping: () => shopping.service, planner: () => planner.service, rec: () => rec.service, availability: availability.service, activity: () => activity.service, intelligence: () => intelligence.service });
+  return { llm, studio, tryOn, bus, storage, identity, profile, availability, wardrobe, outfits, weather, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant };
 }
 
 function createApp(deps = {}) {
-  const { llm, tryOn, identity, profile, availability, wardrobe, outfits, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant } = buildModules(deps);
+  const { llm, studio, tryOn, identity, profile, availability, wardrobe, outfits, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant } = buildModules(deps);
 
   // API Gateway
   const app = express();
@@ -112,6 +116,8 @@ function createApp(deps = {}) {
   api.use('/packing', packing.routes);
   api.use('/activity', activity.routes);
   api.use('/virtual-try-on', tryOn.routes); // US-118 image-based Virtual Try-On (one garment, external provider)
+  api.use('/studio', studio.routes); // v3.0 Studio features (each behind a feature flag)
+  api.use('/cher-mode', (req, _res, next) => { req.url = `/cher-mode${req.url}`; next(); }, studio.routes); // Cher mode, as named in its spec
   api.use('/admin', admin.routes); // Access Control: requireRole('admin')
   api.use('/account', privacy.routes);
   // v2.1 which AI is live, so the app labels AI output honestly ("AI · Anthropic …" or "Closet rules").

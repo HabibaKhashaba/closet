@@ -51,6 +51,11 @@ const ICONS = {
   filter: 'M4 5h16l-6 7.5V19l-4 2v-8.5z',
   suitcase: 'M4 8h16v12H4zM9 8V5h6v3M4 13h16M9 13v2M15 13v2',
   washer: 'M5 3h14v18H5zM5 7h14M8 5h.01M11 5h.01M12 10a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9M9.5 15c1-1 2-1 3 0s2 1 3 0',
+  users: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.5a3.3 3.3 0 0 1 0 6.4M18 14.6c2 .6 3.2 2.4 3.5 5.4',
+  mail: 'M3.5 6h17v12h-17zM3.5 6.5 12 13l8.5-6.5',
+  smile: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14.5c1.8 2 5.2 2 7 0M9 9.5h.01M15 9.5h.01',
+  trophy: 'M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3M12 14v4M8 20h8',
+  gift: 'M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-1.5-3-5-3.5-5-1.2C7 7 9.5 7 12 7zM12 7c1.5-3 5-3.5 5-1.2C17 7 14.5 7 12 7z',
   bolt: 'M13 3 5 14h6l-1 7 8-11h-6z',
   plane: 'M3 14l7-2 3-8 2 1-1 7 6 2v2l-6-1-2 5h-2l.5-5-6.5 1z',
   book: 'M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11',
@@ -78,6 +83,7 @@ export const SPRINT = {
   1: { cls: 's1', short: 'Sprint 1', label: 'Sprint 1 · Implemented', note: 'Graded in Milestone 2.' },
   2: { cls: 's2', short: 'Sprint 2', label: 'Sprint 2 · Early preview', note: 'Working on real data, built ahead of Sprint 2. Not part of Sprint 1 grading.' },
   3: { cls: 's3', short: 'Sprint 3', label: 'Sprint 3 · Product preview', note: 'A preview of the full product. Not part of Sprint 1 grading.' },
+  5: { cls: 's5', short: 'Milestone 3', label: 'Milestone 3 · New feature', note: 'Built for the final milestone (v3.0). Every number comes from our rules, never from the AI.' },
   4: { cls: 's4', short: 'Stretch', label: 'Stretch goal · Concept preview', note: 'A stretch / future feature shown as a working concept. Not committed for December 1 and not part of Sprint 1 grading.' },
 };
 export function SprintTag({ n, short }) {

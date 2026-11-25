@@ -78,11 +78,11 @@ export default function VirtualTryOnScreen({ query }) {
     (async () => {
       try {
         if (query.item) setPiece(await api.item(query.item));
-        if (lookIds.length) { const all = (await api.items()).items; if (live) setLookPieces(lookIds.map((id) => all.find((p) => p.id === id)).filter(Boolean)); }
-        const resumeId = query.id || ((activeJob.get() || {}).item === query.item ? activeJob.get().id : null);
+        if (lookIds.length) { const all = (await api.items()).items; if (live) { setLookPieces(lookIds.map((id) => all.find((p) => p.id === id)).filter(Boolean)); if (!query.item && !query.id) setPicker(true); } }
+        const active = activeJob.get(); const resumeId = query.id || (active && active.item === query.item ? active.id : null);
         if (resumeId) { const r = await api.vto.get(resumeId); if (!live) return; setJob(r);
           if (!lookIds.length && r.outfitItemIds.length) { const all = (await api.items()).items; if (live) setLookPieces(r.outfitItemIds.map((id) => all.find((p) => p.id === id)).filter(Boolean)); } if (!query.item && r.garment.id) setPiece(await api.item(r.garment.id).catch(() => null)); if (r.status === 'PROCESSING' || r.status === 'PENDING') { startedAt.current = Date.now() - 1000; poll(r.tryOnId); } }
-        if (!query.item && !query.id) { const h = await api.vto.list(); if (live) setHistory(h.tryOns); }
+        if (!query.item && !query.id && !lookIds.length) { const h = await api.vto.list(); if (live) setHistory(h.tryOns); }
       } catch (e) { if (live) setError(errorText(e)); }
     })();
     return () => { live = false; };
@@ -265,7 +265,7 @@ export default function VirtualTryOnScreen({ query }) {
           {error && <div className="notice warn small" role="alert" style={{ marginTop: 10 }}>{error}</div>}
         </aside>
       </div>
-      {picker && <GarmentPicker pieces={lookPieces} onClose={() => setPicker(false)} onPick={pickOther} title="Try another item from this look" />}
+      {picker && <GarmentPicker pieces={lookPieces} onClose={() => setPicker(false)} onPick={pickOther} title={query.item ? "Try another item from this look" : "Which item do you want to try on?"} />}
     </>
   );
 }

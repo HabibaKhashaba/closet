@@ -105,7 +105,21 @@ const MEMBERS = [
   ['bashar.demo@closet.app', 2, 'active', false],
 ];
 
-module.exports = { MEMBERS, EMAIL: 'demo@closet.app', ADMIN: 'admin@closet.app', PASSWORD: 'Closet2026!', PIECES, STATUSES, WEARS, REJECTS, REMOVED, EVENTS, inDays };
+// v3.0 Friends' closet: Nour (a MEMBERS account) is the demo user's confirmed friend and lends these pieces.
+// [photo file, name, details] — every one is marked lendable and Available.
+const FRIEND = {
+  email: 'nour.demo@closet.app', name: 'Nour',
+  pieces: [
+    ['olive_blazer', 'Olive blazer', { category: 'Layer', colour: 'Green', fabric: 'Wool', season: 'Spring / Autumn', size: 'S', styles: ['Classic', 'Chic'], dressCodes: [2, 3, 4], modest: true }],
+    ['silver_heels', 'Silver heels', { category: 'Shoes', colour: 'Grey', fabric: 'Leather', season: 'All seasons', size: '38', styles: ['Elegant'], dressCodes: [4, 5], modest: true }],
+    ['red_clutch', 'Red clutch', { category: 'Bag', colour: 'Red', fabric: 'Leather', season: 'All seasons', size: 'One size', styles: ['Bold', 'Elegant'], dressCodes: [3, 4, 5], modest: true }],
+    ['black_slip_dress', 'Black slip dress', { category: 'Dress', colour: 'Black', fabric: 'Silk', season: 'Summer', size: 'S', styles: ['Elegant', 'Minimal'], dressCodes: [2, 4, 5], modest: false }],
+  ],
+  // the demo user's own pieces she lets friends borrow
+  demoLendable: ['black_blazer', 'champagne_evening_bag'],
+};
+
+module.exports = { FRIEND, MEMBERS, EMAIL: 'demo@closet.app', ADMIN: 'admin@closet.app', PASSWORD: 'Closet2026!', PIECES, STATUSES, WEARS, REJECTS, REMOVED, EVENTS, inDays };
 
 // The seeded closet as domain pieces (the shape IWardrobe.allPieces returns), for pure tests and the
 // offline demo. ids are stable, readable keys (the file name of the photo).

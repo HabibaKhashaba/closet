@@ -101,6 +101,16 @@ function createLocalApi({ saved = null, persist = () => {}, llm = null } = {}) {
       if (status === 'active') S.activity.push({ id: ++S.seq.activity, user_id: id, action: 'Signed in', detail: null, at: at(Math.min(days, 1 + k), 3) });
       if (status === 'suspended') S.activity.push({ id: ++S.seq.activity, user_id: ADMIN.id, action: 'Admin: account suspended', detail: email, at: at(2) });
     });
+    // v3.0 Friends' closet (seedData FRIEND): Nour's lendable pieces + a confirmed friendship
+    const nourId = S.users.find((x) => x.email === seed.FRIEND.email).id;
+    if (!S.profiles.has(nourId)) await repos.profile.createDefault(nourId);
+    S.profiles.get(nourId).display_name = seed.FRIEND.name;
+    for (const [file, name, d] of seed.FRIEND.pieces) {
+      const row = await repos.wardrobe.create(nourId, file, { ...v.validate(detailsSchema, d), name });
+      await repos.studio.setLendable(nourId, row.id, true);
+    }
+    for (const file of seed.FRIEND.demoLendable) await repos.studio.setLendable(uid, ids[file], true);
+    const fr = await repos.studio.request(uid, nourId); await repos.studio.accept(fr.id, nourId);
     S.activity.push({ id: ++S.seq.activity, user_id: uid, action: 'Signed in', detail: null, at: at(1, 2) });
     return ids;
   }
@@ -216,6 +226,12 @@ function createLocalApi({ saved = null, persist = () => {}, llm = null } = {}) {
   route('POST', '/virtual-try-on/:id/save', ({ p, body }) => vto().setSaved(uid, p.id, !(body && body.saved === false)));
   route('POST', '/virtual-try-on/:id/retry', ({ p }) => vto().retry(uid, p.id));
   route('DELETE', '/virtual-try-on/:id', ({ p }) => vto().remove(uid, p.id));
+  // v3.0 Studio: the SAME route table as the server (modules/studio/studioModule.js)
+  for (const e of m.studio.table) {
+    const fn = ({ p, body, query }) => m.studio.run(e, { userId: uid, body, query, params: p });
+    route(e.method, `/studio${e.path}`, fn);
+    if (e.path.startsWith('/cher-mode/')) route(e.method, e.path, fn);
+  }
   // Ask Closet
   route('GET', '/chat', () => ({ suggestions: [], languageModel: 'keyword parser' }));
   route('POST', '/chat', ({ body }) => sv().assistant.chat(uid, { message: String(body.message || '').slice(0, 500), context: body.context || null, pieceId: body.pieceId,

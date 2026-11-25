@@ -32,7 +32,7 @@ export default function SavedScreen() {
                   </div>
                   <div className="toolbar">
                     <button type="button" onClick={() => wear(o)} disabled={!o.wearable}><Icon name="check" size={14} />Wear</button>
-                    <button type="button" onClick={() => go(`/tryon?ids=${o.pieces.map((p) => p.id).join(',')}`)}><Icon name="mirror" size={14} />Try on</button>
+                    <button type="button" onClick={() => go(`/virtual-try-on?ids=${o.pieces.map((p) => p.id).join(',')}`)}><Icon name="mirror" size={14} />Try on</button>
                     <button type="button" className={o.favorite ? 'on' : ''} onClick={() => fav(o)}><Icon name="heart" size={14} fill={o.favorite ? 'currentColor' : 'none'} />{o.favorite ? 'Favourite' : 'Favourite'}</button>
                     <button type="button" style={{ marginLeft: 'auto' }} onClick={() => remove(o.id)}><Icon name="trash" size={14} />Remove</button>
                   </div>

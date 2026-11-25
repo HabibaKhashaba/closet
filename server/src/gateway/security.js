@@ -34,7 +34,10 @@ function securityPipeline(app) {
     },
   }));
   app.use(cors({ origin: config.clientOrigin, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] }));
-  app.use(express.json({ limit: '100kb' }));
+  // v3.0 Studio photo features send one photo as base64 JSON (≤ 5 MB); everything else stays at 100 kB.
+  const smallJson = express.json({ limit: '100kb' });
+  const photoJson = express.json({ limit: '8mb' });
+  app.use((req, res, next) => (/^\/api\/v1\/studio\/(buy\/check|invitation\/decode|recreate|fit-check)$/.test(req.path) ? photoJson : smallJson)(req, res, next));
   if (config.env !== 'test') {
     // Photo requests are not counted: one closet page loads every photo (defect D-04).
     app.use('/api', rateLimit({
