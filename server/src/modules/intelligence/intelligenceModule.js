@@ -181,6 +181,7 @@ function intelligenceService({ db, repo: givenRepo, wardrobe, outfits, profile, 
       for (const t of trips) {
         if (!t.packed && t.startDate >= today && t.startDate <= addDays(today, 3)) add({ key: `pack:${t.id}`, kind: 'packing', priority: 4, title: 'Packing list incomplete', text: `Your ${t.destination} trip starts ${t.startDate === today ? 'today' : t.startDate === addDays(today, 1) ? 'tomorrow' : `on ${t.startDate}`} — ${t.itemIds.length} pieces are not marked as packed yet.`, link: '#/packing', date: t.startDate });
       }
+      if (this.social) for (const n of await this.social.notices(userId)) add(n); // v3.0 Friends' closet: access + borrow requests
       for (const a of recent.filter((x) => x.action === 'Wash done')) add({ key: `wash:${a.id}`, kind: 'wash', priority: 1, title: 'Wash done', text: `${a.detail || 'Your pieces'} returned to Available.`, link: '#/laundry', date: isoDay(a.at) });
       // v1.5 proactive notices — one Notification Center, stable keys (dedupe), snoozes respected.
       const week = `${today.slice(0, 4)}-w${String(Math.ceil((((new Date(`${today}T12:00:00Z`) - new Date(`${today.slice(0, 4)}-01-01T12:00:00Z`)) / 86400000) + 1) / 7)).padStart(2, '0')}`;

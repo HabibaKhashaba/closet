@@ -115,17 +115,12 @@ async function main() {
       await pool.query(`UPDATE accounts.users SET created_at = now() - ($2 || ' days')::interval, account_status = $3,
         failed_logins = CASE WHEN $4 THEN 5 ELSE 0 END, locked_until = CASE WHEN $4 THEN now() + interval '15 minutes' ELSE NULL END WHERE id = $1`, [m.user.id, String(days), status, locked]);
     }
-    // v3.0 Friends' closet: Nour lends 4 pieces; the demo user sends a request and Nour accepts it.
+    // v3.0 Friends' closet: Nour (nour.demo@closet.app / Closet2026!) gets her own closet. No friendship yet:
+    // the live demo is Habiba requesting access → Nour giving it → borrowing between the two accounts.
     const nour = await call('POST', '/auth/login', { email: FRIEND.email, password: PASSWORD });
+    await call('PUT', '/profile/quiz', { styles: ['Chic', 'Elegant', 'Minimal'], colours: ['Black', 'Beige', 'Green'], occasions: ['Work', 'Dinner', 'Wedding'], dressCode: 2, modest: false, city: 'Cairo' }, nour.token);
     await call('PUT', '/profile', { displayName: FRIEND.name }, nour.token);
-    for (const [file, name, details] of FRIEND.pieces) {
-      const p = await upload(nour.token, file, name, details);
-      await call('PUT', `/studio/friends/lendable/${p.id}`, { lendable: true }, nour.token);
-    }
-    for (const file of FRIEND.demoLendable) await call('PUT', `/studio/friends/lendable/${ids[file]}`, { lendable: true }, token);
-    await call('POST', '/studio/friends', { email: FRIEND.email }, token);
-    const incoming = (await call('GET', '/studio/friends', null, nour.token)).incoming[0];
-    await call('POST', `/studio/friends/${incoming.id}/accept`, null, nour.token);
+    for (const [file, name, details] of FRIEND.pieces) await upload(nour.token, file, name, details);
 
     console.log(`Seeded ${PIECES.length} pieces, ${REMOVED.length} deleted with reasons, ${WEARS.length} worn outfits, ${REJECTS.length} rejections, ${EVENTS.length} events (2 planned), 4 saved outfits, 1 packing list for ${EMAIL} / ${PASSWORD}; admin ${ADMIN}`);
   } finally {

@@ -1,7 +1,7 @@
 // Studio module (v3.0): the ten new features, each in its own file under ./features, mounted under
 // /api/v1/studio (and Cher mode also at /api/v1/cher-mode). One route table is used by BOTH the Express
 // server and the offline demo, so the two can never drift apart.
-// Feature flags: FEATURES_OFF=battle,wrapped turns features off (their routes answer 404 FEATURE_OFF).
+// Feature flags: FEATURES_OFF=mood,wrapped turns features off (their routes answer 404 FEATURE_OFF).
 const express = require('express');
 const { AppError } = require('../../shared/errors');
 const { studioRepository } = require('./studioRepository');
@@ -10,7 +10,7 @@ const { featureFlags } = require('./context');
 // static requires (the offline demo bundles this file)
 const FEATURE_FILES = {
   buy: require('./features/buy'), cher: require('./features/cher'), rescue: require('./features/rescue'), invitation: require('./features/invitation'), mood: require('./features/mood'),
-  recreate: require('./features/recreate'), fitcheck: require('./features/fitcheck'), battle: require('./features/battle'), wrapped: require('./features/wrapped'), friends: require('./features/friends'),
+  recreate: require('./features/recreate'), fitcheck: require('./features/fitcheck'), wrapped: require('./features/wrapped'), friends: require('./features/friends'),
 };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

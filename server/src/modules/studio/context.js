@@ -4,7 +4,7 @@ const { errors, AppError } = require('../../shared/errors');
 const { OCCASIONS, COLOURS, CATEGORIES, STYLES, FABRICS, DRESS_CODES } = require('../../shared/vocabulary');
 const { isOwned } = require('../../shared/lifecycle');
 
-const FEATURES = ['buy', 'cher', 'rescue', 'invitation', 'mood', 'recreate', 'fitcheck', 'battle', 'wrapped', 'friends'];
+const FEATURES = ['buy', 'cher', 'rescue', 'invitation', 'mood', 'recreate', 'fitcheck', 'wrapped', 'friends'];
 const featureFlags = (env = process.env) => {
   const off = String(env.FEATURES_OFF || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
   return Object.fromEntries(FEATURES.map((f) => [f, !off.includes(f)]));

@@ -73,6 +73,7 @@ function buildModules(deps = {}) {
   // v3.0 Studio: ten features on one shared CompatibilityService (modules/studio)
   const studio = registerStudio({ db: pool, repo: repos.studio, env: deps.env, llm, weather, profile: profile.service, wardrobe: () => wardrobe.service, outfits: () => outfits.service,
     shopping: () => shopping.service, planner: () => planner.service, rec: () => rec.service, availability: availability.service, activity: () => activity.service, intelligence: () => intelligence.service });
+  intelligence.service.social = studio.service.friends; // Friends' closet notices in the Notification Center
   return { llm, studio, tryOn, bus, storage, identity, profile, availability, wardrobe, outfits, weather, rec, planner, shopping, admin, activity, packing, intelligence, privacy, assistant };
 }
 

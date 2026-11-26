@@ -105,8 +105,8 @@ const MEMBERS = [
   ['bashar.demo@closet.app', 2, 'active', false],
 ];
 
-// v3.0 Friends' closet: Nour (a MEMBERS account) is the demo user's confirmed friend and lends these pieces.
-// [photo file, name, details] — every one is marked lendable and Available.
+// v3.0 Friends' closet: Nour (a MEMBERS account, password Closet2026!) has her own closet.
+// The demo starts with NO friendship: Habiba requests access, Nour gives it, then they borrow from each other.
 const FRIEND = {
   email: 'nour.demo@closet.app', name: 'Nour',
   pieces: [
@@ -114,9 +114,13 @@ const FRIEND = {
     ['silver_heels', 'Silver heels', { category: 'Shoes', colour: 'Grey', fabric: 'Leather', season: 'All seasons', size: '38', styles: ['Elegant'], dressCodes: [4, 5], modest: true }],
     ['red_clutch', 'Red clutch', { category: 'Bag', colour: 'Red', fabric: 'Leather', season: 'All seasons', size: 'One size', styles: ['Bold', 'Elegant'], dressCodes: [3, 4, 5], modest: true }],
     ['black_slip_dress', 'Black slip dress', { category: 'Dress', colour: 'Black', fabric: 'Silk', season: 'Summer', size: 'S', styles: ['Elegant', 'Minimal'], dressCodes: [2, 4, 5], modest: false }],
+    ['rose_wrap_dress', 'Rose wrap dress', { category: 'Dress', colour: 'Pink', fabric: 'Polyester', season: 'Spring / Autumn', size: 'S', styles: ['Elegant', 'Chic'], dressCodes: [2, 4], modest: true }],
+    ['camel_cardigan', 'Camel cardigan', { category: 'Layer', colour: 'Brown', fabric: 'Knit', season: 'Winter', size: 'M', styles: ['Classic', 'Comfortable'], dressCodes: [1, 2], modest: true }],
+    ['sage_linen_shirt', 'Sage linen shirt', { category: 'Top', colour: 'Green', fabric: 'Linen', season: 'Summer', size: 'S', styles: ['Minimal', 'Casual'], dressCodes: [1, 2, 3], modest: true }],
+    ['cream_pleated_skirt', 'Cream pleated skirt', { category: 'Bottom', colour: 'Beige', fabric: 'Polyester', season: 'All seasons', size: 'S', styles: ['Classic', 'Elegant'], dressCodes: [2, 3, 4], modest: true }],
+    ['white_sneakers', 'White sneakers', { category: 'Shoes', colour: 'White', fabric: 'Leather', season: 'All seasons', size: '38', styles: ['Casual', 'Minimal'], dressCodes: [1, 2], modest: true }],
+    ['tan_leather_tote', 'Tan leather tote', { category: 'Bag', colour: 'Brown', fabric: 'Leather', season: 'All seasons', size: 'One size', styles: ['Classic'], dressCodes: [1, 2, 3], modest: true }],
   ],
-  // the demo user's own pieces she lets friends borrow
-  demoLendable: ['black_blazer', 'champagne_evening_bag'],
 };
 
 module.exports = { FRIEND, MEMBERS, EMAIL: 'demo@closet.app', ADMIN: 'admin@closet.app', PASSWORD: 'Closet2026!', PIECES, STATUSES, WEARS, REJECTS, REMOVED, EVENTS, inDays };
