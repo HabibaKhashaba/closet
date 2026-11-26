@@ -8,6 +8,7 @@ import { LendModal } from './Lifecycle.jsx';
 export default function LendingScreen() {
   const { toast, refresh } = useApp();
   const l = useLoad(() => api.lending(), []);
+  const fr = useLoad(() => api.borrowRequests().catch(() => ({ borrowing: [] })), []); // v3.1 Friends' closet
   const closet = useLoad(() => api.items({ status: 'Available' }), []);
   const [pick, setPick] = useState(false);
   const [lend, setLend] = useState(null);
@@ -20,6 +21,21 @@ export default function LendingScreen() {
         actions={<button type="button" className="btn" onClick={() => setPick(true)}><Icon name="user" size={16} />Lend an item</button>} />
       {!l.data ? <Skeleton h={240} /> : (
         <div className="stack lg">
+          {(fr.data?.borrowing || []).length > 0 && (
+            <section className="card pad" aria-label="Borrowed from friends">
+              <div className="card-head"><div className="row"><h3>Borrowed from friends</h3><SprintTag n={5} short /></div><span className="tiny muted">{fr.data.borrowing.length} with you</span></div>
+              {fr.data.borrowing.map((r) => (
+                <div key={r.id} className="care-row">
+                  <a href="#/friends" className="care-pic">{r.piece ? <Tile piece={r.piece} status={false} /> : null}</a>
+                  <div className="grow">
+                    <b>{r.piece ? r.piece.name : 'A piece'}</b>
+                    <div className="small">From <b>{r.with}</b>{r.dueOn && <> · give it back by {fmtDate(r.dueOn)}</>}</div>
+                    <div className="small muted">{r.with} marks it returned in her Borrow & lend.</div>
+                  </div>
+                </div>
+              ))}
+            </section>
+          )}
           <section className="card pad" aria-label="Currently lent">
             <div className="card-head"><div className="row"><h3>Currently lent</h3><SprintTag n={3} short /></div><span className="tiny muted">{l.data.current.length} out{l.data.overdue ? ` · ${l.data.overdue} overdue` : ''}</span></div>
             {!l.data.current.length && <Empty icon="user" title="Nothing is lent out">Open a piece → More actions → Lend item, or use “Lend an item”.</Empty>}

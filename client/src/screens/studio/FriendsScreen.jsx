@@ -3,7 +3,7 @@
 // (403 for anyone who is not a confirmed friend; only available pieces can be borrowed; only the owner approves).
 import React, { useState } from 'react';
 import { api } from '../../api.js';
-import { pieceName, relDay, useApp, useLoad } from '../../ui.jsx';
+import { fmtDate, pieceName, relDay, useApp, useLoad } from '../../ui.jsx';
 import { ACCENT, Choice, Cover, Fineprint, Step } from './editorial.jsx';
 
 const CATS = ['All', 'Top', 'Dress', 'Bottom', 'Layer', 'Shoes', 'Bag', 'Extra'];
@@ -43,6 +43,18 @@ export default function FriendsScreen({ query = {} }) {
 
       {tab === 'friends' && (
         <>
+          {(reqs.data?.borrowing || []).length > 0 && (
+            <Step n="↙" title="Borrowed from friends" aside={<span className="ed-fine">{reqs.data.borrowing.length} with you now</span>}>
+              {reqs.data.borrowing.map((r) => (
+                <div key={r.id} className="ed-match">
+                  {r.piece ? <img src={r.piece.photoUrl} alt={pieceName(r.piece)} /> : <div className="ed-ph">?</div>}
+                  <div><div style={{ fontFamily: 'var(--serif)', fontSize: 20 }}>{r.piece ? r.piece.name : 'A piece'}</div>
+                    <div className="ed-meta">From <b>{r.with}</b>{r.dueOn ? ` · give it back by ${fmtDate(r.dueOn, { weekday: 'short', day: 'numeric', month: 'short' })}` : ''}</div></div>
+                  <span className="ed-fine">{r.with} marks it returned</span>
+                </div>
+              ))}
+            </Step>
+          )}
           <Step n="+" title="Request access to a closet">
             <form className="ed-row" onSubmit={async (e) => { e.preventDefault(); await run(() => api.friendRequest(email), 'Request sent. She will see it in her notifications.'); setEmail(''); }}>
               <input className="input" style={{ flex: 1, minWidth: 220 }} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Her Closet email, e.g. nour.demo@closet.app" aria-label="Friend’s Closet email" />
@@ -102,7 +114,7 @@ export default function FriendsScreen({ query = {} }) {
             {data.outgoing.length === 0 && !all.some((r) => r.direction === 'outgoing') && <p className="ed-fine">You haven’t asked anyone yet.</p>}
             <ul className="ed-list">
               {data.outgoing.map((o) => <li key={o.id}>Access to {o.name}’s closet · waiting</li>)}
-              {all.filter((r) => r.direction === 'outgoing').map((r) => <li key={r.id}>Borrow {r.piece ? pieceName(r.piece).toLowerCase() : 'a piece'} from {r.with} · <b>{r.status}</b></li>)}
+              {all.filter((r) => r.direction === 'outgoing').map((r) => <li key={r.id}>Borrow {r.piece ? pieceName(r.piece).toLowerCase() : 'a piece'} from {r.with} · <b>{r.borrowedNow ? 'with you now' : r.status}</b></li>)}
             </ul>
           </Step>
         </>

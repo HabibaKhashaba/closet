@@ -10,6 +10,7 @@ export default function ClosetScreen({ query: q = {} }) {
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState('new');
   const all = useLoad(() => api.items(), []);
+  const borrowed = useLoad(() => api.borrowRequests().catch(() => ({ borrowing: [] })), []); // v3.1: pieces borrowed from friends
   const [gapsOpen, setGapsOpen] = useState(false);
 
   const items = useMemo(() => {
@@ -31,6 +32,19 @@ export default function ClosetScreen({ query: q = {} }) {
     <>
       <PageHead title="My closet" sprint={1} sub="Your dressing room — every piece, with its status."
         actions={<><button type="button" className="btn line" onClick={() => setGapsOpen(true)}><Icon name="chart" size={16} />Closet gaps</button><a className="btn" href="#/closet/new"><Icon name="plus" size={16} />Add a piece</a></>} />
+      {(borrowed.data?.borrowing || []).length > 0 && (
+        <section className="card pad" style={{ marginBottom: 18 }} aria-label="Borrowed from friends">
+          <div className="card-head"><div className="row"><h3>Borrowed from friends</h3><SprintTag n={5} short /></div><a className="tiny muted" href="#/lending">Borrow & lend →</a></div>
+          <div className="row" style={{ gap: 14, flexWrap: 'wrap' }}>
+            {borrowed.data.borrowing.map((r) => (
+              <a key={r.id} href="#/friends" className="row" style={{ gap: 10, alignItems: 'center' }}>
+                {r.piece && <img src={r.piece.photoUrl} alt="" style={{ width: 54, height: 68, objectFit: 'cover', borderRadius: 8, background: 'var(--sand)' }} />}
+                <span className="small"><b>{r.piece ? r.piece.name : 'A piece'}</b><br /><span className="muted">from {r.with}{r.dueOn ? ` · back by ${r.dueOn.slice(8, 10)}/${r.dueOn.slice(5, 7)}` : ''}</span></span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
       <div className="row" style={{ marginBottom: 14, gap: 12 }}>
         <div style={{ overflowX: 'auto', maxWidth: '100%' }}><Tabs options={tabs} value={category} onChange={setCategory} /></div>
       </div>
