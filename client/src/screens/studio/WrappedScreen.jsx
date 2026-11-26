@@ -5,14 +5,14 @@ import { api } from '../../api.js';
 import { pieceName, useApp, useLoad } from '../../ui.jsx';
 import { ACCENT, Choice, Cover, Fineprint } from './editorial.jsx';
 
-const BG = ['#f5e6e3', '#f1e8de', '#e5ede3', '#eee7f2', '#e5ecf3', '#f6eedb', '#fbf1ef'];
+const BG = ['#EDE3D6', '#f1e8de', '#e5ede3', '#eee7f2', '#e5ecf3', '#f6eedb', '#F5EFE6'];
 
 function drawShare(canvas, w) {
   const c = canvas.getContext('2d'); const W = 1080; const H = 1350;
   canvas.width = W; canvas.height = H;
-  const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#fbf1ef'); g.addColorStop(1, '#f1e8de');
+  const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#F5EFE6'); g.addColorStop(1, '#f1e8de');
   c.fillStyle = g; c.fillRect(0, 0, W, H);
-  c.fillStyle = '#2a2626';
+  c.fillStyle = '#30231E';
   c.font = '600 30px sans-serif'; c.fillText(`CLOSET WRAPPED · LAST ${w.days} DAYS`, 80, 120);
   c.font = '600 104px Georgia, serif'; wrap(c, w.persona, 80, 270, W - 160, 108);
   c.font = 'italic 40px Georgia, serif'; wrap(c, w.tagline, 80, 520, W - 160, 52);
@@ -45,7 +45,7 @@ export default function WrappedScreen() {
   ] : [];
   return (
     <div className="ed" style={{ '--acc': ACCENT.wrapped }}>
-      <Cover feature="wrapped" no={9} kicker="Your year in clothes" title="Closet wrapped" dek="Your style story, counted from what you actually wore — swipe through it, then share it." />
+      <Cover feature="wrapped" no={8} kicker="Your year in clothes" title="Closet wrapped" dek="Your style story, counted from what you actually wore — swipe through it, then share it." />
       <Choice label="Period" options={['30', '90', '365']} value={days} render={(x) => (x === '365' ? 'This year' : `Last ${x} days`)} onChange={setDays} />
       <div className="ed-story" style={{ marginTop: 22 }} aria-live="polite">
         {cards.map(([title, body], i) => (

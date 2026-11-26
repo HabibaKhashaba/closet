@@ -7,7 +7,7 @@ import { pieceName } from '../../ui.jsx';
 import { readPhoto } from './common.jsx';
 
 // One quiet accent everywhere (the app's rose), so Studio matches the rest of Closet.
-const ROSE = '#9c5f5b';
+const ROSE = '#652F3C'; // burgundy
 export const ACCENT = { buy: ROSE, cher: ROSE, rescue: ROSE, invitation: ROSE, mood: ROSE, recreate: ROSE, fit: ROSE, battle: ROSE, wrapped: ROSE, friends: ROSE };
 
 let closetCache = null;

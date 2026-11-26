@@ -4,7 +4,7 @@ Addendum to the SRS v2.0, the SDD v2.0 and the Test Plan & Report v2.0. Build v3
 
 ## 1. What changed in v3.0
 
-Ten new features, called **Studio**. They are built on the existing modules and do not change older features.
+Nine new features, called **Studio**. They are built on the existing modules and do not change older features.
 
 - **One scorer.** Every feature scores outfits through one `CompatibilityService` (`server/src/modules/studio/compatibility.js`). It wraps the existing recommendation engine, so a look gets the same score in Style me, Mix & Match and every Studio feature. No feature has its own scoring.
 - **Own clothes only.** Features use the user's own pieces, plus friends' pieces only when the friend chose to share them. Looks use **Available** pieces and respect the *modest-only* setting and the dress-code levels.
@@ -15,7 +15,7 @@ Ten new features, called **Studio**. They are built on the existing modules and 
   - A bad answer gets **one retry**. After that, the feature uses its friendly rule-based fallback.
   - So every feature also works with **no AI key** (keyword parsing or manual choice).
 - **Authorization on the server.** Every Studio route is behind the login token. Pieces that belong to someone else return **404**. Friends' closet returns **403** to anyone who is not a confirmed friend.
-- **Feature flags.** `FEATURES_OFF=battle,wrapped` turns single features off; their routes then answer `404 FEATURE_OFF`. `GET /api/v1/studio/features` lists the flags.
+- **Feature flags.** `FEATURES_OFF=mood,wrapped` turns single features off; their routes then answer `404 FEATURE_OFF`. `GET /api/v1/studio/features` lists the flags.
 - **One module, one file per feature** (`server/src/modules/studio/features/*.js`). One route table serves both the Express server and the offline demo, so the two cannot drift apart.
 
 ## 2. Requirements and user stories (Jira-ready)
@@ -81,14 +81,6 @@ Story points use the team's scale. All ten stories belong to **Sprint 4 (final m
 3. *Save my outfit* runs the normal wear flow: wear count, last worn and analytics.
 4. The photo is never stored.
 
-### US-127 Stylist battle — 3 pts
-*As a user, I want two stylist personas to compete with looks from my closet and vote for the winner.*
-
-1. *The Classic* favours neutrals and classic styles. *The Rule Breaker* favours bold styles and colours. Both looks pass the same rules.
-2. The two looks share at most one main piece.
-3. My vote is stored and the vote count is shown.
-4. AI may add one line per persona, with no numbers.
-
 ### US-128 Closet wrapped — 3 pts
 *As a user, I want a fun recap of my style for the last 30 / 90 / 365 days that I can share.*
 
@@ -98,13 +90,13 @@ Story points use the team's scale. All ten stories belong to **Sprint 4 (final m
 4. Any period other than 30, 90 or 365 days returns 400.
 
 ### US-129 Friends' closet — 8 pts (security-critical)
-*As a user, I want to borrow from friends instead of buying, while keeping the rest of my closet private.*
+*As a user, I want to request access to a friend's closet with her Closet email, see everything she owns once she agrees, and ask to borrow a piece.*
 
-1. Friendship is mutual: a request must be accepted by the other person. The answer to a request is the same whether or not the email exists, so accounts cannot be discovered.
-2. A friend sees only the pieces I marked **lendable** that are also **Available**. They see only the photo, name, category, colour and my first name.
-3. Anyone who is not a confirmed friend gets **403**. A piece that is not lendable gets **404**. Only the owner can approve a request.
-4. *Approve* runs the existing Borrow & lend flow: the piece becomes Borrowed and leaves the friend's view.
-5. Friend actions go to the activity log, without garment details.
+1. *Request access* takes a Closet email. The friend sees **"Habiba requested access to your closet"** in her Notification Center and on the Requests tab. The reply is the same whether or not the email exists, so accounts cannot be discovered.
+2. *Give access* makes the friendship mutual: both users can open the other's **whole closet**. They see the photo, name, category, colour and whether each piece is available — never wear history, notes or prices.
+3. Anyone who is not a confirmed friend gets **403**. A pending request is not enough.
+4. *Ask to borrow* works only on an Available piece (otherwise 409). The owner is notified and approves or declines; only the owner can decide. *Approve* runs the existing Borrow & lend flow, so the piece becomes Borrowed and shows as unavailable. The requester is notified of the answer.
+5. Removing access ends it for both users. Friend actions are written to the activity log without garment details.
 
 ## 3. API (all under `/api/v1`, login token required)
 
@@ -124,13 +116,10 @@ Story points use the team's scale. All ten stories belong to **Sprint 4 (final m
 | POST | /studio/recreate/shopping-list | Recreate | `target` | shopping list item |
 | POST | /studio/fit-check | Fit check | `itemIds[]` or `photo`, `occasion` | `detected[], score, compatibility, reasons, swap` |
 | POST | /studio/fit-check/save | Fit check | `itemIds[]` | `saved` |
-| POST | /studio/battle | Battle | `occasion` | `looks[2]` (each look has `persona` and `line`), `votes` |
-| POST | /studio/battle/vote | Battle | `winner, itemIds[]` | `votes` |
 | GET | /studio/wrapped?days=30\|90\|365 | Wrapped | – | `outfitsWorn, differentPieces, rotation, mostWorn, topColours[], persona, tagline …` |
-| GET / POST | /studio/friends | Friends | `email` | `friends[], incoming[], outgoing[], lendableIds[]` |
+| GET / POST | /studio/friends | Friends | `email` (request access) | `friends[], incoming[], outgoing[]` |
 | POST / DELETE | /studio/friends/:id/accept · /studio/friends/:id | Friends | – | `accepted` · `removed` |
-| PUT | /studio/friends/lendable/:itemId | Friends | `lendable` | `lendable` |
-| GET | /studio/friends/:friendId/closet | Friends | – | `items[]` (safe fields only) · **403** if not a friend |
+| GET | /studio/friends/:friendId/closet | Friends | – | `items[]` (whole closet, safe fields + `available`) · **403** if not a friend |
 | POST | /studio/friends/borrow | Friends | `friendId, itemId` | `request{id, status}` |
 | GET / POST | /studio/friends/requests · /studio/friends/requests/:id | Friends | `decision: approve · decline` | `requests[]` · `status` |
 
@@ -144,16 +133,14 @@ There is one new schema, `studio`. Every table references `accounts.users ON DEL
 | Table | Purpose | Key columns |
 |---|---|---|
 | studio.friendships | mutual friendship | requester_id, addressee_id, status pending · accepted; unique per pair (LEAST/GREATEST index) |
-| studio.lendable | pieces the owner lets friends borrow (off by default) | item_id PK → wardrobe.items, user_id |
 | studio.borrow_requests | borrow requests and their decisions | item_id, owner_id, requester_id, status pending · approved · declined |
-| studio.battle_votes | Stylist battle votes | user_id, occasion, winner, item_ids |
 | studio.cher_feedback | what the user did with a spun look | user_id, item_ids, score, action |
 
 Accepted Cher looks are also saved as favourites. Rejected looks become a reject signal. Both feed the existing learned style patterns.
 
 ## 5. Design (SDD additions)
 
-**Class diagram — Studio module.** One module registers ten feature objects. All the features that score looks depend on CompatibilityService. All the features that call AI go through `callClaudeJSON`.
+**Class diagram — Studio module.** One module registers nine feature objects. All the features that score looks depend on CompatibilityService. All the features that call AI go through `callClaudeJSON`.
 
 ![Studio class diagram](class_studio.svg)
 
@@ -221,20 +208,21 @@ Accepted Cher looks are also saved as favourites. Rejected looks become a reject
 
 **Fit check.** Use *Pick pieces instead*: Breton top, beige trousers, white sneakers. Show the score and one swap, then *Save my outfit* (the wear count goes up).
 
-**Stylist battle.** Choose Dinner → *Start the battle*. Compare *The Classic* and *The Rule Breaker*, vote, and show the vote count.
-
 **Closet wrapped.** Swipe through the cards (30 days → 90 days), then *Download share card*.
 
-**Friends' closet.**
+**Friends' closet (two accounts).**
 
-1. Open the Friends tab: Nour is a confirmed friend. *Open closet* shows only her 4 lendable pieces, then *Ask to borrow*.
-2. Open *What I lend* and toggle the black blazer.
-3. Explain the 403 rule for people who are not friends.
+1. As Habiba (`demo@closet.app`), go to Friends' closet → *Request access* → `nour.demo@closet.app`.
+2. Sign out and sign in as Nour (`nour.demo@closet.app` / `Closet2026!`). The bell shows "Habiba requested access to your closet". Open Requests → *Give access*.
+3. Sign in as Habiba again. The bell shows "Nour gave you access". *Open closet* shows all 10 of Nour's pieces → *Ask to borrow* the red clutch.
+4. Sign in as Nour. "Habiba asks to borrow your red clutch" → *Approve*. The clutch moves to Borrow & lend.
+5. Sign in as Habiba. "Nour approved your request". In Nour's closet, the clutch now shows as not available.
 
 ## 8. Change log
 
 | Version | Date | Change |
 |---|---|---|
+| 3.1 | 26 Nov 2026 | Stylist battle removed. Friends' closet reworked: access by Closet email, the whole closet visible to friends, Notification Center entries for requests and answers, a second demo account (Nour). New colour palette (ivory, cashmere, warm oak, brass, burgundy, espresso). |
 | 3.0 | 25 Nov 2026 | Studio: 10 features, CompatibilityService, strict-JSON AI gate, migration 009, Friends' closet, Cher mode (CSS 3D), 19 unit + 18 API tests, demo seed (Nour + 4 lendable pieces) |
 
 ## 9. Future expansion

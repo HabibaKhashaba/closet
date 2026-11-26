@@ -5,7 +5,7 @@ import { useApp, useLoad } from '../../ui.jsx';
 import { ACCENT, Choice, Cover, Fineprint, LookPanel, Shelf, Step } from './editorial.jsx';
 import { go } from '../../App.jsx';
 
-const MOOD_COLOUR = { confident: '#9c5f5b', cozy: '#9c5f5b', bold: '#9c5f5b', calm: '#9c5f5b', playful: '#9c5f5b', elegant: '#9c5f5b' };
+const MOOD_COLOUR = { confident: '#652F3C', cozy: '#652F3C', bold: '#652F3C', calm: '#652F3C', playful: '#652F3C', elegant: '#652F3C' };
 
 export default function MoodScreen() {
   const { vocab, toast } = useApp();
@@ -37,7 +37,7 @@ export default function MoodScreen() {
             <div className="ed-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', marginTop: 0 }}>
               {list.map((m) => (
                 <button type="button" key={m.key} aria-pressed={mood === m.key} onClick={() => { setMood(m.key); run({ mood: m.key }); }}
-                  style={{ textAlign: 'left', cursor: 'pointer', border: 0, borderRadius: 18, padding: '20px 18px', minHeight: 132, background: mood === m.key ? 'var(--rose-soft)' : '#fff', color: 'var(--ink)', outline: mood === m.key ? '1.5px solid #9c5f5b' : 'none', boxShadow: '0 18px 36px -28px rgba(0,0,0,.5)', borderTop: 0 }}>
+                  style={{ textAlign: 'left', cursor: 'pointer', border: 0, borderRadius: 18, padding: '20px 18px', minHeight: 132, background: mood === m.key ? 'var(--rose-soft)' : '#fff', color: 'var(--ink)', outline: mood === m.key ? '1.5px solid #652F3C' : 'none', boxShadow: '0 18px 36px -28px rgba(0,0,0,.5)', borderTop: 0 }}>
                   <div style={{ fontFamily: 'var(--serif)', fontSize: 28, fontWeight: 600, lineHeight: 1 }}>{m.label}</div>
                   <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, marginTop: 10, opacity: .85 }}>{m.line}</div>
                 </button>

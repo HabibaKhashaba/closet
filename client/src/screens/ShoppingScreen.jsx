@@ -125,7 +125,7 @@ export default function ShoppingScreen() {
       <PageHead title="Shopping bag" sprint={3} sub="What to buy next — and why. Never what you let go of." />
       <div className="shop">
         <section className="bag-scene">
-          <div className="bag-handles" aria-hidden="true"><svg viewBox="0 0 300 90"><path d="M70 88 C70 10, 130 4, 150 4 C170 4, 230 10, 230 88" fill="none" stroke="#9c5f5b" strokeWidth="10" strokeLinecap="round" /><path d="M70 88 C70 10, 130 4, 150 4 C170 4, 230 10, 230 88" fill="none" stroke="#c48a86" strokeWidth="5" strokeLinecap="round" /></svg></div>
+          <div className="bag-handles" aria-hidden="true"><svg viewBox="0 0 300 90"><path d="M70 88 C70 10, 130 4, 150 4 C170 4, 230 10, 230 88" fill="none" stroke="#652F3C" strokeWidth="10" strokeLinecap="round" /><path d="M70 88 C70 10, 130 4, 150 4 C170 4, 230 10, 230 88" fill="none" stroke="#A58A60" strokeWidth="5" strokeLinecap="round" /></svg></div>
           <div className="bag">
             <div className="bag-top"><span className="bag-brand">closet<span>.</span></span><span className="bag-count"><b>{list.loading ? '…' : toBuy.length}</b> to buy</span></div>
             {list.loading ? <Skeleton h={260} /> : !toBuy.length ? (

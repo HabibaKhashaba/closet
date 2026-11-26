@@ -37,7 +37,7 @@ function Launch({ items }) {
       {DOORS.map(([href, title, sub, s, p, bg], i) => (
         <a key={href} href={href} className={`tilt rise d${i % 4}`}>
           <SprintTag n={s} short />
-          <span className="art" style={{ background: bg }}>{p ? <img src={p.photoUrl} alt="" /> : <span className="orb" style={{ width: 54, height: 54, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%, #fff, #f1cfc9 30%, #c48a86 65%, #7d4b48)', boxShadow: '0 0 30px rgba(232,180,175,.5)' }} />}</span>
+          <span className="art" style={{ background: bg }}>{p ? <img src={p.photoUrl} alt="" /> : <span className="orb" style={{ width: 54, height: 54, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%, #fff, #f1cfc9 30%, #A58A60 65%, #7d4b48)', boxShadow: '0 0 30px rgba(232,180,175,.5)' }} />}</span>
           <b>{title}</b><small>{sub}</small>
         </a>
       ))}

@@ -31,8 +31,8 @@ function HamperFront({ count, label }) {
       <ellipse cx="290" cy="96" rx="16" ry="7" fill="#7c5a3b" opacity=".55" />
       <g transform="translate(170 150)">
         <rect x="-62" y="-34" width="124" height="62" rx="14" fill="#fffaf6" opacity=".92" />
-        <text x="0" y="0" textAnchor="middle" fontFamily="Lora, Georgia, serif" fontSize="34" fill="#2a2626">{count}</text>
-        <text x="0" y="18" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="9.5" fontWeight="700" letterSpacing="1.6" fill="#8a807c">{label}</text>
+        <text x="0" y="0" textAnchor="middle" fontFamily="Lora, Georgia, serif" fontSize="34" fill="#30231E">{count}</text>
+        <text x="0" y="18" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="9.5" fontWeight="700" letterSpacing="1.6" fill="#8a7b6e">{label}</text>
       </g>
     </svg>
   );
@@ -64,12 +64,12 @@ function LaundryRoom({ washing }) {
       <g transform="translate(14 300)">
         <rect width="164" height="212" rx="14" fill="#fdfdfd" stroke="#d9e2e9" strokeWidth="2" />
         <rect x="0" y="0" width="164" height="38" rx="14" fill="#f1f5f8" />
-        <circle cx="26" cy="19" r="7" fill="#dfe7ee" /><circle cx="46" cy="19" r="4" fill="#c48a86" /><rect x="96" y="12" width="52" height="14" rx="4" fill="#2a2626" opacity=".85" /><text x="122" y="23" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="9" fill="#9fe0b8">{washing ? 'WASH' : '00:00'}</text>
+        <circle cx="26" cy="19" r="7" fill="#dfe7ee" /><circle cx="46" cy="19" r="4" fill="#A58A60" /><rect x="96" y="12" width="52" height="14" rx="4" fill="#30231E" opacity=".85" /><text x="122" y="23" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="9" fill="#9fe0b8">{washing ? 'WASH' : '00:00'}</text>
         <circle cx="82" cy="122" r="60" fill="#e7edf2" stroke="#cbd6df" strokeWidth="4" />
         <circle cx="82" cy="122" r="47" fill="url(#glass)" />
         <g className={washing ? 'drum spin' : 'drum'} style={{ transformOrigin: '82px 122px' }}>
           <path d="M40 128 Q60 112 82 126 T124 124 L124 160 Q82 176 40 160 Z" fill="#7aa9cc" opacity=".55" />
-          <rect x="58" y="128" width="26" height="16" rx="6" fill="#c48a86" opacity=".85" transform="rotate(-18 71 136)" />
+          <rect x="58" y="128" width="26" height="16" rx="6" fill="#A58A60" opacity=".85" transform="rotate(-18 71 136)" />
           <rect x="84" y="134" width="24" height="14" rx="6" fill="#f6efe9" opacity=".9" transform="rotate(14 96 141)" />
         </g>
         <path d="M50 92 A40 40 0 0 1 96 84" stroke="#fff" strokeWidth="5" fill="none" opacity=".7" strokeLinecap="round" />
@@ -84,7 +84,7 @@ function LaundryRoom({ washing }) {
       ))}
       {/* ironing board and iron */}
       <g transform="translate(470 392)">
-        <path d="M-6 10 L150 0 Q172 2 164 14 L-2 24 Q-14 20 -6 10Z" fill="#c48a86" />
+        <path d="M-6 10 L150 0 Q172 2 164 14 L-2 24 Q-14 20 -6 10Z" fill="#A58A60" />
         <path d="M-4 14 L150 5" stroke="#e9c9c4" strokeWidth="3" strokeDasharray="6 6" />
         <path d="M30 20 L110 122M110 20 L30 122" stroke="#9aa6b0" strokeWidth="5" strokeLinecap="round" />
         <path d="M58 -14 h46 q14 0 16 12 h-70 z" fill="#f4f6f8" stroke="#aab4bd" strokeWidth="2" />

@@ -32,6 +32,8 @@ const TOKEN = 'offline-demo-session';
 // The seeded admin (seedData ADMIN): its own empty account plus /admin. Like the server, /admin shows counts, never a wardrobe.
 const ADMIN = { id: '00000000-0000-4000-8000-0000000ad313', email: seed.ADMIN, role: 'admin' };
 const ADMIN_TOKEN = 'offline-demo-admin-session';
+const NOUR_TOKEN = 'offline-demo-nour-session';
+const NOUR = { id: '00000000-0000-4000-8000-000000000010', email: 'nour.demo@closet.app', role: 'user' }; // seedData MEMBERS[0]
 
 function createLocalApi({ saved = null, persist = () => {}, llm = null } = {}) {
   const repos = memoryRepositories(saved ? restoreStore(saved) : createMemoryStore());
@@ -101,16 +103,12 @@ function createLocalApi({ saved = null, persist = () => {}, llm = null } = {}) {
       if (status === 'active') S.activity.push({ id: ++S.seq.activity, user_id: id, action: 'Signed in', detail: null, at: at(Math.min(days, 1 + k), 3) });
       if (status === 'suspended') S.activity.push({ id: ++S.seq.activity, user_id: ADMIN.id, action: 'Admin: account suspended', detail: email, at: at(2) });
     });
-    // v3.0 Friends' closet (seedData FRIEND): Nour's lendable pieces + a confirmed friendship
+    // v3.0 Friends' closet (seedData FRIEND): Nour has her own closet and can sign in; no friendship yet
     const nourId = S.users.find((x) => x.email === seed.FRIEND.email).id;
     if (!S.profiles.has(nourId)) await repos.profile.createDefault(nourId);
-    S.profiles.get(nourId).display_name = seed.FRIEND.name;
-    for (const [file, name, d] of seed.FRIEND.pieces) {
-      const row = await repos.wardrobe.create(nourId, file, { ...v.validate(detailsSchema, d), name });
-      await repos.studio.setLendable(nourId, row.id, true);
-    }
-    for (const file of seed.FRIEND.demoLendable) await repos.studio.setLendable(uid, ids[file], true);
-    const fr = await repos.studio.request(uid, nourId); await repos.studio.accept(fr.id, nourId);
+    Object.assign(S.profiles.get(nourId), { display_name: seed.FRIEND.name, quiz_completed_at: new Date(), styles: ['Chic', 'Elegant', 'Minimal'], occasions: ['Work', 'Dinner', 'Wedding'], city: 'Cairo' });
+    for (const [file, name, d] of seed.FRIEND.pieces) { const row = await repos.wardrobe.create(nourId, file, { ...v.validate(detailsSchema, d), name }); await m.bus.publish(TOPICS.ItemCreated, { userId: nourId, itemId: row.id }); }
+    await m.bus.publish(TOPICS.UserRegistered, { userId: nourId });
     S.activity.push({ id: ++S.seq.activity, user_id: uid, action: 'Signed in', detail: null, at: at(1, 2) });
     return ids;
   }
@@ -129,14 +127,15 @@ function createLocalApi({ saved = null, persist = () => {}, llm = null } = {}) {
       await repos.activity.insert(ADMIN.id, 'Signed in', null);
       return { token: ADMIN_TOKEN, user: ADMIN };
     }
-    if (email !== seed.EMAIL || body.password !== seed.PASSWORD) throw new AppError(401, 'BAD_LOGIN', 'Offline demo: sign in with demo@closet.app or admin@closet.app / Closet2026!');
+    if (body.password === seed.PASSWORD && email === seed.FRIEND.email) { await repos.activity.insert(NOUR.id, 'Signed in', null); return { token: NOUR_TOKEN, user: NOUR }; }
+    if (email !== seed.EMAIL || body.password !== seed.PASSWORD) throw new AppError(401, 'BAD_LOGIN', 'Offline demo: sign in with demo@closet.app, nour.demo@closet.app or admin@closet.app / Closet2026!');
     await repos.activity.insert(USER.id, 'Signed in', null);
     return { token: TOKEN, user: USER };
   });
   route('POST', '/auth/register', () => { throw new AppError(403, 'OFFLINE', 'The offline demo uses the seeded demo account. Registration needs the live server.'); });
   route('POST', '/auth/google', () => { throw new AppError(403, 'OFFLINE', 'Google sign-in needs the live server.'); });
-  route('POST', '/auth/logout', async ({ auth }) => { await repos.activity.insert(auth === `Bearer ${ADMIN_TOKEN}` ? ADMIN.id : USER.id, 'Signed out', null); return null; });
-  route('GET', '/auth/me', ({ auth }) => ({ user: auth === `Bearer ${ADMIN_TOKEN}` ? ADMIN : USER }));
+  route('POST', '/auth/logout', async () => { await repos.activity.insert(uid, 'Signed out', null); return null; });
+  route('GET', '/auth/me', ({ auth }) => ({ user: auth === `Bearer ${ADMIN_TOKEN}` ? ADMIN : auth === `Bearer ${NOUR_TOKEN}` ? NOUR : USER }));
   // Admin: the real admin service (server/src/modules/admin) on the in-memory store. /admin is admin-only (see handle).
   const ad = () => m.admin.service;
   route('GET', '/admin/users', async () => ({ users: await ad().users() }));
@@ -296,9 +295,10 @@ function createLocalApi({ saved = null, persist = () => {}, llm = null } = {}) {
     if (!hit) return { status: 404, data: { error: 'NOT_FOUND', message: 'No such endpoint in the offline demo.' } };
     const open = path === '/auth/login' || path === '/auth/register' || path === '/auth/google' || path === '/vocabulary' || path === '/health';
     const asAdmin = authorization === `Bearer ${ADMIN_TOKEN}`;
-    if (!open && authorization !== `Bearer ${TOKEN}` && !asAdmin) return { status: 401, data: { error: 'UNAUTHORIZED', message: 'Please sign in.' } };
+    const asNour = authorization === `Bearer ${NOUR_TOKEN}`;
+    if (!open && authorization !== `Bearer ${TOKEN}` && !asAdmin && !asNour) return { status: 401, data: { error: 'UNAUTHORIZED', message: 'Please sign in.' } };
     if (path.startsWith('/admin') && !asAdmin) return { status: 403, data: { error: 'FORBIDDEN', message: 'Admins only.' } };
-    uid = asAdmin ? ADMIN.id : USER.id; // one signed-in account per tab: the admin works on its own, empty account
+    uid = asAdmin ? ADMIN.id : asNour ? NOUR.id : USER.id; // one signed-in account per tab: the admin works on its own, empty account
     try {
       const data = await hit.fn({ p: path.match(hit.re).groups || {}, body: body || {}, query, auth: authorization });
       const a = AUDIT.find(([re]) => re.test(`${method} ${path}`));
@@ -314,4 +314,4 @@ function createLocalApi({ saved = null, persist = () => {}, llm = null } = {}) {
   return { handle, ready, store: S, modules: m };
 }
 
-module.exports = { createLocalApi, TOKEN, USER, ADMIN, ADMIN_TOKEN };
+module.exports = { createLocalApi, TOKEN, USER, ADMIN, ADMIN_TOKEN, NOUR, NOUR_TOKEN };

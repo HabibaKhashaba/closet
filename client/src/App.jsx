@@ -28,7 +28,6 @@ import InvitationScreen from './screens/studio/InvitationScreen.jsx';
 import MoodScreen from './screens/studio/MoodScreen.jsx';
 import RecreateScreen from './screens/studio/RecreateScreen.jsx';
 import FitCheckScreen from './screens/studio/FitCheckScreen.jsx';
-import BattleScreen from './screens/studio/BattleScreen.jsx';
 import WrappedScreen from './screens/studio/WrappedScreen.jsx';
 import FriendsScreen from './screens/studio/FriendsScreen.jsx';
 
@@ -53,7 +52,7 @@ const NAV = [
   ['Today', [['/', 'home', 'Home', null]]],
   ['Wardrobe', [['/closet', 'closet', 'Closet', 1], ['/care', 'laundry', 'Care', 1], ['/lending', 'user', 'Borrow & lend', 3], ['/donation', 'heart', 'Donation', 3]]],
   ['Style', [['/outfits', 'sparkle', 'Style me · 3 looks', 2], ['/mix', 'grid', 'Mix & Match', 2], ['/virtual-try-on', 'mirror', 'Virtual try-on', 2], ['/saved', 'bookmark', 'Lookbook', 2]]],
-  ['Studio', [['/mix?mode=spin', 'sparkle', 'Cher mode', 5], ['/mood', 'smile', 'Mood styling', 5], ['/rescue', 'bolt', 'Emergency rescue', 5], ['/fit-check', 'camera', 'Fit check', 5], ['/recreate', 'wand', 'Recreate this look', 5], ['/battle', 'trophy', 'Stylist battle', 5], ['/invitation', 'mail', 'Invitation decoder', 5], ['/buy', 'bag', 'Should I buy this?', 5], ['/friends', 'users', 'Friends’ closet', 5], ['/wrapped', 'gift', 'Closet wrapped', 5]]],
+  ['Studio', [['/mix?mode=spin', 'sparkle', 'Cher mode', 5], ['/mood', 'smile', 'Mood styling', 5], ['/rescue', 'bolt', 'Emergency rescue', 5], ['/fit-check', 'camera', 'Fit check', 5], ['/recreate', 'wand', 'Recreate this look', 5], ['/invitation', 'mail', 'Invitation decoder', 5], ['/buy', 'bag', 'Should I buy this?', 5], ['/friends', 'users', 'Friends’ closet', 5], ['/wrapped', 'gift', 'Closet wrapped', 5]]],
   ['Assistant', [['/ask', 'brain', 'Ask Closet', 3]]],
   ['Plan', [['/planner', 'calendar', 'Planner', 1], ['/packing', 'suitcase', 'Packing', 4]]],
   ['Insights', [['/analytics', 'chart', 'Analytics & insights', 3], ['/shopping', 'bag', 'Shopping bag', 3]]],
@@ -61,7 +60,7 @@ const NAV = [
 ];
 const TABS = [['/', 'home', 'Home'], ['/outfits', 'sparkle', 'Outfits'], ['/ask', 'chat', 'Ask'], ['/closet', 'closet', 'Closet']];
 
-const N_ICON = { conflict: 'alert', plan: 'calendar', forgotten: 'wand', wash: 'washer', laundry: 'washer', packing: 'suitcase', due: 'clock', weather: 'cloud' };
+const N_ICON = { friends: 'users', conflict: 'alert', plan: 'calendar', forgotten: 'wand', wash: 'washer', laundry: 'washer', packing: 'suitcase', due: 'clock', weather: 'cloud' };
 // Notification Center (US-92): notices from Planner, Availability, Packing, Analytics and Weather in one place.
 function NotificationCenter({ data, onClose, onRead }) {
   const list = data?.notifications || [];
@@ -182,9 +181,8 @@ export default function App() {
   else if (section === 'mood') screen = <MoodScreen />;
   else if (section === 'recreate') screen = <RecreateScreen />;
   else if (section === 'fit-check') screen = <FitCheckScreen />;
-  else if (section === 'battle') screen = <BattleScreen />;
   else if (section === 'wrapped') screen = <WrappedScreen />;
-  else if (section === 'friends') screen = <FriendsScreen />;
+  else if (section === 'friends') screen = <FriendsScreen key={q.tab || ''} query={q} />;
   else if (section === 'admin' && user.role === 'admin') screen = <AdminScreen />;
   else screen = <HomeScreen />;
 

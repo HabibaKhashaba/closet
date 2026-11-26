@@ -10,7 +10,6 @@ classDiagram
   class MoodFeature { +style() +restyle() }
   class RecreateFeature { +recreate() +addMissing() }
   class FitCheckFeature { +check() +save() }
-  class BattleFeature { +battle() +vote() }
   class WrappedFeature { +wrapped() }
   class FriendsFeature { +request() +accept() +closet() +borrow() +decide() }
   class RecommendationEngine
@@ -22,7 +21,6 @@ classDiagram
   StudioModule --> MoodFeature
   StudioModule --> RecreateFeature
   StudioModule --> FitCheckFeature
-  StudioModule --> BattleFeature
   StudioModule --> WrappedFeature
   StudioModule --> FriendsFeature
   BuyFeature ..> CompatibilityService
@@ -31,7 +29,6 @@ classDiagram
   MoodFeature ..> CompatibilityService
   RecreateFeature ..> CompatibilityService
   FitCheckFeature ..> CompatibilityService
-  BattleFeature ..> CompatibilityService
   CompatibilityService ..> RecommendationEngine
   RescueFeature ..> ClaudeJSON
   InvitationFeature ..> ClaudeJSON
@@ -39,5 +36,4 @@ classDiagram
   FitCheckFeature ..> ClaudeJSON
   ClaudeJSON ..> LLMAdapter
   FriendsFeature ..> StudioRepository
-  BattleFeature ..> StudioRepository
   CherFeature ..> StudioRepository
