@@ -1,60 +1,63 @@
-// Fit check — v3.0: a mirror selfie (or picked pieces) → score + one best swap → "Save my outfit".
+// Fit check — v3.0, editorial design: a mirror selfie (or picked pieces) → score + one best swap.
 // The photo is only sent for matching and is never stored.
 import React, { useState } from 'react';
 import { api } from '../../api.js';
-import { Chips, Icon, PageHead, SprintNote, Tile, pieceName, useApp, useLoad } from '../../ui.jsx';
-import { MiniLook, PhotoInput, PiecePicker, Source } from './common.jsx';
+import { pieceName, useApp, useLoad } from '../../ui.jsx';
+import { ACCENT, Choice, Cover, Drop, Fineprint, Shelf, Spread, Step } from './editorial.jsx';
 
 export default function FitCheckScreen() {
   const { vocab, toast, refresh } = useApp();
   const closet = useLoad(() => api.items(), []);
   const [photo, setPhoto] = useState(null);
+  const [ids, setIds] = useState([]);
   const [occasion, setOccasion] = useState('Everyday');
   const [res, setRes] = useState(null);
-  const [picking, setPicking] = useState(false);
   const [busy, setBusy] = useState(false);
-  const items = closet.data?.items || [];
+  const items = (closet.data?.items || []).filter((p) => p.status === 'Available' && p.photoUrl);
   async function check(body) {
     setBusy(true);
-    try { const r = await api.fitCheck({ occasion, ...body }); setRes(r); if (r.source === 'none') setPicking(true); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+    try { setRes(await api.fitCheck({ occasion, ...body })); } catch (e) { toast(e.message, true); } finally { setBusy(false); }
   }
-  async function save(ids) {
-    try { await api.fitSave({ itemIds: ids, occasion }); toast('Saved as today’s outfit'); refresh(); closet.reload(true); } catch (e) { toast(e.message, true); }
+  async function save(itemIds) {
+    try { await api.fitSave({ itemIds, occasion }); toast('Saved as today’s outfit'); refresh(); closet.reload(true); } catch (e) { toast(e.message, true); }
   }
+  const verdict = res && res.source !== 'none' ? (res.score === 100 ? 'Good to go' : res.score >= 83 ? 'Almost there' : 'Needs a change') : null;
   return (
-    <>
-      <PageHead title="Fit check" sub="Take a mirror selfie before you leave. Closet recognises your pieces, scores the outfit and suggests one swap." />
-      <div className="studio">
-        <section className="table-board stack lg">
-          <PhotoInput label="Mirror selfie (never stored)" value={photo} onChange={setPhoto} onError={(m) => toast(m, true)} />
-          <Chips options={Object.keys(vocab.OCCASIONS)} value={occasion} multiple={false} onChange={(v) => setOccasion(v || occasion)} />
-          <div className="row">
-            <button type="button" className="btn rose" disabled={busy || !photo} onClick={() => check({ photo: { base64: photo.base64, mime: photo.mime } })}><Icon name="camera" size={15} />{busy ? 'Checking…' : 'Check my fit'}</button>
-            <button type="button" className="btn line" onClick={() => setPicking(true)}>Pick pieces instead</button>
-          </div>
-        </section>
-        <section className="verdict-card stack lg" aria-live="polite">
-          {!res || res.source === 'none' ? <p className="muted">{res ? res.message : 'Your score appears here.'}</p> : (
+    <div className="ed" style={{ '--acc': ACCENT.fit }}>
+      <Cover feature="fit" no={7} kicker="Before you leave" title="Fit check" pick={['Breton striped top', 'Beige wide-leg trousers', 'White sneakers']}
+        dek="One mirror selfie. We recognise your pieces, score the outfit and suggest the one swap that makes it better." />
+      <Step n={1} title="Your mirror selfie" aside={<span className="ed-fine">never stored</span>}>
+        <Drop label="Drop a mirror selfie" value={photo} onChange={setPhoto} onError={(m) => toast(m, true)} />
+        <div className="ed-actions"><button type="button" className="ed-cta" disabled={busy || !photo} onClick={() => check({ photo: { base64: photo.base64, mime: photo.mime } })}>{busy ? 'Checking…' : 'Check my fit'}</button></div>
+      </Step>
+      <Step n={2} title="…or tap what you’re wearing" aside={<span className="ed-fine">{ids.length}/4</span>}>
+        <Shelf items={items} value={ids} onChange={setIds} multiple />
+        <div style={{ marginTop: 16 }}><Choice label="Occasion" options={Object.keys(vocab.OCCASIONS)} value={occasion} onChange={setOccasion} /></div>
+        <div className="ed-actions"><button type="button" className="ed-cta" disabled={busy || ids.length < 2} onClick={() => check({ itemIds: ids })}>Score this outfit</button></div>
+      </Step>
+
+      {res && res.source === 'none' && <Spread tone="bad" label="Hmm" headline="We couldn’t match the photo" sub={res.message} />}
+      {verdict && (
+        <Spread tone={res.score === 100 ? 'good' : res.score < 83 ? 'bad' : ''} label={`${res.levelName} · rule score ${res.score}/100`} headline={verdict} big={res.compatibility} bigUnit="% match" pieces={res.detected}>
+          <ul className="ed-list">{[...res.problems, ...res.reasons].slice(0, 4).map((x) => <li key={x}>{x}</li>)}</ul>
+          {res.swap ? (
             <>
-              <div><div className="big-verdict">{res.score === 100 ? 'Good to go' : res.score >= 83 ? 'Almost there' : 'Needs a change'}</div><div className="small muted">{res.levelName} · {res.compatibility}% compatible · rule score {res.score}/100</div></div>
-              <MiniLook pieces={res.detected} />
-              <ul className="small" style={{ margin: 0, paddingLeft: 18 }}>{[...res.problems, ...res.reasons].slice(0, 4).map((x) => <li key={x}>{x}</li>)}</ul>
-              {res.swap ? (
-                <div className="studio-card stack">
-                  <b>One swap: {pieceName(res.swap.out)} → {pieceName(res.swap.in)}</b>
-                  <div className="row" style={{ gap: 10 }}><Tile piece={res.swap.out} status={false} style={{ width: 70 }} /><Icon name="swap" size={18} /><Tile piece={res.swap.in} status={false} style={{ width: 70 }} /></div>
-                  <div className="small">Then: {res.swap.compatibility}% · rule score {res.swap.score}/100</div>
-                  <button type="button" className="btn line sm" onClick={() => save(res.swap.itemIds)}>Swap and save my outfit</button>
-                </div>
-              ) : <p className="small">No single swap makes it better — nice.</p>}
-              <div className="row"><button type="button" className="btn" onClick={() => save(res.itemIds)}><Icon name="check" size={15} />Save my outfit</button></div>
-              <Source source={res.source} />
+              <div className="ed-label" style={{ marginTop: 22 }}>One swap → {res.swap.compatibility}% · {res.swap.score}/100</div>
+              <div className="ed-swap">
+                <figure className="from" style={{ margin: 0 }}><img src={res.swap.out.photoUrl} alt={pieceName(res.swap.out)} /></figure>
+                <div className="arrow">→</div>
+                <figure style={{ margin: 0 }}><img src={res.swap.in.photoUrl} alt={pieceName(res.swap.in)} /></figure>
+                <div className="ed-meta">{pieceName(res.swap.out)} → <b>{pieceName(res.swap.in)}</b></div>
+              </div>
             </>
-          )}
-        </section>
-      </div>
-      <div style={{ marginTop: 20 }}><SprintNote n={5} /></div>
-      {picking && <PiecePicker items={items.filter((p) => p.status === 'Available')} title="What are you wearing?" onClose={() => setPicking(false)} onChange={(ids) => { setPicking(false); check({ itemIds: ids }); }} />}
-    </>
+          ) : <p className="ed-sub">No single swap makes it better — nice.</p>}
+          <div className="ed-actions">
+            <button type="button" className="ed-cta" onClick={() => save(res.itemIds)}>Save my outfit</button>
+            {res.swap && <button type="button" className="ed-link" onClick={() => save(res.swap.itemIds)}>Swap and save</button>}
+          </div>
+          <Fineprint>{res.source === 'ai' ? 'Pieces recognised by AI from your own closet only; the score is Closet’s rules.' : 'Scored by Closet’s rules.'}</Fineprint>
+        </Spread>
+      )}
+    </div>
   );
 }

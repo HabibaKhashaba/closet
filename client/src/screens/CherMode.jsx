@@ -113,9 +113,9 @@ export default function CherMode({ occasion, onFineTune }) {
   const pieces = result ? [result.outfit.top, result.outfit.bottom, result.outfit.shoes].filter(Boolean) : [];
 
   return (
-    <div className="cher">
+    <div className="cher ed" style={{ '--acc': '#9c5f5b' }}>
       <div className="cher-controls row">
-        <button type="button" className="btn rose" onClick={spin} disabled={phase === 'spinning' || !rings} aria-label="Spin the wardrobe"><Icon name="sparkle" size={15} />{phase === 'spinning' ? 'Spinning…' : result ? 'Spin again' : 'Spin'}</button>
+        <button type="button" className="ed-cta" onClick={spin} disabled={phase === 'spinning' || !rings} aria-label="Spin the wardrobe">{phase === 'spinning' ? 'Spinning…' : result ? 'Spin again' : 'Spin'}</button>
         <div className="cher-toggle"><Toggle label="Rediscovery" sub="Forgotten pieces come up more often" value={rediscovery} onChange={setRediscovery} /></div>
         <div className="cher-toggle"><Toggle label="Voice" sub="Says the verdict out loud" value={voice} onChange={setVoice} /></div>
       </div>

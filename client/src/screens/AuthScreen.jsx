@@ -22,11 +22,6 @@ function GoogleButton({ onCredential }) {
   return <><div className="or">or</div><div ref={ref} /></>;
 }
 
-const COLLAGE = [
-  ['navy_silk_midi_dress', 'Dress', 0, 30, -6], ['beige_trench_coat', 'Layer', 130, 0, 4], ['cream_knit_sweater', 'Top', 262, 34, -3],
-  ['beige_wide_leg_trousers', 'Bottom', 394, 8, 5], ['white_sneakers', 'Shoes', 526, 40, -4], ['structured_black_bag', 'Bag', 640, 12, 6],
-];
-
 export default function AuthScreen({ onSignedIn }) {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
@@ -51,24 +46,11 @@ export default function AuthScreen({ onSignedIn }) {
   };
 
   return (
-    <div className="auth">
-      <section className="auth-art">
+    <div className="auth auth-center">
+      <header className="auth-brand">
         <div className="logo">closet<i /></div>
-        <div style={{ position: 'relative', zIndex: 2, marginTop: 'auto' }}>
-          <span className="eyebrow" style={{ color: 'var(--rose-ink)' }}>Your AI wardrobe assistant</span>
-          <h1 style={{ marginTop: 12 }}>Get dressed in seconds, with what you already own.</h1>
-          <p>Closet knows every piece you own, what is in the laundry, the weather in your city and the events on your calendar — and suggests three outfits that actually work.</p>
-          <div className="features">
-            {['3 explained outfits a day', 'Weather-aware', 'Knows your laundry', 'Plan for your calendar', 'Ask in plain words'].map((f) => <span key={f} className="tag plain" style={{ background: 'rgba(255,255,255,.7)', padding: '6px 12px' }}>{f}</span>)}
-          </div>
-        </div>
-        <div className="collage" aria-hidden="true">
-          {COLLAGE.map(([f, c, x, y, r]) => (
-            <div key={f} className={`tile ${c}`} style={{ left: x, top: y, transform: `rotate(${r}deg)` }}><img src={`/art/${f}.jpg`} alt="" /></div>
-          ))}
-        </div>
-        <small className="muted" style={{ position: 'relative', zIndex: 2 }}>CSCE 3701 · Software Engineering · Fall 2026</small>
-      </section>
+        <p>Your AI wardrobe — get dressed in seconds with what you already own.</p>
+      </header>
       <section className="auth-form">
         <form className="card pad-lg" onSubmit={submit} noValidate>
           <h2 style={{ marginBottom: 6 }}>{mode === 'login' ? 'Welcome back' : 'Create your closet'}</h2>
@@ -95,6 +77,7 @@ export default function AuthScreen({ onSignedIn }) {
           </div>
         </form>
       </section>
+      <small className="muted auth-foot">CSCE 3701 · Software Engineering · Fall 2026</small>
     </div>
   );
 }
