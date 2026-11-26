@@ -86,7 +86,6 @@ export default function AskScreen({ query }) {
           <h1 style={{ marginTop: 10 }}>Ask Closet</h1>
           <p>Your wardrobe knows more than you think.</p>
         </div>
-        <div className="orb" aria-hidden="true" />
         <div className="ask-prompts">{contextual.map((q) => <button type="button" key={q} onClick={() => send(q)}>{q}</button>)}</div>
       </section>
       <div className="chat">

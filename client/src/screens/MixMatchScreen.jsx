@@ -108,14 +108,10 @@ export default function MixMatchScreen({ query }) {
     <>
       <PageHead title="Mix & Match" sprint={2} sub="Lay pieces on the styling table. Closet checks the look live and tells you exactly what works and what to change." actions={<WeatherPill w={result?.forecast} />} />
       <div className="row between" style={{ marginBottom: 16 }}>
-        <Tabs options={[['build', 'Build it myself'], ['spin', 'Spin for me']]} value={mode} onChange={setMode} />
+        <Tabs options={[['build', 'Build it myself'], ['spin', 'Spin for me']]} value={mode} onChange={(m) => go(m === 'spin' ? '/mix?mode=spin' : `/mix${occasion !== 'Everyday' ? `?occasion=${encodeURIComponent(occasion)}` : ''}`)} />
         {mode === 'spin' && <Chips options={Object.keys(vocab.OCCASIONS)} value={occasion} multiple={false} onChange={(v) => setOccasion(v || occasion)} />}
       </div>
-      {mode === 'spin' && <CherMode key={occasion} occasion={occasion} onFineTune={(pieces) => {
-        const next = [null, null, null, null];
-        for (const p of pieces) { const s = slotOf(p); if (s >= 0 && next[s] === null) next[s] = p; }
-        setSlots(next); setMode('build');
-      }} />}
+      {mode === 'spin' && <CherMode key={occasion} occasion={occasion} onFineTune={(pieces) => go(`/mix?ids=${pieces.map((p) => p.id).join(',')}&occasion=${encodeURIComponent(occasion)}`)} />}
       {mode === 'build' && <div className="studio">
         <section className="table-board">
           <div className="row between" style={{ marginBottom: 18 }}>

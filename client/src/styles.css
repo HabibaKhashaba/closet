@@ -1255,3 +1255,8 @@ button.link { background: none; border: 0; padding: 0; cursor: pointer; text-dec
 .auth-center .auth-form { padding: 0; width: 100%; display: flex; justify-content: center; }
 .auth-center .auth-form .card { max-width: 420px; box-shadow: var(--shadow-lift); }
 .auth-foot { font-size: 12px; letter-spacing: .04em; }
+/* Studio covers: text only, one large numeral (no repeated photo collage) */
+.ed-cover.ed-cover-text-only { min-height: 0; grid-template-columns: 1fr auto; align-items: end; padding: 30px 36px; background: #fbf8f4; border: 1px solid var(--line); box-shadow: none; }
+.ed-cover-text-only .ed-kicker { margin-top: 0; }
+.ed-cover-text-only .ed-title { font-size: clamp(36px, 4.4vw, 58px); }
+.ed-numeral { font-family: var(--serif); font-style: italic; font-size: clamp(80px, 10vw, 140px); line-height: .8; color: var(--brass, #A58A60); opacity: .55; }

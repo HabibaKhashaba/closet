@@ -11,7 +11,7 @@ const ROSE = '#652F3C'; // burgundy
 export const ACCENT = { buy: ROSE, cher: ROSE, rescue: ROSE, invitation: ROSE, mood: ROSE, recreate: ROSE, fit: ROSE, battle: ROSE, wrapped: ROSE, friends: ROSE };
 
 let closetCache = null;
-function useClosetPhotos() {
+export function useClosetPhotos() {
   const [items, setItems] = useState(closetCache || []);
   useEffect(() => {
     if (closetCache) return;
@@ -20,24 +20,17 @@ function useClosetPhotos() {
   return items;
 }
 
-// Cover: issue line, huge title, one-line dek, and a collage of the user's own pieces.
-export function Cover({ feature, no, kicker, title, dek, pick = [] }) {
-  const items = useClosetPhotos();
-  const chosen = (pick.length ? pick.map((n) => items.find((p) => p.name === n)).filter(Boolean) : []);
-  const fill = items.filter((p) => !chosen.includes(p));
-  const seed = Object.keys(ACCENT).indexOf(feature) * 5;
-  const pics = [...chosen, ...fill.slice(seed % Math.max(fill.length, 1)), ...fill].slice(0, 3);
+// Cover: a quiet, text-led header — issue line, title, one-line dek and the feature's own large numeral.
+// (No photo collage: every feature would look the same.)
+export function Cover({ no, kicker, title, dek }) {
   return (
-    <header className="ed-cover" style={{ '--acc': ACCENT[feature] }}>
+    <header className="ed-cover ed-cover-text-only">
       <div className="ed-cover-text">
-        <div className="ed-issue"><span>Closet Studio</span><span>No. {String(no).padStart(2, '0')}</span></div>
         <div className="ed-kicker">{kicker}</div>
         <h1 className="ed-title">{title}</h1>
         <p className="ed-dek">{dek}</p>
       </div>
-      <div className="ed-collage" aria-hidden="true">
-        {pics.map((p, i) => <figure key={p.id} className={`ed-pic p${i}`}><img src={p.photoUrl} alt="" /></figure>)}
-      </div>
+      <div className="ed-numeral" aria-hidden="true">{String(no).padStart(2, '0')}</div>
     </header>
   );
 }
