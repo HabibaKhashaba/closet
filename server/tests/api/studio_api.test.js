@@ -35,8 +35,8 @@ describe('v3.0 Studio — authentication and feature flags', () => {
   });
   test('API-ST02 GET /studio/features lists the flags; a feature turned off answers 404 FEATURE_OFF', async () => {
     expect((await api('get', '/studio/features')).body.features).toMatchObject({ buy: true, friends: true });
-    const off = makeApp({ llm: null, env: { FEATURES_OFF: 'battle' } });
-    const r = await request(off).post('/api/v1/studio/battle').set(auth(u.token)).send({ occasion: 'Dinner' });
+    const off = makeApp({ llm: null, env: { FEATURES_OFF: 'wrapped' } });
+    const r = await request(off).get('/api/v1/studio/wrapped?days=30').set(auth(u.token));
     expect(r.status).toBe(404);
     expect(r.body.error).toBe('FEATURE_OFF');
   });
@@ -108,15 +108,6 @@ describe('v3.0 Studio — features', () => {
     expect((await api('get', `/items/${P.tee.id}`)).body.wearCount).toBe(1);
     expect((await api('post', '/studio/fit-check').send({ itemIds: [other.P.tee.id, P.jeans.id] })).status).toBe(404);
   });
-  test('API-ST12 POST /studio/battle + /studio/battle/vote', async () => {
-    const b = await api('post', '/studio/battle').send({ occasion: 'Everyday' });
-    expect(b.status).toBe(200);
-    if (b.body.looks.length) {
-      const v = await api('post', '/studio/battle/vote').send({ winner: 'classic', itemIds: b.body.looks[0].itemIds });
-      expect(v.body.votes.classic).toBe(1);
-    }
-    expect((await api('post', '/studio/battle/vote').send({ winner: 'classic', itemIds: [other.P.tee.id, other.P.jeans.id] })).status).toBe(404);
-  });
   test('API-ST13 GET /studio/wrapped counts only her own wears', async () => {
     await api('post', '/outfits/wear').send({ itemIds: ids('tee', 'jeans', 'sneakers') });
     const w = await api('get', '/studio/wrapped?days=30');
@@ -131,49 +122,50 @@ describe('v3.0 Studio — Friends’ closet security', () => {
     await api('post', '/studio/friends').send({ email: other.email });
     const inc = (await api('get', '/studio/friends', other.token)).body.incoming[0];
     await api('post', `/studio/friends/${inc.id}/accept`, other.token);
+    return inc;
   };
-  test('API-ST14 not friends → 403; a pending request is not enough → 403', async () => {
-    await api('put', `/studio/friends/lendable/${other.P.blazer.id}`, other.token).send({ lendable: true });
+  test('API-ST14 not friends → 403; a pending request is not enough → 403; the owner is notified', async () => {
     expect((await api('get', `/studio/friends/${other.user.id}/closet`)).status).toBe(403);
     await api('post', '/studio/friends').send({ email: other.email });
     expect((await api('get', `/studio/friends/${other.user.id}/closet`)).status).toBe(403);
     expect((await api('post', '/studio/friends/borrow').send({ friendId: other.user.id, itemId: other.P.blazer.id })).status).toBe(403);
+    const notes = (await api('get', '/notifications', other.token)).body.notifications;
+    expect(notes.some((n) => n.type === 'CLOSET_ACCESS_REQUEST')).toBe(true);
   });
-  test('API-ST15 a friend sees ONLY lendable + Available pieces and only safe fields', async () => {
+  test('API-ST15 after access: the whole closet with safe fields only; unavailable pieces are marked', async () => {
     await befriend();
-    await api('put', `/studio/friends/lendable/${other.P.blazer.id}`, other.token).send({ lendable: true });
-    await api('put', `/studio/friends/lendable/${other.P.tee.id}`, other.token).send({ lendable: true });
     await api('patch', `/items/${other.P.tee.id}/status`, other.token).send({ status: 'Laundry' });
     const r = await api('get', `/studio/friends/${other.user.id}/closet`);
     expect(r.status).toBe(200);
-    expect(r.body.items.map((p) => p.id)).toEqual([other.P.blazer.id]);
-    expect(Object.keys(r.body.items[0]).sort()).toEqual(['category', 'colour', 'id', 'name', 'owner', 'photoUrl']);
+    expect(r.body.items).toHaveLength(9);
+    expect(r.body.items.find((p) => p.id === other.P.tee.id).available).toBe(false);
+    expect(Object.keys(r.body.items[0]).sort()).toEqual(['available', 'category', 'colour', 'id', 'name', 'owner', 'photoUrl']);
   });
-  test('API-ST16 borrowing a piece that is not lendable → 404; marking someone else’s piece lendable → 404', async () => {
+  test('API-ST16 borrowing an unavailable piece → 409; someone else’s piece id → 404', async () => {
     await befriend();
-    expect((await api('post', '/studio/friends/borrow').send({ friendId: other.user.id, itemId: other.P.jeans.id })).status).toBe(404);
-    expect((await api('put', `/studio/friends/lendable/${other.P.jeans.id}`)).status).toBe(404);
+    await api('patch', `/items/${other.P.tee.id}/status`, other.token).send({ status: 'Laundry' });
+    expect((await api('post', '/studio/friends/borrow').send({ friendId: other.user.id, itemId: other.P.tee.id })).status).toBe(409);
+    expect((await api('post', '/studio/friends/borrow').send({ friendId: other.user.id, itemId: P.jeans.id })).status).toBe(404);
     expect((await api('get', '/studio/friends/not-a-uuid/closet')).status).toBe(404);
   });
-  test('API-ST17 borrow → owner approves → the piece is Lent through the normal flow; only the owner can decide', async () => {
+  test('API-ST17 borrow → owner notified → owner approves → piece is Borrowed; only the owner can decide; requester notified', async () => {
     await befriend();
-    await api('put', `/studio/friends/lendable/${other.P.blazer.id}`, other.token).send({ lendable: true });
     const b = await api('post', '/studio/friends/borrow').send({ friendId: other.user.id, itemId: other.P.blazer.id });
     expect(b.body.request.status).toBe('pending');
-    expect((await api('post', `/studio/friends/requests/${b.body.request.id}`).send({ decision: 'approve' })).status).toBe(404); // the requester cannot approve
-    const ok = await api('post', `/studio/friends/requests/${b.body.request.id}`, other.token).send({ decision: 'approve' });
-    expect(ok.body.status).toBe('approved');
+    expect((await api('get', '/notifications', other.token)).body.notifications.some((n) => n.type === 'BORROW_REQUEST')).toBe(true);
+    expect((await api('post', `/studio/friends/requests/${b.body.request.id}`).send({ decision: 'approve' })).status).toBe(404);
+    expect((await api('post', `/studio/friends/requests/${b.body.request.id}`, other.token).send({ decision: 'approve' })).body.status).toBe('approved');
     expect((await api('get', `/items/${other.P.blazer.id}`, other.token)).body.status).toBe('Borrowed');
-    expect((await api('get', `/studio/friends/${other.user.id}/closet`)).body.items).toHaveLength(0);
-    expect((await api('get', '/studio/friends/requests')).body.requests[0]).toMatchObject({ direction: 'outgoing', status: 'approved' });
+    expect((await api('get', '/notifications')).body.notifications.some((n) => n.type === 'BORROW_ANSWER')).toBe(true);
   });
-  test('API-ST18 friend request answer is the same for unknown emails; removing a friend ends access', async () => {
+  test('API-ST18 same reply for unknown emails; removing access ends it for both', async () => {
     const unknown = await api('post', '/studio/friends').send({ email: 'nobody@example.com' });
     const known = await api('post', '/studio/friends').send({ email: other.email });
     expect(unknown.body).toEqual(known.body);
     const inc = (await api('get', '/studio/friends', other.token)).body.incoming[0];
     await api('post', `/studio/friends/${inc.id}/accept`, other.token);
     expect((await api('get', `/studio/friends/${other.user.id}/closet`)).status).toBe(200);
+    expect((await api('get', `/studio/friends/${u.user.id}/closet`, other.token)).status).toBe(200);
     await api('delete', `/studio/friends/${inc.id}`);
     expect((await api('get', `/studio/friends/${other.user.id}/closet`)).status).toBe(403);
   });

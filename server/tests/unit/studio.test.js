@@ -103,7 +103,7 @@ describe('Keyword fallbacks (work with no AI key)', () => {
     expect(recreate.matchScore({ category: 'Layer', colour: 'Black' }, { category: 'Layer', colour: 'Black' })).toBe(100);
   });
   test('ST-13 feature flags: FEATURES_OFF turns single features off', () => {
-    expect(featureFlags({ FEATURES_OFF: 'battle, Wrapped' })).toMatchObject({ battle: false, wrapped: false, buy: true, friends: true });
+    expect(featureFlags({ FEATURES_OFF: 'mood, Wrapped' })).toMatchObject({ mood: false, wrapped: false, buy: true, friends: true });
   });
 });
 
@@ -145,7 +145,7 @@ describe('Studio features through the offline demo (real services, in-memory dat
     const c = await ok('POST', '/studio/invitation/confirm', { card: d.card });
     expect(c.event).toMatchObject({ title: d.card.title, dressCode: 5 });
   });
-  test('ST-18 Mood, restyle, recreate, fit check, battle and wrapped all answer from her own closet', async () => {
+  test('ST-18 Mood, restyle, recreate, fit check and wrapped all answer from her own closet', async () => {
     const m = await ok('POST', '/studio/mood', { mood: 'cozy', occasion: 'University' });
     expect(m.looks.length).toBeGreaterThan(0);
     expect(m.looks.every((l) => l.score >= 83)).toBe(true);
@@ -155,22 +155,32 @@ describe('Studio features through the offline demo (real services, in-memory dat
     expect(rc.matches[0]).toMatchObject({ level: 'Exact', match: { name: 'Black blazer' } });
     const f = await ok('POST', '/studio/fit-check', { itemIds: [by('Breton striped top'), by('Light-wash jeans'), by('White sneakers')] });
     expect(typeof f.score).toBe('number');
-    const b = await ok('POST', '/studio/battle', { occasion: 'Dinner' });
-    expect(b.looks.map((l) => l.persona)).toEqual(['classic', 'rebel']);
-    expect((await ok('POST', '/studio/battle/vote', { winner: 'rebel', itemIds: b.looks[1].itemIds })).votes.rebel).toBe(1);
     const w = await ok('GET', '/studio/wrapped?days=90');
     expect(w.outfitsWorn).toBeGreaterThan(0);
     expect(w.topColours.reduce((t, c) => t + c.share, 0)).toBeLessThanOrEqual(100);
   });
-  test('ST-19 Friends’ closet: only confirmed friends, only lendable + Available pieces, only safe fields; others get 403', async () => {
-    const f = await ok('GET', '/studio/friends');
-    expect(f.friends).toHaveLength(1);
-    const cl = await ok('GET', `/studio/friends/${f.friends[0].userId}/closet`);
-    expect(cl.items.map((p) => p.name)).toEqual(['Olive blazer', 'Silver heels', 'Red clutch', 'Black slip dress']);
-    expect(Object.keys(cl.items[0]).sort()).toEqual(['category', 'colour', 'id', 'name', 'owner', 'photoUrl']);
+  test('ST-19 Friends’ closet: request → notification → give access → full closet → borrow → owner notified → approve', async () => {
+    const { NOUR_TOKEN } = require('../../../tools/offline_demo/localApi');
+    const asNour = (method, url, body) => local.handle(method, url, body, `Bearer ${NOUR_TOKEN}`);
+    const nourId = '00000000-0000-4000-8000-000000000010';
+    expect((await call('GET', `/studio/friends/${nourId}/closet`)).status).toBe(403); // not friends yet
+    await ok('POST', '/studio/friends', { email: 'nour.demo@closet.app' });
+    expect((await call('GET', `/studio/friends/${nourId}/closet`)).status).toBe(403); // pending is not enough
+    const notes = (await asNour('GET', '/notifications')).data.notifications;
+    expect(notes.some((n) => n.type === 'CLOSET_ACCESS_REQUEST' && /Habiba requested access to your closet/.test(n.text))).toBe(true);
+    const inc = (await asNour('GET', '/studio/friends')).data.incoming[0];
+    expect((await asNour('POST', `/studio/friends/${inc.id}/accept`)).status).toBe(200);
+    const cl = await ok('GET', `/studio/friends/${nourId}/closet`);
+    expect(cl.items.length).toBe(10);
+    expect(Object.keys(cl.items[0]).sort()).toEqual(['available', 'category', 'colour', 'id', 'name', 'owner', 'photoUrl']);
+    const dress = cl.items.find((p) => p.name === 'Black slip dress');
+    expect((await ok('POST', '/studio/friends/borrow', { friendId: nourId, itemId: dress.id })).request.status).toBe('pending');
+    expect((await asNour('GET', '/notifications')).data.notifications.some((n) => n.type === 'BORROW_REQUEST' && /Habiba asks to borrow your black slip dress/.test(n.text))).toBe(true);
+    const req = (await asNour('GET', '/studio/friends/requests')).data.requests.find((r) => r.direction === 'incoming');
+    expect((await call('POST', `/studio/friends/requests/${req.id}`, { decision: 'approve' })).status).toBe(404); // only the owner decides
+    const ap = await asNour('POST', `/studio/friends/requests/${req.id}`, { decision: 'approve' }); if (ap.status !== 200) console.log(JSON.stringify(ap.data)); expect(ap.data.status).toBe('approved');
+    expect((await ok('GET', `/studio/friends/${nourId}/closet`)).items.find((p) => p.id === dress.id).available).toBe(false);
+    expect((await ok('GET', '/notifications')).notifications.some((n) => n.type === 'BORROW_ANSWER' && /Nour approved/.test(n.text))).toBe(true);
     expect((await call('GET', '/studio/friends/00000000-0000-4000-8000-000000000011/closet')).status).toBe(403); // Karim: not a friend
-    expect((await call('POST', '/studio/friends/borrow', { friendId: f.friends[0].userId, itemId: by('Navy blazer') })).status).toBe(404);
-    const r = await ok('POST', '/studio/friends/borrow', { friendId: f.friends[0].userId, itemId: cl.items[0].id });
-    expect(r.request.status).toBe('pending');
   });
 });
