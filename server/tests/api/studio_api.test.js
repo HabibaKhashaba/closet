@@ -157,6 +157,9 @@ describe('v3.0 Studio — Friends’ closet security', () => {
     expect((await api('post', `/studio/friends/requests/${b.body.request.id}`, other.token).send({ decision: 'approve' })).body.status).toBe('approved');
     expect((await api('get', `/items/${other.P.blazer.id}`, other.token)).body.status).toBe('Borrowed');
     expect((await api('get', '/notifications')).body.notifications.some((n) => n.type === 'BORROW_ANSWER')).toBe(true);
+    const mine = (await api('get', '/studio/friends/requests')).body;
+    expect(mine.borrowing).toHaveLength(1);
+    expect(mine.borrowing[0].piece.id).toBe(other.P.blazer.id);
   });
   test('API-ST18 same reply for unknown emails; removing access ends it for both', async () => {
     const unknown = await api('post', '/studio/friends').send({ email: 'nobody@example.com' });

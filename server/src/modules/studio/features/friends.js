@@ -93,13 +93,21 @@ module.exports = function friends(deps) {
     },
     async requests(userId) {
       const out = [];
+      const closets = new Map(); // owner → pieces with their current status (allPieces includes availability)
+      const pieceOf = async (owner, id) => {
+        if (!closets.has(owner)) closets.set(owner, await deps.wardrobe().allPieces(owner));
+        return closets.get(owner).find((p) => p.id === id) || null;
+      };
       for (const r of await repo.borrowRequests(userId)) {
         const mine = r.owner_id === userId;
-        const piece = (await deps.wardrobe().piecesByIds(r.owner_id, [r.item_id]))[0];
-        out.push({ id: r.id, direction: mine ? 'incoming' : 'outgoing', status: r.status, with: await nameOf(mine ? r.requester_id : r.owner_id), createdAt: r.created_at, decidedAt: r.decided_at || null,
-          piece: piece ? shared(piece, null) : null });
+        const piece = await pieceOf(r.owner_id, r.item_id);
+        // borrowedNow: approved and the owner's piece is still out on this loan (Borrow & lend is the source)
+        const borrowedNow = r.status === 'approved' && !!piece && piece.status === 'Borrowed';
+        out.push({ id: r.id, direction: mine ? 'incoming' : 'outgoing', status: borrowedNow ? 'approved' : r.status === 'approved' ? 'returned' : r.status, with: await nameOf(mine ? r.requester_id : r.owner_id), createdAt: r.created_at, decidedAt: r.decided_at || null,
+          piece: piece ? shared(piece, null) : null, borrowedNow, dueOn: borrowedNow ? ((piece.loan && piece.loan.dueOn) || (piece.statusUntil ? String(piece.statusUntil).slice(0, 10) : null)) : null });
       }
-      return { requests: out };
+      // what I have from friends right now, and what friends have from me (from approved requests)
+      return { requests: out, borrowing: out.filter((r) => r.direction === 'outgoing' && r.borrowedNow), lending: out.filter((r) => r.direction === 'incoming' && r.borrowedNow) };
     },
     async decide(userId, id, body = {}) {
       if (!['approve', 'decline'].includes(body.decision)) throw bad('decision', 'decision must be approve or decline.');
@@ -131,7 +139,7 @@ module.exports = function friends(deps) {
       for (const r of (await this.requests(userId)).requests) {
         const what = r.piece ? r.piece.name.toLowerCase() : 'a piece';
         if (r.direction === 'incoming' && r.status === 'pending') out.push({ key: `borrow-req:${r.id}`, kind: 'friends', type: 'BORROW_REQUEST', priority: 5, title: 'Borrow request', text: `${r.with} asks to borrow your ${what}.`, link: '#/friends?tab=requests', date: day(r.createdAt), action: { label: 'Review', link: '#/friends?tab=requests' } });
-        if (r.direction === 'outgoing' && r.status !== 'pending' && recent(r.decidedAt)) out.push({ key: `borrow-ans:${r.id}`, kind: 'friends', type: 'BORROW_ANSWER', priority: 4, title: r.status === 'approved' ? 'Borrow approved' : 'Borrow declined', text: `${r.with} ${r.status} your request to borrow the ${what}.`, link: '#/friends?tab=requests', date: day(r.decidedAt) });
+        if (r.direction === 'outgoing' && r.status !== 'pending' && r.status !== 'returned' && recent(r.decidedAt)) out.push({ key: `borrow-ans:${r.id}`, kind: 'friends', type: 'BORROW_ANSWER', priority: 4, title: r.status === 'approved' ? 'Borrow approved' : 'Borrow declined', text: `${r.with} ${r.status} your request to borrow the ${what}.`, link: '#/friends?tab=requests', date: day(r.decidedAt) });
       }
       return out;
     },

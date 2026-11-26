@@ -181,6 +181,11 @@ describe('Studio features through the offline demo (real services, in-memory dat
     const ap = await asNour('POST', `/studio/friends/requests/${req.id}`, { decision: 'approve' }); if (ap.status !== 200) console.log(JSON.stringify(ap.data)); expect(ap.data.status).toBe('approved');
     expect((await ok('GET', `/studio/friends/${nourId}/closet`)).items.find((p) => p.id === dress.id).available).toBe(false);
     expect((await ok('GET', '/notifications')).notifications.some((n) => n.type === 'BORROW_ANSWER' && /Nour approved/.test(n.text))).toBe(true);
+    const mine = await ok('GET', '/studio/friends/requests');
+    expect(mine.borrowing.map((r) => r.piece.name)).toEqual(['Black slip dress']); // Habiba sees what she borrowed
+    expect(mine.borrowing[0]).toMatchObject({ with: 'Nour', borrowedNow: true });
+    expect(mine.borrowing[0].dueOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect((await asNour('GET', '/studio/friends/requests')).data.lending.map((r) => r.piece.name)).toEqual(['Black slip dress']);
     expect((await call('GET', '/studio/friends/00000000-0000-4000-8000-000000000011/closet')).status).toBe(403); // Karim: not a friend
   });
 });
