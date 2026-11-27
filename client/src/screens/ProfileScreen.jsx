@@ -42,7 +42,7 @@ export default function ProfileScreen() {
         <div className="stack lg">
           <section className="card pad">
             <div className="card-head"><h3>Wardrobe rules</h3><SprintTag n={2} /></div>
-            <p className="small muted" style={{ marginTop: -6, marginBottom: 12 }}>Requested in the Milestone 1 review (US-84 – US-87), built early.</p>
+            
             <Field label="Your name"><input value={rules.displayName} maxLength={40} onChange={(e) => setR('displayName')(e.target.value)} placeholder="Habiba" /></Field>
             <RangeRow label="Laundry basket time" sub="How long a piece usually stays in the wash" value={rules.laundryDays} min={1} max={7} onChange={setR('laundryDays')} format={(v) => `${v} day${v === 1 ? '' : 's'}`} />
             <Toggle label="Bring pieces back automatically" sub="After the basket time, pieces become Available again" value={rules.laundryAutoReturn} onChange={setR('laundryAutoReturn')} />

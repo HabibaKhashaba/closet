@@ -216,7 +216,7 @@ export default function OutfitsScreen({ query }) {
           )}
         </Modal>
       )}
-      <p className="tiny muted" style={{ marginTop: 18, display: 'flex', gap: 8, alignItems: 'center' }}><SprintTag n={2} short />Match % = average of four defined part scores (colour, style, formality, weather) — flip a card to see them. Built ahead of Sprint 2; not part of Sprint 1 grading.</p>
+      <p className="tiny muted" style={{ marginTop: 18, display: 'flex', gap: 8, alignItems: 'center' }}><SprintTag n={2} short />Match % = average of four defined part scores (colour, style, formality, weather) — flip a card to see them.</p>
     </>
   );
 }

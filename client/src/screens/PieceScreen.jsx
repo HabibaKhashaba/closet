@@ -88,7 +88,7 @@ export default function PieceScreen({ id }) {
         <div className="stack lg">
           <PageHead eyebrow={CATEGORY_ONE[p.category]} title={pieceName(p)} sprint={1}
             actions={<><button type="button" className="btn line sm" onClick={() => { setEditing({ ...p, name: p.name || '', fabric: p.fabric || '', season: p.season || '', size: p.size || '', price: p.price ?? '', currency: p.currency || 'EGP', purchaseDate: p.purchaseDate || '' }); setErrors([]); }}><Icon name="edit" size={15} />Edit</button>
-              <button type="button" className="btn line sm" onClick={() => setDeleting(true)} title="Sprint 2 · built early"><Icon name="trash" size={15} />Remove</button></>} />
+              <button type="button" className="btn line sm" onClick={() => setDeleting(true)}><Icon name="trash" size={15} />Remove</button></>} />
 
           <section className="card pad">
             <div className="card-head"><h3>Availability</h3><span className={statusClass(p.status)} style={{ background: 'var(--bg-2)' }}>{STATUS_LABEL[p.status]}</span></div>
@@ -175,7 +175,7 @@ export default function PieceScreen({ id }) {
               </button>
             ))}
           </div>
-          <p className="tiny muted" style={{ marginTop: 10 }}>US-13 · Sprint 2, built early</p>
+          
           <div className="row end" style={{ marginTop: 18 }}><button type="button" className="btn line" onClick={() => setDeleting(false)}>Keep it</button><button type="button" className="btn danger" disabled={!reason} onClick={remove}>Remove piece</button></div>
         </Modal>
       )}

@@ -84,7 +84,7 @@ function NotificationCenter({ data, onClose, onRead }) {
     </div>
   );
 }
-const SprintPill = () => <span className="tag s3" style={{ marginRight: 6 }}>Sprint 3 · preview</span>;
+const SprintPill = () => null;
 
 export default function App() {
   const route = useHashRoute();
@@ -198,11 +198,11 @@ export default function App() {
         {items.map(([path, icon, label, sprint]) => (
           <a key={path} href={`#${path}`} className={isOn(path) ? 'on' : ''} onClick={() => setMoreOpen(false)}>
             <Icon name={icon} size={18} />{label}
-            {path === '/care' && laundryCount > 0 ? <span className="count">{laundryCount}</span> : sprint && <span className={`dot ${SPRINT[sprint].cls}`} title={SPRINT[sprint].label} />}
+            {path === '/care' && laundryCount > 0 ? <span className="count">{laundryCount}</span> : null}
           </a>
         ))}
         {group === 'You' && user.role === 'admin' && (
-          <a href="#/admin" className={isOn('/admin') ? 'on' : ''}><Icon name="shield" size={18} />Admin<span className="dot s3" title={SPRINT[3].label} /></a>
+          <a href="#/admin" className={isOn('/admin') ? 'on' : ''}><Icon name="shield" size={18} />Admin</a>
         )}
       </nav>
     </div>
@@ -215,12 +215,6 @@ export default function App() {
           <a className="logo" href="#/">closet<i /><small>AI wardrobe</small></a>
           {nav}
           <div className="side-foot">
-            <div className="legend">
-              <span><i className="dot s1" style={{ width: 7, height: 7, borderRadius: 9 }} />Sprint 1 · implemented, graded</span>
-              <span><i className="dot s2" style={{ width: 7, height: 7, borderRadius: 9 }} />Sprint 2 · early preview</span>
-              <span><i className="dot s3" style={{ width: 7, height: 7, borderRadius: 9 }} />Sprint 3 · product preview</span>
-              <span><i className="dot s4" style={{ width: 7, height: 7, borderRadius: 9 }} />Stretch · concept preview</span>
-            </div>
             <a className="me" href="#/profile"><span className="avatar">{name[0].toUpperCase()}</span><span className="grow"><b style={{ fontSize: 14 }}>{name}</b><br /><span className="tiny muted">{user.email}</span></span></a>
           </div>
         </aside>

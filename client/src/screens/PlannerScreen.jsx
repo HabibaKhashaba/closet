@@ -44,7 +44,7 @@ function ConnectCalendar({ onClose, onDone }) {
     try { const r = await api.importIcs(text); setResult(r); onDone(); toast(`${r.imported} event${r.imported === 1 ? '' : 's'} imported`); } catch (e) { toast(e.message, true); }
   }
   return (
-    <Modal title="Connect your calendar" sub="Bring your events in, and Closet plans outfits for them. Sprint 2 · built early." onClose={onClose}>
+    <Modal title="Connect your calendar" sub="Bring your events in, and Closet plans outfits for them." onClose={onClose}>
       <div className="stack">
         <div className="notice">
           <Icon name="calendar" size={18} style={{ flex: 'none' }} />
@@ -56,7 +56,7 @@ function ConnectCalendar({ onClose, onDone }) {
         </label>
         {result && <div className="notice ok small">Imported {result.imported} of {result.found} events{result.skipped ? ` (${result.skipped} past or already added)` : ''}.</div>}
         <div className="row between">
-          <button type="button" className="btn line" disabled title="Live sync with Google Calendar comes with the Calendar Service integration (Sprint 3)"><Icon name="link" size={15} />Google Calendar sync <SprintTag n={3} short /></button>
+          <button type="button" className="btn line" disabled title="Live sync with Google Calendar comes with the Calendar Service integration"><Icon name="link" size={15} />Google Calendar sync <SprintTag n={3} short /></button>
           <button type="button" className="btn" disabled={!text} onClick={run}>Import events</button>
         </div>
       </div>

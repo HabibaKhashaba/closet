@@ -86,11 +86,15 @@ export const SPRINT = {
   5: { cls: 's5', short: 'Milestone 3', label: 'Milestone 3 · New feature', note: 'Built for the final milestone (v3.0). Every number comes from our rules, never from the AI.' },
   4: { cls: 's4', short: 'Stretch', label: 'Stretch goal · Concept preview', note: 'A stretch / future feature shown as a working concept. Not committed for December 1 and not part of Sprint 1 grading.' },
 };
-export function SprintTag({ n, short }) {
+export function SprintTag() {
+  return null; // final release: no sprint / milestone labels in the app
+}
+function _oldSprintTag({ n, short }) {
   const s = SPRINT[n];
   return <span className={`tag ${s.cls}`} title={s.note}><span className={`dot ${s.cls}`} style={{ width: 6, height: 6, borderRadius: 9 }} />{short ? s.short : s.label}</span>;
 }
-export function SprintNote({ n, children }) {
+export function SprintNote() { return null; }
+function _oldSprintNote({ n, children }) {
   return (
     <div className="sprint-note"><SprintTag n={n} /><span>{children || SPRINT[n].note}</span></div>
   );
