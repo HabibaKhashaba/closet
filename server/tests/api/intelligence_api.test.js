@@ -215,6 +215,7 @@ describe('Notification Center (US-92) and activity log (US-93)', () => {
     expect(a.find((x) => x.action === 'Piece deleted').detail).toBe('White fitted tee · Torn / damaged');
     expect(a.length).toBe(13); // account + 9 pieces added + sign-in + profile + delete
     const other = await registerUser(app, 'b@example.com');
+    await wait(80); // the audit entry is written after the response, like every other entry in this file
     expect((await api('get', '/activity', other.token)).body.activity.map((x) => x.action)).toEqual(['Account created']);
   });
 });
