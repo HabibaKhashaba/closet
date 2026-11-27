@@ -30,7 +30,6 @@ export function Cover({ no, kicker, title, dek }) {
         <h1 className="ed-title">{title}</h1>
         <p className="ed-dek">{dek}</p>
       </div>
-      <div className="ed-numeral" aria-hidden="true">{String(no).padStart(2, '0')}</div>
     </header>
   );
 }
