@@ -171,7 +171,7 @@ describe('Studio features through the offline demo (real services, in-memory dat
     const inc = (await asNour('GET', '/studio/friends')).data.incoming[0];
     expect((await asNour('POST', `/studio/friends/${inc.id}/accept`)).status).toBe(200);
     const cl = await ok('GET', `/studio/friends/${nourId}/closet`);
-    expect(cl.items.length).toBe(10);
+    expect(cl.items.length).toBe(require('../../src/db/seedData').FRIEND.pieces.length);
     expect(Object.keys(cl.items[0]).sort()).toEqual(['available', 'category', 'colour', 'id', 'name', 'owner', 'photoUrl']);
     const dress = cl.items.find((p) => p.name === 'Black slip dress');
     expect((await ok('POST', '/studio/friends/borrow', { friendId: nourId, itemId: dress.id })).request.status).toBe('pending');

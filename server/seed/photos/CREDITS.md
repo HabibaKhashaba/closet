@@ -6,3 +6,9 @@ carry no third-party rights and contain no personal data. They are only used by 
 to fill the demo account (demo@closet.app).
 
 In the real app every piece is a photo the user takes; these illustrations only stand in for the demo.
+
+## Photos added for the final demo (v3.0)
+
+`brown_ankle_boots`, `beige_wide_leg_trousers`, `tan_leather_tote`, `light_wash_jeans` and every `nour_*.jpg`
+are product-style photos collected by the team (T-24 – T-29), cropped to 640 × 800. They are not our own
+photography; they are used only for the classroom demo and must be replaced or licensed before any public release.

@@ -110,7 +110,15 @@ const MEMBERS = [
 const FRIEND = {
   email: 'nour.demo@closet.app', name: 'Nour',
   pieces: [
-    ['olive_blazer', 'Olive blazer', { category: 'Layer', colour: 'Green', fabric: 'Wool', season: 'Spring / Autumn', size: 'S', styles: ['Classic', 'Chic'], dressCodes: [2, 3, 4], modest: true }],
+    ['nour_grey_pinstripe_blazer', 'Grey pinstripe blazer', { category: 'Layer', colour: 'Grey', fabric: 'Wool', season: 'Spring / Autumn', size: 'S', styles: ['Classic', 'Chic'], dressCodes: [2, 3, 4], modest: true }],
+    ['nour_brown_leather_jacket', 'Brown leather jacket', { category: 'Layer', colour: 'Brown', fabric: 'Leather', season: 'Spring / Autumn', size: 'S', styles: ['Chic', 'Classic'], dressCodes: [1, 2, 3], modest: true }],
+    ['nour_brown_wool_jacket', 'Brown wool jacket', { category: 'Layer', colour: 'Brown', fabric: 'Wool', season: 'Winter', size: 'S', styles: ['Minimal', 'Chic'], dressCodes: [1, 2, 3], modest: true }],
+    ['nour_red_zip_jacket', 'Red zip jacket', { category: 'Layer', colour: 'Red', fabric: 'Polyester', season: 'Spring / Autumn', size: 'S', styles: ['Sporty', 'Bold'], dressCodes: [1, 2], modest: true }],
+    ['nour_red_merino_sweater', 'Red merino sweater', { category: 'Top', colour: 'Red', fabric: 'Wool', season: 'Winter', size: 'S', styles: ['Classic', 'Comfortable'], dressCodes: [1, 2, 3], modest: true }],
+    ['nour_olive_tee', 'Olive boxy tee', { category: 'Top', colour: 'Green', fabric: 'Cotton', season: 'Summer', size: 'S', styles: ['Casual', 'Minimal'], dressCodes: [1, 2], modest: true }],
+    ['nour_lime_cami', 'Lime satin cami', { category: 'Top', colour: 'Yellow', fabric: 'Silk', season: 'Summer', size: 'S', styles: ['Chic', 'Bold'], dressCodes: [2, 4], modest: false }],
+    ['nour_denim_mini_skirt', 'Denim mini skirt', { category: 'Bottom', colour: 'Blue', fabric: 'Denim', season: 'Summer', size: 'S', styles: ['Casual', 'Streetwear'], dressCodes: [1, 2], modest: false }],
+    ['nour_black_knee_boots', 'Black knee boots', { category: 'Shoes', colour: 'Black', fabric: 'Leather', season: 'Winter', size: '38', styles: ['Chic', 'Bold'], dressCodes: [2, 3, 4], modest: true }],
     ['silver_heels', 'Silver heels', { category: 'Shoes', colour: 'Grey', fabric: 'Leather', season: 'All seasons', size: '38', styles: ['Elegant'], dressCodes: [4, 5], modest: true }],
     ['red_clutch', 'Red clutch', { category: 'Bag', colour: 'Red', fabric: 'Leather', season: 'All seasons', size: 'One size', styles: ['Bold', 'Elegant'], dressCodes: [3, 4, 5], modest: true }],
     ['black_slip_dress', 'Black slip dress', { category: 'Dress', colour: 'Black', fabric: 'Silk', season: 'Summer', size: 'S', styles: ['Elegant', 'Minimal'], dressCodes: [2, 4, 5], modest: false }],
