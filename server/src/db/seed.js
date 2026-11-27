@@ -32,7 +32,19 @@ const ADMIN = 'admin@closet.app';
 const PASSWORD = 'Closet2026!';
 const PHOTOS = path.join(__dirname, '..', '..', 'seed', 'photos');
 
-const { FRIEND, MEMBERS, PIECES, STATUSES, WEARS, REJECTS, REMOVED, EVENTS, inDays } = require('./seedData');
+const SEED = require('./seedData');
+const { HABIBA, NOUR, live } = require('./realPhotos');
+const { MEMBERS, REMOVED, inDays } = SEED;
+// Live demo: real photos only (realPhotos.js). Pieces without a real photo are left out, with everything that uses them.
+const PIECES = SEED.PIECES.map((r) => live(HABIBA, r)).filter(Boolean);
+const KEEP = new Set(PIECES.map((r) => r[0]));
+const PHOTO = Object.fromEntries(PIECES.map((r) => [r[0], r.photo || r[0]]));
+const keeps = (files) => files.every((f) => KEEP.has(f));
+const STATUSES = SEED.STATUSES.filter((r) => KEEP.has(r[0]));
+const WEARS = SEED.WEARS.map((w) => [w[0], w[1].filter((f) => KEEP.has(f)), ...w.slice(2)]).filter((w) => w[1].length >= 2);
+const REJECTS = SEED.REJECTS.filter((r) => keeps(r[1]));
+const EVENTS = SEED.EVENTS.map((e) => (e.plan && !keeps(e.plan) ? { ...e, plan: undefined } : e));
+const FRIEND = { ...SEED.FRIEND, pieces: SEED.FRIEND.pieces.map((r) => live(NOUR, r)).filter(Boolean) };
 
 async function main() {
   await migrate();
@@ -50,7 +62,8 @@ async function main() {
   };
   const upload = async (token, file, name, details) => {
     const form = new FormData();
-    form.append('photo', new Blob([fs.readFileSync(path.join(PHOTOS, `${file}.jpg`))], { type: 'image/jpeg' }), `${file}.jpg`);
+    const img = PHOTO[file] || file;
+    form.append('photo', new Blob([fs.readFileSync(path.join(PHOTOS, `${img}.jpg`))], { type: 'image/jpeg' }), `${img}.jpg`);
     form.append('details', JSON.stringify({ ...details, name }));
     return call('POST', '/items', null, token, form);
   };
@@ -87,7 +100,7 @@ async function main() {
     for (const [d, files, rating, occasion, tempC, condition, eventTitle] of WEARS) {
       await pool.query("INSERT INTO outfits.wears (user_id, item_ids, worn_on, rating, occasion, temp_c, conditions, event_title) VALUES ($1, $2, CURRENT_DATE - ($3 || ' days')::interval, $4, $5, $6, $7, $8)", [user.id, files.map((f) => ids[f]), String(d), rating, occasion, tempC, condition, eventTitle || null]);
     }
-    const save = (files, o) => call('POST', '/outfits', { itemIds: files.map((f) => ids[f]), ...o }, token);
+    const save = (files, o) => (keeps(files) ? call('POST', '/outfits', { itemIds: files.map((f) => ids[f]), ...o }, token) : null);
     await save(['ivory_silk_blouse', 'black_tailored_trousers', 'navy_blazer', 'black_loafers'], { occasion: 'Work', ruleScore: 100, favorite: true, reasons: ['Every piece suits Business Casual for work.', 'Colours: all neutral colours.', 'The navy blazer adds structure without feeling stiff.'] });
     await save(['breton_striped_top', 'beige_wide_leg_trousers', 'white_sneakers', 'tan_leather_tote'], { occasion: 'University', ruleScore: 100, favorite: true, reasons: ['Every piece suits Casual for university.', 'Colours: neutrals with navy stripes.', 'Comfortable for a long campus day.'] });
     await save(['navy_silk_midi_dress', 'nude_heels', 'structured_black_bag', 'gold_hoop_earrings'], { occasion: 'Wedding', ruleScore: 100, reasons: ['Every piece suits Formal for a wedding.', 'Silk and gold read as evening wear.'] });
@@ -120,7 +133,7 @@ async function main() {
     const nour = await call('POST', '/auth/login', { email: FRIEND.email, password: PASSWORD });
     await call('PUT', '/profile/quiz', { styles: ['Chic', 'Elegant', 'Minimal'], colours: ['Black', 'Beige', 'Green'], occasions: ['Work', 'Dinner', 'Wedding'], dressCode: 2, modest: false, city: 'Cairo' }, nour.token);
     await call('PUT', '/profile', { displayName: FRIEND.name }, nour.token);
-    for (const [file, name, details] of FRIEND.pieces) await upload(nour.token, file, name, details);
+    for (const r of FRIEND.pieces) await upload(nour.token, r.photo || r[0], r[1], r[2]);
 
     console.log(`Seeded ${PIECES.length} pieces, ${REMOVED.length} deleted with reasons, ${WEARS.length} worn outfits, ${REJECTS.length} rejections, ${EVENTS.length} events (2 planned), 4 saved outfits, 1 packing list for ${EMAIL} / ${PASSWORD}; admin ${ADMIN}`);
   } finally {

@@ -9,6 +9,10 @@ In the real app every piece is a photo the user takes; these illustrations only 
 
 ## Photos added for the final demo (v3.0)
 
-`brown_ankle_boots`, `beige_wide_leg_trousers`, `tan_leather_tote`, `light_wash_jeans` and every `nour_*.jpg`
+`brown_ankle_boots`, `beige_wide_leg_trousers`, `tan_leather_tote`, `light_wash_jeans`, `black_loafers`, `tortoise_sunglasses`, `structured_black_bag`, `nude_heels`, `beige_trench_coat` and every `nour_*`, `h_*` and `n_*` photo
 are product-style photos collected by the team (T-24 – T-29), cropped to 640 × 800. They are not our own
 photography; they are used only for the classroom demo and must be replaced or licensed before any public release.
+
+The live demo (`npm run seed`) shows only real photos: `server/src/db/realPhotos.js` maps each piece to its photo,
+renames it to match, and leaves out pieces we have no photo for (the dresses). The drawings remain only for the
+automated tests and the offline demo.
