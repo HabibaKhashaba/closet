@@ -33,7 +33,10 @@ const PASSWORD = 'Closet2026!';
 const PHOTOS = path.join(__dirname, '..', '..', 'seed', 'photos');
 
 const SEED = require('./seedData');
-const { HABIBA, NOUR, live } = require('./realPhotos');
+const real = require('./realPhotos');
+// CI (GitHub sets CI=true) keeps the original closet: the browser journeys and demo-check click pieces by their names.
+const ON = !process.env.CI && process.env.SEED_PHOTOS !== 'drawings';
+const HABIBA = ON ? real.HABIBA : {}; const NOUR = ON ? real.NOUR : {}; const { live } = real;
 const { MEMBERS, REMOVED, inDays } = SEED;
 // Live demo: real photos only (realPhotos.js). Pieces without a real photo are left out, with everything that uses them.
 const PIECES = SEED.PIECES.map((r) => live(HABIBA, r)).filter(Boolean);
