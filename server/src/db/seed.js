@@ -39,7 +39,7 @@ const ON = !process.env.CI && process.env.SEED_PHOTOS !== 'drawings';
 const HABIBA = ON ? real.HABIBA : {}; const NOUR = ON ? real.NOUR : {}; const { live } = real;
 const { MEMBERS, REMOVED, inDays } = SEED;
 // Live demo: real photos only (realPhotos.js). Pieces without a real photo are left out, with everything that uses them.
-const PIECES = SEED.PIECES.map((r) => live(HABIBA, r)).filter(Boolean);
+const PIECES = [...SEED.PIECES.map((r) => live(HABIBA, r)).filter(Boolean), ...(ON ? real.EXTRA_HABIBA.map(([f, n, d]) => [f, n, d, 0, 0]) : [])];
 const KEEP = new Set(PIECES.map((r) => r[0]));
 const PHOTO = Object.fromEntries(PIECES.map((r) => [r[0], r.photo || r[0]]));
 const keeps = (files) => files.every((f) => KEEP.has(f));
@@ -47,7 +47,7 @@ const STATUSES = SEED.STATUSES.filter((r) => KEEP.has(r[0]));
 const WEARS = SEED.WEARS.map((w) => [w[0], w[1].filter((f) => KEEP.has(f)), ...w.slice(2)]).filter((w) => w[1].length >= 2);
 const REJECTS = SEED.REJECTS.filter((r) => keeps(r[1]));
 const EVENTS = SEED.EVENTS.map((e) => (e.plan && !keeps(e.plan) ? { ...e, plan: undefined } : e));
-const FRIEND = { ...SEED.FRIEND, pieces: SEED.FRIEND.pieces.map((r) => live(NOUR, r)).filter(Boolean) };
+const FRIEND = { ...SEED.FRIEND, pieces: [...SEED.FRIEND.pieces.map((r) => live(NOUR, r)).filter(Boolean), ...(ON ? real.EXTRA_NOUR : [])] };
 
 async function main() {
   await migrate();
